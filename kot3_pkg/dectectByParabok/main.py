@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import sys
 import numpy
-numpy.set_printoptions(threshold=sys.maxsize)
+
 # def lanesDetection(img):
 #     # img = cv.imread("./img/road.jpg")
 #     # img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
@@ -57,9 +57,13 @@ def laneDetection(img):
     
     grayImage = cv.cvtColor(img, cv.COLOR_RGB2GRAY)    
     cv.imshow("Gray" , grayImage)        
-    edgeDetectionImage = cv.Canny(grayImage, 50, 100, 
+    
+    # https://stackoverflow.com/questions/21324950/how-can-i-select-the-best-set-of-parameters-in-the-canny-edge-detection-algorith
+    highThresh, thresh_im = cv.threshold(grayImage, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    lowThresh = 0.5*highThresh    
+    edgeDetectionImage = cv.Canny(grayImage, lowThresh, highThresh, 
                                   apertureSize=3)        
-
+    cv.imshow("egde", edgeDetectionImage)
     lines = cv.HoughLinesP(edgeDetectionImage, 
                            rho=2, theta=np.pi/180,
                            threshold=30, lines=np.array([]), 
@@ -76,8 +80,7 @@ def laneDetection(img):
             leftStartPointY = index
             break
         
-    rightStartPointX = int(HORIZONTAL/2) - 1 + np.argmax(statisticMatrix[int(HORIZONTAL/2 + 1) : int(HORIZONTAL)])
-    print("aaaa", rightStartPointX)
+    rightStartPointX = int(HORIZONTAL/2) - 1 + np.argmax(statisticMatrix[int(HORIZONTAL/2 + 1) : int(HORIZONTAL)])    
     rightStartPointY = 0
     for index in range(VERTICAL-1 , 0 , -1):
         if (edgeDetectionImage[index][rightStartPointX] != BLACK_COLOR):
@@ -93,7 +96,7 @@ def laneDetection(img):
                             20, (0, 255, 0), 10)
     imageCircle = cv.circle(imageCircle, (0, 0), 
                         20, (0, 255, 0), 10)
-    cv.imshow("Circle for fun", imageCircle)    
+    cv.imshow("Circle for fun", imageCircle) 
     cv.waitKey(0)
     cv.destroyAllWindows() 
     
@@ -111,7 +114,7 @@ def videoLanes():
     cv.destroyAllWindows()
 
 def imageLanes():
-    img = cv.imread("./img/demo/page9.png")
+    img = cv.imread("./img/demo/page3.png")
     processedImg = laneDetection(img=img)
 
 
