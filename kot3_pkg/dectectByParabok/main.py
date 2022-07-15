@@ -1,4 +1,5 @@
 import cv2 as cv
+from cv2 import line
 from matplotlib.ft2font import HORIZONTAL
 import numpy as np
 from matplotlib import pyplot as plt
@@ -58,20 +59,21 @@ def laneDetection(img):
     HORIZONTAL = img.shape[1]
     
     grayImage = cv.cvtColor(img, cv.COLOR_RGB2GRAY)    
-    # cv.imshow("Gray" , grayImage)
+    cv.imshow("Gray" , grayImage)
     
     # https://stackoverflow.com/questions/21324950/how-can-i-select-the-best-set-of-parameters-in-the-canny-edge-detection-algorith
     highThresh, thresh_im = cv.threshold(grayImage, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     lowThresh = 0.5*highThresh    
     edgeDetectionImage = cv.Canny(grayImage, lowThresh, highThresh, 
                                   apertureSize=3)        
-    # cv.imshow("egde", edgeDetectionImage)
+    cv.imshow("egde", edgeDetectionImage)
     lines = cv.HoughLinesP(edgeDetectionImage, 
                            rho=2, theta=np.pi/180,
                            threshold=30, lines=np.array([]), 
                            minLineLength=10, maxLineGap=50)
+    print("daadasdas", len(lines))
     imageWithLine = draw_lines(img, lines)    
-    # cv.imshow("Line hough transfom", imageWithLine)
+    cv.imshow("Line hough transfom", imageWithLine)
     
     
     statisticMatrix = np.sum(edgeDetectionImage, axis=0) # CACULATE ALL COLUMN IN MATRIX
@@ -183,7 +185,7 @@ def videoLanes():
 
 def imageLanes():
     # img = cv.imread("./img/demo/page3.png")
-    img = cv.imread("/home/minhtulehoang/kitty/testing/image_2/um_000000.png")
+    img = cv.imread("/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/kot3_pkg/dectectByParabok/kitty/training/image_2/um_000000.png")
     processedImg = laneDetection(img=img)
 
 
