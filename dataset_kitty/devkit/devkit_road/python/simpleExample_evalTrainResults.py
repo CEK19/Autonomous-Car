@@ -31,9 +31,9 @@ if __name__ == "__main__":
     
     # check for correct number of arguments.
     if len(sys.argv)<2:
-        print "Usage: python simpleExample_evalTrainResults.py  <datasetDir> <outputDir>"
-        print "<datasetDir> = base directory of the KITTI Road benchmark dataset (has to contain training and testing), e.g., /home/elvis/kitti_road/"
-        print "<outputDir>  = Here the baseline results will be saved, e.g., /home/elvis/kitti_road/results/"
+        print ("Usage: python simpleExample_evalTrainResults.py  <datasetDir> <outputDir>")
+        print ("<datasetDir> = base directory of the KITTI Road benchmark dataset (has to contain training and testing), e.g., /home/elvis/kitti_road/")
+        print ("<outputDir>  = Here the baseline results will be saved, e.g., /home/elvis/kitti_road/results/")
         sys.exit(1)
    
     # parse parameters

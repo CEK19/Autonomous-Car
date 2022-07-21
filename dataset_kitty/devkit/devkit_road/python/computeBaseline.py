@@ -49,14 +49,14 @@ def main(train_dir, test_dir, outputDir):
 
     trainData_path_gt = os.path.join(train_dir, dataStructure.trainData_subdir_gt)
     
-    print "Computing category specific location potential as a simple baseline for classifying the data..."
-    print "Using ground truth data from: %s" % trainData_path_gt
-    print "All categories = %s" %dataStructure.cats
+    print ("Computing category specific location potential as a simple baseline for classifying the data...")
+    print ("Using ground truth data from: %s" % trainData_path_gt)
+    print ("All categories = %s" %dataStructure.cats)
     
     # Loop over all categories
     for cat in dataStructure.cats:
         cat_tags = cat.split('_')
-        print "Computing on dataset: %s for class: %s" %(cat_tags[0],cat_tags[1])
+        print ("Computing on dataset: %s for class: %s" %(cat_tags[0],cat_tags[1]))
         trainData_fileList_gt = glob(os.path.join(trainData_path_gt, cat + '*' + dataStructure.gt_end))
         trainData_fileList_gt.sort()
         assert len(trainData_fileList_gt)>0, 'Error: Cannot find ground truth data in %s' % trainData_path_gt
@@ -66,7 +66,7 @@ def main(train_dir, test_dir, outputDir):
         # Loop over all gt-files for particular category
         for trainData_fileName_gt in trainData_fileList_gt:
             
-            full_gt = cv2.imread(trainData_fileName_gt, cv2.CV_LOAD_IMAGE_UNCHANGED)
+            full_gt = cv2.imread(trainData_fileName_gt, cv2.IMREAD_UNCHANGED)
             #attention: OpenCV reads in as BGR, so first channel has road GT
             trainData_file_gt =  full_gt[:,:,0] > 0
             #validArea = full_gt[:,:,2] > 0
@@ -80,7 +80,7 @@ def main(train_dir, test_dir, outputDir):
         locationPotential = locationPotential/len(trainData_fileList_gt)
         locationPotential_uinit8 = (locationPotential*255).astype('u1')
         
-        print "Done: computing location potential for category: %s." %cat
+        print ("Done: computing location potential for category: %s." %cat)
         
         if not os.path.isdir(outputDir):
             os.makedirs(outputDir)
@@ -88,7 +88,7 @@ def main(train_dir, test_dir, outputDir):
         testData_fileList_im2 = glob(os.path.join(test_dir, dataStructure.testData_subdir_im2, cat_tags[0] + '_*'+ dataStructure.im_end))
         testData_fileList_im2.sort()
         
-        print "Writing location potential as perspective probability map into %s." %outputDir
+        print ("Writing location potential as perspective probability map into %s." %outputDir)
         
         for testData_file_im2 in testData_fileList_im2:
             # Write output data (same format as images!)
@@ -97,17 +97,17 @@ def main(train_dir, test_dir, outputDir):
             fn_out = os.path.join(outputDir, cat + ts_str)
             cv2.imwrite(fn_out, locationPotential_uinit8)
             
-        print "Done: Creating perspective baseline."
+        print ("Done: Creating perspective baseline.")
 
 
 if __name__ == "__main__":
     
     # check for correct number of arguments.
     if len(sys.argv)!=4:
-        print "Usage: python coomputeBaseline.py <TrainDir> <TestDir> <OutputDir> "
-        print "<TrainDir> = directory of training data (has to contain ground truth: gt_image_2), e.g., /home/elvis/kitti_road/training"
-        print "<TestDir> = directory with testing data (has to contain images: image_2), e.g., /home/elvis/kitti_road/testing"
-        print "<OutputDir>  = directory where the baseline results will be saved, e.g., /home/elvis/kitti_road/test_baseline_perspective"
+        print ("Usage: python coomputeBaseline.py <TrainDir> <TestDir> <OutputDir> ")
+        print ("<TrainDir> = directory of training data (has to contain ground truth: gt_image_2), e.g., /home/elvis/kitti_road/training")
+        print ("<TestDir> = directory with testing data (has to contain images: image_2), e.g., /home/elvis/kitti_road/testing")
+        print ("<OutputDir>  = directory where the baseline results will be saved, e.g., /home/elvis/kitti_road/test_baseline_perspective")
         sys.exit(1)
     
     # parse parameters

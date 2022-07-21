@@ -27,7 +27,7 @@ def getGroundTruth(fileNameGT):
     '''
     # Read GT
     assert os.path.isfile(fileNameGT), 'Cannot find: %s' % fileNameGT
-    full_gt = cv2.imread(fileNameGT, cv2.CV_LOAD_IMAGE_UNCHANGED)
+    full_gt = cv2.imread(fileNameGT, cv2.IMREAD_UNCHANGED)
     #attention: OpenCV reads in as BGR, so first channel has Blue / road GT
     roadArea =  full_gt[:,:,0] > 0
     validArea = full_gt[:,:,2] > 0
@@ -70,11 +70,11 @@ def evalExp(gtBin, cur_prob, thres, validMap = None, validArea=None):
     if validMap!=None:
         if validArea!=None:
             validMap = (validMap == True) & (validArea == True)
-    elif validArea!=None:
+    elif (validArea!=None).all():
         validMap=validArea
 
     # histogram of false negatives
-    if validMap!=None:
+    if (validMap!=None).all():
         fnArray = cur_prob[(gtBin == True) & (validMap == True)]
     else:
         fnArray = cur_prob[(gtBin == True)]
@@ -82,7 +82,7 @@ def evalExp(gtBin, cur_prob, thres, validMap = None, validArea=None):
     fnCum = np.cumsum(fnHist)
     FN = fnCum[0:0+len(thres)];
     
-    if validMap!=None:
+    if (validMap!=None).all():
         fpArray = cur_prob[(gtBin == False) & (validMap == True)]
     else:
         fpArray = cur_prob[(gtBin == False)]
@@ -94,7 +94,7 @@ def evalExp(gtBin, cur_prob, thres, validMap = None, validArea=None):
     # count labels and protos
     #posNum = fnArray.shape[0]
     #negNum = fpArray.shape[0]
-    if validMap!=None:
+    if (validMap!=None).all():
         posNum = np.sum((gtBin == True) & (validMap == True))
         negNum = np.sum((gtBin == False) & (validMap == True))
     else:
@@ -177,7 +177,7 @@ def pxEval_maximizeFMeasure(totalPosNum, totalNegNum, totalFN, totalFP, thresh =
     #prob_eval_scores['precision_bst'] = precision_bst
     #prob_eval_scores['recall_bst'] = recall_bst
     prob_eval_scores['thresh'] = thresh
-    if thresh != None:
+    if (thresh != None).all():
         BestThresh= thresh[index]
         prob_eval_scores['BestThresh'] = BestThresh
 
