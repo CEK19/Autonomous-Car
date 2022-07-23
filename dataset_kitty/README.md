@@ -7,10 +7,16 @@
 ## Cac folder chứa gì
 
 - [x] `data_road`: chứa các hình ảnh và meta data (meta data chưa rõ)
-- [ ] `devkit_road`: bộ kit để chạy tự động, đang đọc
+- [ ] `devkit_road`: bộ kit để chạy tự động, đang đọc (đáng sợ quá [đọc tại đây](./devkit/devkit_road/readme.md)).
 - [ ] `training`: chứa mapping gì đó, chưa rõ
 
 ----------------------
+
+## Bài báo nói về phương pháp đánh giá của kitty dataset
+
+- http://www.cvlibs.net/publications/Fritsch2013ITSC.pdf
+
+-----------------------
 
 ## Download Policy
 To comply with current regulations, all users who download the KITTI dataset must be registered and specify the purpose of dataset usage. If you have no account yet, register below. Note that registration is a two step process. If you are solely interested in downloading the data, you only have to complete the first step. If you want to submit your results, you also need to complete the second step. The second step can be completed at any point in time and must not be completed together with the first step.
