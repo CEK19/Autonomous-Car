@@ -1,7 +1,7 @@
 #include "stdlib.h"
 #include "math.h"
 #include "time.h"
-
+#include <iostream>
 //#include <opencv2/imgproc/imgproc.hpp>
 //#include <opencv2/highgui/highgui.hpp>
 
@@ -299,14 +299,6 @@ LaneInfomation process(Mat frame){
  }
 
 int main(int argc, char **argv){
-
-  /*
-    Load your image
-   
-    Run function process
-
-    return struct is the lane infomation
-  */
-
+	cout << "abc" << endl;
 	return 0;
 }
