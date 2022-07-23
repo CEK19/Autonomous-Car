@@ -2,9 +2,11 @@
 #include "math.h"
 #include "time.h"
 
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
- 
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 using namespace cv;
 using namespace std;
 
@@ -84,9 +86,6 @@ class Ram{
 };
 
 Ram ram;
-demo_pakage::Num present_command;
-ros::Publisher publish_data;
-geometry_msgs::Twist data_msg;
 
 class Lane{
 public:
@@ -296,14 +295,14 @@ LaneInfomation process(Mat frame){
   returnLaneInfo.leftLane = left;
   returnLaneInfo.middleLane = mid;
   returnLaneInfo.rightLane = right;
-  return returnLaneInfo
+    return returnLaneInfo;
  }
 
 int main(int argc, char **argv){
 
   /*
     Load your image
-
+   
     Run function process
 
     return struct is the lane infomation
