@@ -118,10 +118,13 @@ def region_of_interest(canny):
     # (550, 250),
     # (1100, height),]], np.int64)    
 
-    triangle = np.array([[0, 320], [240, 255], [425, 255], [canny.shape[1], 320]])        
-
+    triangle = np.array([[0, 320], [240, 180], [800, 180], [canny.shape[1], 320]])           
     cv2.fillPoly(mask, pts=[triangle], color =(255,255,255))    
     masked_image = cv2.bitwise_and(canny, mask)    
+    cv2.circle(masked_image, (0, 320), 20, (255, 0, 0), 2)
+    cv2.circle(masked_image, (240, 180), 20, (255, 0, 0), 2)
+    cv2.circle(masked_image, (800, 180), 20, (255, 0, 0), 2)
+    cv2.circle(masked_image, (canny.shape[1], 320), 20, (255, 0, 0), 2)
     return masked_image
 
 #------------------------- FINDING LANE USING SLIDE WINDOW --------------------------- #
@@ -318,9 +321,9 @@ def videoReading ():
     
 def imageReading():
     # VIDEO READING
-    PATH_IMAGE_INPUT = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/dataset_kitty/data_road/testing/image_2/"
+    PATH_IMAGE_INPUT = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/dataset_kitty/data_road/training/image_2/"
     imageCollections = os.listdir(PATH_IMAGE_INPUT)
-    PATH_IMAGE_OUTPUT = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/report/nhan_image/testing/"
+    PATH_IMAGE_OUTPUT = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/report/nhan_image/roi/"
     file_object = open(PATH_IMAGE_OUTPUT + 'fps.txt', 'a')
     
     for image in imageCollections:
@@ -336,7 +339,7 @@ def imageReading():
             
         #------------------------- CREATE REGION OF INTEREST ---------------------------
         bitwiseImg = region_of_interest(preprocessImage)
-        # cv2.imshow("bitwise", bitwiseImg)
+        cv2.imshow("bitwise", bitwiseImg)
         cv2.imwrite(PATH_IMAGE_OUTPUT + image, bitwiseImg)
         end = time.time()
         file_object.write(str(1/(end-begin)) + "\n")
