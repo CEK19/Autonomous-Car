@@ -25,6 +25,9 @@ import computingPipeline, transform2BEV
 # transform the results to the metric BEV 
 #########################################################################
 
+# pwd: C:\Users\Admin\Documents\coding\Autonomous-Car\dataset_kitty
+# CLI: python .\devkit\devkit_road\python\simpleExample_generateBEVResults.py .\data_road\ .\data_road\results\
+
 if __name__ == "__main__":
     
     #datasetDir = '/hri/storage/user/rtds/KITTI_Road_Data'
@@ -32,9 +35,9 @@ if __name__ == "__main__":
 
     # check for correct number of arguments.
     if len(sys.argv)<2:
-        print "Usage: python simpleExample_generateBEVResults.py  <datasetDir> <outputDir>"
-        print "<datasetDir> = base directory of the KITTI Road benchmark dataset (has to contain training and testing), e.g., /home/elvis/kitti_road/"
-        print "<outputDir>  = Here the baseline results will be saved, e.g., /home/elvis/kitti_road/results/"
+        print ("Usage: python simpleExample_generateBEVResults.py  <datasetDir> <outputDir>")
+        print ("<datasetDir> = base directory of the KITTI Road benchmark dataset (has to contain training and testing), e.g., /home/elvis/kitti_road/")
+        print ("<outputDir>  = Here the baseline results will be saved, e.g., /home/elvis/kitti_road/results/")
         sys.exit(1)
 
     # parse parameters

@@ -24,6 +24,9 @@ import computeBaseline, evaluateRoad
 # test script to evaluate training data in perspective domain
 #########################################################################
 
+# pwd: C:\Users\Admin\Documents\coding\Autonomous-Car\dataset_kitty
+# CLI: python .\devkit\devkit_road\python\simpleExample_evalTrainResults.py .\data_road .\data_road\results
+
 if __name__ == "__main__":
     
     #datasetDir = '/hri/storage/user/rtds/KITTI_Road_Data'

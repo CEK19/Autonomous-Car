@@ -72,6 +72,10 @@ def evalExp(gtBin, cur_prob, thres, validMap = None, validArea=None):
             validMap = (validMap == True) & (validArea == True)
     elif (validArea!=None).all():
         validMap=validArea
+        
+    print(len(cur_prob))
+    print(len(gtBin))
+    print(len(validMap))
 
     # histogram of false negatives
     if (validMap!=None).all():

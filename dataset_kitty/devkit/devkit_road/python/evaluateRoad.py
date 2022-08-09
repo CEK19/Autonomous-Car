@@ -75,7 +75,8 @@ def main(result_dir, train_dir, debug = False):
         totalNegNum = 0
         
         firstFile  = gt_fileList[0]
-        file_key = firstFile.split('/')[-1].split('.')[0]
+        # file_key = firstFile.split('/')[-1].split('.')[0]
+        file_key = firstFile.split('\\')[-1].split('.')[0]
         tags = file_key.split('_')
         ts_tag = tags[2]
         dataset_tag = tags[0]
@@ -86,7 +87,8 @@ def main(result_dir, train_dir, debug = False):
         
         for fn_curGt in gt_fileList:
             
-            file_key = fn_curGt.split('/')[-1].split('.')[0]
+            # file_key = fn_curGt.split('/')[-1].split('.')[0]
+            file_key = firstFile.split('\\')[-1].split('.')[0]
             if debug:
                 print ("Processing file: %s " %file_key)
             
@@ -110,7 +112,9 @@ def main(result_dir, train_dir, debug = False):
                 break
             
             cur_prob = cv2.imread(fn_curProb,0)
+            print(len(fn_curProb))
             cur_prob = np.clip( (cur_prob.astype('f4'))/(np.iinfo(cur_prob.dtype).max),0.,1.)
+            print(len(cur_prob))
             
             FN, FP, posNum, negNum = evalExp(cur_gt, cur_prob, thresh, validMap = None, validArea=validArea)
             
@@ -163,5 +167,7 @@ if __name__ == "__main__":
 
     # Excecute main fun 
     main(result_dir, gt_dir)
+    
+    # cv2.waitKey(0)
 
 
