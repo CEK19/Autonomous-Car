@@ -37,14 +37,14 @@ def contourFunction(threshImg, orgImg):
 
     index = 0
     while (index < len(contoursList)):
-        if(cv.contourArea(contours[index]) < 1):
+        if(cv.contourArea(contours[index]) < 1.2):
             smallGr.append(contoursList[index])
         else:
             largeGr.append(contoursList[index])
             # contoursList.pop(index)
         index += 1
 
-    cv.drawContours(orgImg, smallGr, -1, (0, 0, 0), 3)
+    cv.drawContours(orgImg, smallGr, -1, (0, 0, 0), thickness=cv.FILLED)
     
     squareGr = []
     i = 0
@@ -67,7 +67,7 @@ def contourFunction(threshImg, orgImg):
             squareGr.append(cnt)
         
     
-    cv.drawContours(orgImg, squareGr, -1, (0, 0, 0), 3)
+    cv.drawContours(orgImg, squareGr, -1, (0, 0, 0), thickness=cv.FILLED)
 
 
 ####################
