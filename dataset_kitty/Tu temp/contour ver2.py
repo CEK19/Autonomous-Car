@@ -26,15 +26,16 @@ def preprocessImg(orgImg):
 
     return threshImg
 
-def thicken(img):
+def thicken(img, orgImg, thickness=2):
     contours, hierarchy = cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-    cv.drawContours(img, contours, -1, (255, 255, 255), thickness=4)
+    cv.drawContours(img, contours, -1, (255, 255, 255), thickness=thickness)
+    cv.drawContours(orgImg, contours, -1, (255, 255, 255), thickness=thickness)
+    
     contours, hierarchy = cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     cv.drawContours(img, contours, -1, (255, 255, 255), thickness=cv.FILLED)
-    cv.imshow("thicken", img)
+    cv.drawContours(orgImg, contours, -1, (255, 255, 255), thickness=cv.FILLED)
 
 def contourFunction(threshImg, orgImg):
-    thicken(threshImg)
     # contours, hierarchy = cv.findContours(threshImg, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
     contours, hierarchy = cv.findContours(threshImg, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     
@@ -53,7 +54,13 @@ def contourFunction(threshImg, orgImg):
         index += 1
 
     cv.drawContours(orgImg, smallGr, -1, (0, 0, 0), thickness=cv.FILLED)
-    
+    cv.drawContours(threshImg, smallGr, -1, (0, 0, 0), thickness=cv.FILLED)
+   
+showIndex = 0;
+ 
+def contourFunction2 (img, orgImg):
+    contours, hierarchy = cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    largeGr = list(contours)
     squareGr = []
     i = 0
     while (i < len(largeGr)):
@@ -70,12 +77,15 @@ def contourFunction(threshImg, orgImg):
         # if dense > 0.2 and w > 4 and h < 20:
         #     squareGr.append(cnt)
         
-        if dense > 0.35 and (w > 8 or (area > 0.45 and w > 5 and h < 10 ) ) :
-            print("Area: ", float( cv.contourArea(cnt) ), " / Box: ", (w*h), " = ", dense)
+        if dense > 0.5 and ( (w > 8 and area < 1000) or (0.45 < area < 1000 and 8 < w and h < 10 ) ) :
+            print("i: ", i,", Area: ", float( cv.contourArea(cnt) ), " / Box: ", (w*h), " = ", dense)
             squareGr.append(cnt)
-        
     
-    cv.drawContours(orgImg, squareGr, -1, (0, 0, 0), thickness=cv.FILLED)
+    # global showIndex
+    showIndex = 7
+    print("----> ", "area: ", cv.contourArea(squareGr[showIndex]), " dimention: ", cv.boundingRect(squareGr[showIndex]), " dense: ", float(area)/(w*h))
+    cv.drawContours(orgImg, squareGr, showIndex, (255, 0, 0), thickness=cv.FILLED)
+    cv.drawContours(threshImg, squareGr, showIndex, (0, 0, 0), thickness=cv.FILLED)
 
 
 ####################
@@ -89,21 +99,28 @@ while True:
         break
     elif keyboard.is_pressed('left') or keyboard.is_pressed('down'):
         index -= 1
+        showIndex -= 1
         if index == -1:
             break
     else:
         cv.destroyAllWindows()
+        showIndex += 1
         index += 1
+        print(showIndex)
         if index == 19:
             break
 
-    orgImg = cv.imread(str(index) + '.jpg')
-    # orgImg = cv.imread('2.jpg')
+    # orgImg = cv.imread(str(index) + '.jpg')
+    orgImg = cv.imread('4.jpg')
     # orgImg = cv.imread("../data_road/training/image_2/um_000000.png")
     threshImg = preprocessImg(orgImg)
     cv.imshow("before", threshImg)
 
     contourFunction(threshImg, orgImg)
-    cv.imshow("after", orgImg)
+    cv.imshow("contour1", orgImg)
+    thicken(threshImg, orgImg, 2)
+    cv.imshow("thicken", orgImg)
+    contourFunction2(threshImg, orgImg)
+    cv.imshow("contour2", orgImg)
 
     cv.waitKey(0)
