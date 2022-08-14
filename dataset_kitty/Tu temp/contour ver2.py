@@ -8,6 +8,12 @@ GRAD_MAX_THRESH_HOLD = 180
 S_THRESH_HOLD = (80, 150)
 V_THRESH_HOLD = (80, 150)
 
+X_MAX = 767
+Y_MAX = 767
+
+BLACK_COLOR = 0
+WHITE_COLOR = 255
+
 
 def abs_sobel_thresh(rgbImg, orient='x', threshMin=25, threshMax=255):
     # convert RGB to HLS
@@ -35,6 +41,52 @@ def thicken(img, orgImg, thickness=2):
     cv.drawContours(img, contours, -1, (255, 255, 255), thickness=cv.FILLED)
     cv.drawContours(orgImg, contours, -1, (255, 255, 255), thickness=cv.FILLED)
 
+def isOutOfRange (point, type):
+    if type == "x-axios":
+        if point < 0 or point > X_MAX:
+            return True
+        else:
+            return False
+    elif type == "y-axios":
+        if point < 0 or point > Y_MAX:
+            return True
+        else:
+            return False
+    elif type == "both":
+        condition1 = point.x < 0 or point.x > X_MAX
+        condition2 = point.y < 0 or point.y > Y_MAX
+        if condition1 or condition2:
+            return True
+        else:
+            return False
+    else:
+        print("Your type is invalid, please choose among 'x-axios', 'y-axios', 'both'")
+    
+def distance(xA, yA, xB, yB):
+    return math.sqrt( (xA-xB)**2 + (yA-yB)**2 )
+
+def density(threshImg, orgImg, centerPointX, centerPointY, radius):
+    totalPoint = 0
+    countedPoint = 0
+    # tempImg = orgImg.copy()
+    for y in range (centerPointY - radius, centerPointY + radius, 1):
+        if isOutOfRange(y, "y-axios"):
+            continue
+        for x in range (centerPointX - radius, centerPointX + radius, 1):
+            if isOutOfRange(x, "x-axios"):
+                continue
+            if distance(x, y, centerPointX, centerPointY) > radius:
+                continue
+            if threshImg[y][x] == WHITE_COLOR:
+                countedPoint += 1
+            totalPoint += 1
+            # tempImg[y, x] = [255, 0, 0]
+
+    # print(countedPoint, totalPoint, float(countedPoint) / totalPoint)
+    # cv.imshow("temp", tempImg)
+    return float(countedPoint) / totalPoint
+
+# first contour function
 def contourFunction(threshImg, orgImg):
     # contours, hierarchy = cv.findContours(threshImg, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
     contours, hierarchy = cv.findContours(threshImg, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
@@ -57,7 +109,8 @@ def contourFunction(threshImg, orgImg):
     cv.drawContours(threshImg, smallGr, -1, (0, 0, 0), thickness=cv.FILLED)
    
 showIndex = 0;
- 
+
+# do this after thicken
 def contourFunction2 (img, orgImg):
     contours, hierarchy = cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     largeGr = list(contours)
@@ -82,10 +135,42 @@ def contourFunction2 (img, orgImg):
             squareGr.append(cnt)
     
     # global showIndex
-    showIndex = 7
-    print("----> ", "area: ", cv.contourArea(squareGr[showIndex]), " dimention: ", cv.boundingRect(squareGr[showIndex]), " dense: ", float(area)/(w*h))
+    showIndex = -1
+    # print("----> ", "area: ", cv.contourArea(squareGr[showIndex]), " dimention: ", cv.boundingRect(squareGr[showIndex]), " dense: ", float(area)/(w*h))
     cv.drawContours(orgImg, squareGr, showIndex, (255, 0, 0), thickness=cv.FILLED)
     cv.drawContours(threshImg, squareGr, showIndex, (0, 0, 0), thickness=cv.FILLED)
+
+def contourFunction3(img, orgImg):
+    contours, hierarchy = cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    contours = list(contours)
+    
+    standAloneGr = []
+    
+    print(len(contours))
+    
+    # for cnt in contours:
+    i = 0
+    while i < len(contours):
+        print(i)
+        cnt = contours[i]
+        M = cv.moments(cnt)
+        cx = int(M['m10']/M['m00'])
+        cy = int(M['m01']/M['m00'])
+        if cy < 500:
+            i += 1
+            continue
+        # radius = 10, tham so = 0.12 => khá ổn
+        if(density(img, orgImg, cx, cy, 10) < 0.09):
+            standAloneGr.append(cnt)
+        i += 1
+    
+    cv.drawContours(threshImg, standAloneGr, -1, (0, 0, 0), thickness=cv.FILLED)
+    cv.drawContours(orgImg, standAloneGr, -1, (255, 0, 0), thickness=cv.FILLED)
+    # for cnt in contours:
+    #     x,y,w,h = cv.boundingRect(cnt)
+        
+    
+    return 0
 
 
 ####################
@@ -110,17 +195,26 @@ while True:
         if index == 19:
             break
 
-    # orgImg = cv.imread(str(index) + '.jpg')
-    orgImg = cv.imread('4.jpg')
-    # orgImg = cv.imread("../data_road/training/image_2/um_000000.png")
+    orgImg = cv.imread(str(index) + '.jpg')
+    # orgImg = cv.imread('3.jpg')
     threshImg = preprocessImg(orgImg)
     cv.imshow("before", threshImg)
 
     contourFunction(threshImg, orgImg)
     cv.imshow("contour1", orgImg)
-    thicken(threshImg, orgImg, 2)
-    cv.imshow("thicken", orgImg)
-    contourFunction2(threshImg, orgImg)
-    cv.imshow("contour2", orgImg)
+    
+    contourFunction3(threshImg, orgImg)
+    cv.imshow("contour3", orgImg)
+    
+    
+    # orgImg[100:150, 400:450] = [255, 0, 0]
+    # cv.imshow("contours", orgImg)
+    
+    
+    # thicken(threshImg, orgImg, 2)
+    # cv.imshow("thicken", orgImg)
+    
+    # contourFunction2(threshImg, orgImg)
+    # cv.imshow("contour2", orgImg)
 
     cv.waitKey(0)
