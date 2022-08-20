@@ -1,7 +1,7 @@
 # Autonomous-Car
 DEVELOPMENT OF DRIVING-ASSISTED SYSTEM FOR AUTONOMOUS CAR
 
-Open Terminal and do above step
+**Installation:** Open Terminal and do above step
 
 **STEP 1: CREATE WORKSPACE** 
 ```
@@ -24,3 +24,12 @@ git pull origin main
 cd ~/NCKH_workspace/KOT3_ws/
 catkin_make
 ```
+
+---
+**Source structure**:   
+-  **build:** contains script to build workspace ROS
+-  **dataset_kitty:** folder contains dataset to train/test
+-  **documentation:** contains software documentations & more information
+-  **kot3_pkg:** contains script & folder relative to ROS
+-  **report:** contains result of testing
+-  **src:** contains mains algorithms script (don't have ROS script here)
