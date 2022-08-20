@@ -33,3 +33,7 @@ catkin_make
 -  **kot3_pkg:** contains script & folder relative to ROS
 -  **report:** contains result of testing
 -  **src:** contains mains algorithms script (don't have ROS script here)
+---
+**Contribute Project Rule:**
+
+-**Commit message:** *"#ISSUE_NUMBER date: detail changing of this commit"* => **Example:** *"#4 20-08-2022: changing folder structure for understandable purpose"*
