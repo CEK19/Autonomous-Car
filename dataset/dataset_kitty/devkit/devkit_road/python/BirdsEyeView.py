@@ -113,10 +113,11 @@ def readKittiCalib(filename, dtype = 'f8'):
         if content=='':
             continue
         if content[0]!='#' :
-            tmp = content.split(':')
+            tmp = str(str)
+            tmp = content.split(b":")
             assert len(tmp)==2, 'wrong file format, only one : per line!'
             var = tmp[0].strip()
-            values = np.array(tmp[-1].strip().split(' '), dtype)
+            values = np.array(tmp[-1].strip().split(b' '), dtype)
 
             outdict[var] = values
 
@@ -158,8 +159,10 @@ class KittiCalibration(object):
         '''
         dtype_str = 'f8'
         #dtype = np.float64
+        
+        # print(dictWithKittiStuff)
 
-        self.P2 = np.matrix(dictWithKittiStuff['P2']).reshape((3,4))
+        self.P2 = np.matrix(dictWithKittiStuff[b'P2']).reshape((3,4))
 
         if useRect:
             #
@@ -167,14 +170,14 @@ class KittiCalibration(object):
             #self.R0_rect = None
 
         else:
-            R0_rect_raw = np.array(dictWithKittiStuff['R0_rect']).reshape((3,3))
+            R0_rect_raw = np.array(dictWithKittiStuff[b'R0_rect']).reshape((3,3))
             # Rectification Matrix
             self.R0_rect = np.matrix(np.hstack((np.vstack((R0_rect_raw, np.zeros((1,3), dtype_str))), np.zeros((4,1), dtype_str))))
             self.R0_rect[3,3]=1.
             # intermediate result
             R2_1 = np.dot(self.P2, self.R0_rect)
 
-        Tr_cam_to_road_raw = np.array(dictWithKittiStuff['Tr_cam_to_road']).reshape(3,4)
+        Tr_cam_to_road_raw = np.array(dictWithKittiStuff[b'Tr_cam_to_road']).reshape(3,4)
         # Transformation matrixs
         self.Tr_cam_to_road = np.matrix(np.vstack((Tr_cam_to_road_raw, np.zeros((1,4), dtype_str))))
         self.Tr_cam_to_road[3,3]=1.
@@ -186,7 +189,7 @@ class KittiCalibration(object):
         '''
 
         '''
-        assert self.Tr33 != None
+        assert (self.Tr33 != None).all()
         return self.Tr33
 
 class BirdsEyeView(object):
@@ -404,15 +407,15 @@ class BirdsEyeView(object):
         
         :param inImage:
         '''
-        assert self.im_u_float != None
-        assert self.im_v_float != None
-        assert self.bev_x_ind != None
-        assert self.bev_z_ind != None
+        assert (self.im_u_float != None).all()
+        assert (self.im_v_float != None).all()
+        assert (self.bev_x_ind != None).all()
+        assert (self.bev_z_ind != None).all()
         
         
         if len(inImage.shape) > 2:
             outputData = np.zeros(self.bevParams.bev_size + (inImage.shape[2],), dtype = out_dtype)
-            for channel in xrange(0, inImage.shape[2]):
+            for channel in range(0, inImage.shape[2]):
                 outputData[self.bev_z_ind-1, self.bev_x_ind-1, channel] = inImage[self.im_v_float.astype('u4')-1, self.im_u_float.astype('u4')-1, channel]
         else:
             outputData = np.zeros(self.bevParams.bev_size, dtype = out_dtype)
@@ -432,7 +435,7 @@ class BirdsEyeView(object):
         assert self.imSize_back != None
         if len(bevMask.shape) > 2:
             outputData = np.zeros(self.imSize_back + (bevMask.shape[2],), dtype = out_dtype)
-            for channel in xrange(0, bevMask.shape[2]):
+            for channel in range(0, bevMask.shape[2]):
                 outputData[self.yImInd_reverse, self.xImInd_reverse, channel] = bevMask[self.ZBevInd_reverse, self.XBevInd_reverse, channel]
         else:
             outputData = np.zeros(self.imSize_back, dtype = out_dtype)
