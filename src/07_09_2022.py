@@ -107,7 +107,7 @@ def preprocessing(frame):
     copyOriginalFrame[np.where(combineColorImg==[0])] = [0]
     
     blurred = cv2.GaussianBlur(frame, (3, 3), 0)    
-    cannyEdgeDectection = cv2.Canny(blurred, 250, 255)
+    cannyEdgeDectection = cv2.Canny(blurred, 200, 255)
     
     combineFirst = cv2.bitwise_or(cannyEdgeDectection, combineColorImg)
     
@@ -116,7 +116,7 @@ def preprocessing(frame):
 
 def videoReading ():
     # VIDEO READING
-    cap = cv2.VideoCapture("/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/src/video1.avi")
+    cap = cv2.VideoCapture("/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/dataset/real_video_Nhan/vid1.mp4")
     while(cap.isOpened()):
         begin = time.time()
         _, frame = cap.read()     
@@ -148,6 +148,6 @@ def imageReading():
         end = time.time()
         print(1/(end-begin))
         
-imageReading()
-# videoReading()
+# imageReading()
+videoReading()
 # cv2.destroyAllWindows()
