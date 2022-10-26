@@ -5,25 +5,30 @@ import os
 
 def preprocessing(frame):    
     hsvImg = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    sensitivity = 120
+    # sensitivity = 120
+    sensitivity = 150
     lowerWhite = np.array([0,0,255-sensitivity])
     upperWhite = np.array([255,sensitivity,255])
     maskWhite = cv2.inRange(hsvImg, lowerWhite, upperWhite)
+    cv2.imshow("white filter", maskWhite)
     
     # lowerYellow = np.array([25,100 ,20]) #H,S,V
     # upperYellow = np.array([32, 255,255]) #H,S,V
     
     lowerYellow = np.array([12,100 ,20]) #H,S,V
     upperYellow = np.array([23, 255,255]) #H,S,V    
-    maskYellow = cv2.inRange(hsvImg, lowerYellow, upperYellow)
+    maskYellow = cv2.inRange(hsvImg, lowerYellow, upperYellow)    
+    cv2.imshow("yellow filter", maskYellow)
     
     combineColorImg = cv2.bitwise_or(maskWhite, maskYellow)
+    cv2.imshow("Combine color filter", combineColorImg)
+
     copyOriginalFrame = frame.copy()
     copyOriginalFrame[np.where(combineColorImg==[0])] = [0]
     
-    blurred = cv2.GaussianBlur(frame, (3, 3), 0)    
+    blurred = cv2.GaussianBlur(frame, (5, 5), 0)    
     cannyEdgeDectection = cv2.Canny(blurred, 100, 180)
-    # cannyEdgeDectection = cv2.Canny(blurred, , 150)
+    cv2.imshow("canny edge", cannyEdgeDectection)
     
     combineFirst = cv2.bitwise_or(cannyEdgeDectection, combineColorImg)
     
@@ -32,7 +37,7 @@ def preprocessing(frame):
 
 def videoReading ():
     # VIDEO READING
-    cap = cv2.VideoCapture("/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/dataset/real_video_Nhan/vid1.mp4")
+    cap = cv2.VideoCapture("/Users/mac/Desktop/vid4nhan.avi")
     while(cap.isOpened()):
         begin = time.time()
         _, frame = cap.read()     
@@ -51,9 +56,9 @@ def videoReading ():
     
 def imageReading():
     # VIDEO READING
-    PATH_IMAGE_INPUT = "/Users/mac/Desktop/things/"
+    PATH_IMAGE_INPUT = "/Users/mac/Desktop/drive-download-20221007T154316Z-001/"
     imageCollections = os.listdir(PATH_IMAGE_INPUT)
-    PATH_IMAGE_OUTPUT = "/Users/mac/Desktop/output/" 
+    PATH_IMAGE_OUTPUT = "/Users/mac/Desktop/output1/" 
     
     for image in imageCollections:
         begin = time.time()
