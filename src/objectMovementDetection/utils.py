@@ -1,6 +1,5 @@
 import pygame
 import math
-
 class Utils:
     @staticmethod
     def blit_rotate_center(win, image, top_left, angle):

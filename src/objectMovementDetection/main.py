@@ -120,10 +120,18 @@ class Obstacle(Player):
         super().__init__(maxVelocity=PlayerParam.MAX_VELOCITY,
                          maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
 
-        self.xPos, self.yPos = PlayerParam.INITIAL_OBSTACLE_X + random.randint(-int(0.8*PlayerParam.INITIAL_OBSTACLE_X), int(
-            0.8*PlayerParam.INITIAL_OBSTACLE_X)), PlayerParam.INITIAL_OBSTACLE_Y + random.randint(-40, 40)
+        self.xPos = ObstacleParam.INITIAL_OBSTACLE_X + random.randint(-int(0.8*ObstacleParam.INITIAL_OBSTACLE_X), int(
+            0.8*ObstacleParam.INITIAL_OBSTACLE_X))
+
+        self.yPos = ObstacleParam.INITIAL_OBSTACLE_Y + random.randint(0, int(
+            0.7*GameSettingParam.HEIGHT))
+
         self.circleRect = pygame.draw.circle(
             GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos), PlayerParam.RADIUS_OBJECT)
+        self.currAngle = 0
+
+        # Is random ?
+        self.randomVelo = False
 
     def _playerInput(self):
         keys = [PlayerParam.INC_ROTATION_VELO,
@@ -131,21 +139,31 @@ class Obstacle(Player):
                 PlayerParam.STOP,
                 PlayerParam.INC_FORWARD_VELO,
                 PlayerParam.DESC_FORWARD_VELO]
-        choosedKey = keys[random.choice(range(len(keys)))]
+        probs = [
+            0.1,
+            0.1,
+            0.1,
+            0.4,
+            0.3
+        ]
+
+        # choosedKey = keys[random.choice(range(len(keys)))]
+        randomIndex = random.choices(range(len(keys)), probs)[0]
+        choosedKey = keys[randomIndex]
 
         if choosedKey == PlayerParam.INC_ROTATION_VELO:
-            self.currRotationVelocity += PlayerParam.OBSTACLE_ACCELERATION_ROTATE
+            self.currRotationVelocity += ObstacleParam.OBSTACLE_ACCELERATION_ROTATE
         if choosedKey == PlayerParam.DESC_ROTATION_VELO:
-            self.currRotationVelocity -= PlayerParam.OBSTACLE_ACCELERATION_ROTATE
+            self.currRotationVelocity -= ObstacleParam.OBSTACLE_ACCELERATION_ROTATE
         if choosedKey == PlayerParam.STOP:
             self.currVelocity = 0
             self.currRotationVelocity = 0
         if choosedKey == PlayerParam.INC_FORWARD_VELO:
             self.currVelocity = min(
-                self.currVelocity + PlayerParam.OBSTACLE_ACCELERATION_FORWARD, self.maxVelocity)
+                self.currVelocity + ObstacleParam.OBSTACLE_ACCELERATION_FORWARD, self.maxVelocity)
         if choosedKey == PlayerParam.DESC_FORWARD_VELO:
             self.currVelocity = max(
-                self.currVelocity - PlayerParam.OBSTACLE_ACCELERATION_FORWARD, 0)
+                self.currVelocity - ObstacleParam.OBSTACLE_ACCELERATION_FORWARD, 0)
 
     def _rayCasting(self):
         pass
@@ -168,8 +186,6 @@ class Obstacle(Player):
         pygame.draw.line(GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos),
                          (self.xPos - math.sin(self.currAngle) * 20,
                           self.yPos + math.cos(self.currAngle) * 20), 3)
-
-
 # Game setting
 pygame.init()
 GLOBAL_SCREEN = pygame.display.set_mode(
@@ -180,7 +196,10 @@ GLOBAL_CLOCK = pygame.time.Clock()
 # Groups
 player = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
                 maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
-obstacles = [Obstacle(), Obstacle(), Obstacle(), Obstacle()]
+obstacles = []
+for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
+    obstacles.append(Obstacle())
+
 # Start game
 while True:
     GLOBAL_CLOCK.tick(GameSettingParam.FPS)
@@ -197,4 +216,3 @@ while True:
         obstacle.draw()
 
     pygame.display.flip()
-    pygame.display.update()
