@@ -45,11 +45,19 @@ class ObstacleParam:
 
 
 class RLParam:
-    EPSILON = 0.1
-    ALPHA = 0.1
-    GAMMA = 0.6
+    EPSILON = 0.2
+    
+    MAX_ALPHA = 0.1
+    MIN_ALPHA = 1
+    
+    GAMMA = 0.6    
 
     AREA_RAY_CASTING_NUMBERS = 10
+    
+    N_EPISODES = 20
+    MAX_EPISODE_STEPS = 100
+    
+    
     
     class LEVEL_OF_RAY_CASTING:
         INFINITY = "3" # NO TOUCH OBSTACLE 
