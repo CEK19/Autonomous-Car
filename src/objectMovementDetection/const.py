@@ -34,6 +34,8 @@ class PlayerParam:
     STOP = "STOP"
     INC_FORWARD_VELO = "INC_FORWARD_VELO"
     DESC_FORWARD_VELO = "DESC_FORWARD_VELO"
+    
+    INFINITY = 9999
 
 
 class ObstacleParam:
@@ -42,15 +44,32 @@ class ObstacleParam:
     OBSTACLE_ACCELERATION_ROTATE = 0.5
     INITIAL_OBSTACLE_X = GameSettingParam.WIDTH//2
     INITIAL_OBSTACLE_Y = 0
-
+    
+    PROBABILITIES_ACTION = [0.1,
+                            0.1,
+                            0.1,
+                            0.4,
+                            0.3]
 
 class RLParam:
-    EPSILON = 0.1
-    ALPHA = 0.1
+    EPSILON = 0.2
+
+    MAX_ALPHA = 0.1
+    MIN_ALPHA = 1
+
     GAMMA = 0.6
 
     AREA_RAY_CASTING_NUMBERS = 10
-    
+
+    N_EPISODES = 20
+    MAX_EPISODE_STEPS = 100
+
+    ACTIONS = [PlayerParam.INC_ROTATION_VELO,
+               PlayerParam.DESC_ROTATION_VELO,
+               PlayerParam.STOP,
+               PlayerParam.INC_FORWARD_VELO,
+               PlayerParam.DESC_FORWARD_VELO]
+
     DISTANCE_OF_RAY_CASTING = [10, 20, 30, 9999999] # 9999999 is infinity
     
     class LEVEL_OF_RAY_CASTING:
@@ -67,12 +86,20 @@ class RLParam:
         MIDDLE =  "2"
         RIGHT = "1"
         MOST_RIGHT = "0"
-        
-        
-        
-        
+
+
 class CustomColor:
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
+
+
+class MODE_PLAY:
+    MANUAL = "MANUAL"
+    RL_TRAIN = "RL_TRAIN"
+
+
+class GUI:
+    DISPLAY = True
+    HIDDEN = False

@@ -5,6 +5,7 @@ from sys import exit
 import random
 from const import *
 from utils import *
+from table import *
 import datetime
 
 
@@ -27,6 +28,9 @@ class Player():
         # Raycasting
         self.raycastingLists = []
 
+        self.mode = MODE_PLAY.MANUAL
+        self.displayGUI = GUI.DISPLAY
+
     def _move(self):
         dt = float(1/GameSettingParam.FPS)
 
@@ -34,30 +38,51 @@ class Player():
         self.xPos += -math.sin(self.currAngle) * self.currVelocity * dt
         self.currAngle += self.currRotationVelocity*dt
 
-    def _playerInput(self):
-        keys = pygame.key.get_pressed()
+    def _playerInput(self, actionIndex):
+        if (self.mode == MODE_PLAY.MANUAL):
+            keys = pygame.key.get_pressed()
 
-        # Rotate left ()
-        if keys[pygame.K_a]:
-            self.currRotationVelocity -= PlayerParam.ACCELERATION_ROTATE
-        # Rotate right ()
-        if keys[pygame.K_d]:
-            self.currRotationVelocity += PlayerParam.ACCELERATION_ROTATE
+            # Rotate left ()
+            if keys[pygame.K_a]:
+                self.currRotationVelocity -= PlayerParam.ACCELERATION_ROTATE
+            # Rotate right ()
+            if keys[pygame.K_d]:
+                self.currRotationVelocity += PlayerParam.ACCELERATION_ROTATE
 
-        # Increase forward velocity
-        if keys[pygame.K_w]:
-            self.currVelocity = min(
-                self.currVelocity + PlayerParam.ACCELERATION_FORWARD, self.maxVelocity)
+            # Increase forward velocity
+            if keys[pygame.K_w]:
+                self.currVelocity = min(
+                    self.currVelocity + PlayerParam.ACCELERATION_FORWARD, self.maxVelocity)
 
-        # Stop
-        if keys[pygame.K_s]:
-            self.currVelocity = 0
-            self.currRotationVelocity = 0
+            # Stop
+            if keys[pygame.K_s]:
+                self.currVelocity = 0
+                self.currRotationVelocity = 0
 
-        # Decrease forward velocity
-        if keys[pygame.K_x]:
-            self.currVelocity = max(
-                self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
+            # Decrease forward velocity
+            if keys[pygame.K_x]:
+                self.currVelocity = max(
+                    self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
+
+        elif (self.mode == MODE_PLAY.RL_TRAIN):
+
+            if RLParam.ACTIONS[actionIndex] == PlayerParam.DESC_ROTATION_VELO:
+                self.currRotationVelocity -= PlayerParam.ACCELERATION_ROTATE
+
+            if RLParam.ACTIONS[actionIndex] == PlayerParam.INC_ROTATION_VELO:
+                self.currRotationVelocity += PlayerParam.ACCELERATION_ROTATE
+
+            if RLParam.ACTIONS[actionIndex] == PlayerParam.STOP:
+                self.currVelocity = 0
+                self.currRotationVelocity = 0
+
+            if RLParam.ACTIONS[actionIndex] == PlayerParam.INC_FORWARD_VELO:
+                self.currVelocity = min(
+                    self.currVelocity + PlayerParam.ACCELERATION_FORWARD, self.maxVelocity)
+
+            if RLParam.ACTIONS[actionIndex] == PlayerParam.DESC_FORWARD_VELO:
+                self.currVelocity = max(
+                    self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
 
     def _rayCasting(self):
         global obstacles
@@ -78,13 +103,17 @@ class Player():
                     distance = Utils.distanceBetweenTwoPoints(
                         target_x, target_y, obstacle.xPos, obstacle.yPos)
                     if distance <= PlayerParam.RADIUS_OBJECT:
+                        self.raycastingLists.append(distance)
                         isDetectObject = True
-                        pygame.draw.line(GLOBAL_SCREEN, CustomColor.WHITE,
-                                         (self.xPos, self.yPos), (target_x, target_y))
+                        if self.displayGUI == GUI.DISPLAY:
+                            pygame.draw.line(
+                                GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
                         break
                     if depth == PlayerParam.RADIUS_LIDAR and not isDetectObject:
-                        pygame.draw.line(GLOBAL_SCREEN, CustomColor.WHITE,
-                                         (self.xPos, self.yPos), (target_x, target_y))
+                        self.raycastingLists.append(PlayerParam.INFINITY)
+                        if self.displayGUI == GUI.DISPLAY:
+                            pygame.draw.line(
+                                GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
 
             startAngle += PlayerParam.STEP_ANGLE
 
@@ -98,21 +127,22 @@ class Player():
                 print(datetime.datetime.now(), "ouchhhh")
                 pass
 
-    def draw(self):
+    def draw(self, actionIndex):
         global GLOBAL_SCREEN
-        self._playerInput()
+        self._playerInput(actionIndex=actionIndex)
         self._rayCasting()
         self._checkCollision()
         self._move()
 
-        # draw player on 2D board
-        pygame.draw.circle(GLOBAL_SCREEN, CustomColor.RED,
-                           (self.xPos, self.yPos), PlayerParam.RADIUS_OBJECT)
+        if (self.displayGUI == GUI.DISPLAY):
+            # draw player on 2D board
+            pygame.draw.circle(GLOBAL_SCREEN, CustomColor.RED,
+                               (self.xPos, self.yPos), PlayerParam.RADIUS_OBJECT)
 
-        # draw player direction
-        pygame.draw.line(GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos),
-                         (self.xPos - math.sin(self.currAngle) * 20,
-                          self.yPos + math.cos(self.currAngle) * 20), 3)
+            # draw player direction
+            pygame.draw.line(GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos),
+                             (self.xPos - math.sin(self.currAngle) * 20,
+                              self.yPos + math.cos(self.currAngle) * 20), 3)
 
 
 class Obstacle(Player):
@@ -134,18 +164,8 @@ class Obstacle(Player):
         self.randomVelo = False
 
     def _playerInput(self):
-        keys = [PlayerParam.INC_ROTATION_VELO,
-                PlayerParam.DESC_ROTATION_VELO,
-                PlayerParam.STOP,
-                PlayerParam.INC_FORWARD_VELO,
-                PlayerParam.DESC_FORWARD_VELO]
-        probs = [
-            0.1,
-            0.1,
-            0.1,
-            0.4,
-            0.3
-        ]
+        keys = RLParam.ACTIONS
+        probs = ObstacleParam.PROBABILITIES_ACTION
 
         # choosedKey = keys[random.choice(range(len(keys)))]
         randomIndex = random.choices(range(len(keys)), probs)[0]
@@ -176,16 +196,51 @@ class Obstacle(Player):
         self._playerInput()
         self._move()
 
-        # draw player on 2D board
-        pygame.draw.circle(GLOBAL_SCREEN, CustomColor.GREEN,
-                           (self.xPos, self.yPos), PlayerParam.RADIUS_OBJECT)
+        if (self.displayGUI == GUI.DISPLAY):
+            # draw player on 2D board
+            pygame.draw.circle(GLOBAL_SCREEN, CustomColor.GREEN,
+                               (self.xPos, self.yPos), PlayerParam.RADIUS_OBJECT)
 
-        pygame.draw.circle(GLOBAL_SCREEN, CustomColor.RED,
-                           (self.xPos, self.yPos), 6)
-        # draw player direction
-        pygame.draw.line(GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos),
-                         (self.xPos - math.sin(self.currAngle) * 20,
-                          self.yPos + math.cos(self.currAngle) * 20), 3)
+            pygame.draw.circle(GLOBAL_SCREEN, CustomColor.RED,
+                               (self.xPos, self.yPos), 6)
+            # draw player direction
+            pygame.draw.line(GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos),
+                             (self.xPos - math.sin(self.currAngle) * 20,
+                              self.yPos + math.cos(self.currAngle) * 20), 3)
+
+
+class Environment:
+    def __init__(self, currentPlayer, currentObstacles):
+        self.currPlayer = currentPlayer
+        self.currObstacles = currentObstacles
+
+        self.rayCastingData = currentPlayer.raycastingLists
+        self.xPos, self.yPos = currentPlayer.xPos, currentPlayer.yPos
+
+        currentPlayer.mode = MODE_PLAY.RL_TRAIN
+        currentPlayer.displayGUI = GUI.HIDDEN
+
+        for obstacle in currentObstacles:
+            obstacle.mode = MODE_PLAY.RL_TRAIN
+            obstacle.displayGUI = GUI.HIDDEN
+
+    def updateStateByAction(self, actionIndex):
+        self.currPlayer.draw(actionIndex=actionIndex)
+        # TODO: ADD STATE USING HASHING
+        nextState = ""
+        reward = RLAlgorithm.getReward(currState=nextState, currAction="")
+        done = ""
+        return nextState, reward, done
+
+    def getState():
+        pass
+
+    def reset():
+        pass
+
+
+###########################################################################################
+
 # Game setting
 pygame.init()
 GLOBAL_SCREEN = pygame.display.set_mode(
@@ -200,19 +255,29 @@ obstacles = []
 for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
     obstacles.append(Obstacle())
 
-# Start game
-while True:
-    GLOBAL_CLOCK.tick(GameSettingParam.FPS)
-    GLOBAL_SCREEN.fill(CustomColor.BLACK)
-    GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+def startGame(mode=MODE_PLAY.MANUAL):
+    if (mode == MODE_PLAY.MANUAL):
+        while True:
+            GLOBAL_CLOCK.tick(GameSettingParam.FPS)
+            GLOBAL_SCREEN.fill(CustomColor.BLACK)
+            GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))
 
-    player.draw()
-    for obstacle in obstacles:
-        obstacle.draw()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
 
-    pygame.display.flip()
+            player.draw(actionIndex=None)
+            for obstacle in obstacles:
+                obstacle.draw()
+
+            pygame.display.flip()
+    elif (mode == MODE_PLAY.RL_TRAIN):
+        env = Environment(currentPlayer=player, currentObstacles=obstacles)
+        RL = RLAlgorithm(rayCastingData=env.rayCastingData,
+                         actions=RLParam.ACTIONS)
+        RL.train(env)
+
+
+startGame()
