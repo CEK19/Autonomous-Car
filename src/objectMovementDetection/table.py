@@ -56,7 +56,7 @@ class RLAlgorithm:
                 break
         return hashFromRayCasting + hashFromCeneterOfLane
     
-    def getReward(self, currState, currAction): 
+    def getReward(self, currState, currActionIndex): 
         stateArr = [int(char) for char in currState]
         lidarState = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
         centerState = stateArr[-1]
