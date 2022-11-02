@@ -1,6 +1,7 @@
 from const import *
 import random
 import numpy as np
+import time
 
 
 class RLAlgorithm:
@@ -68,7 +69,7 @@ class RLAlgorithm:
         # Obstacles block car
         for lidarState in lidarStates:
             if lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
-                finalReward -= 100
+                return -100
             elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE and currActionIndex != RLParam.ACTIONS_INDEX.STOP:
                 finalReward -= 6
             elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE and currActionIndex == RLParam.ACTIONS_INDEX.STOP:
@@ -107,6 +108,7 @@ class RLAlgorithm:
             state = "START STATE"
             totalReward = 0
             alpha = alphas[e]
+            startTime = time.time()
 
             for _ in range(RLParam.MAX_EPISODE_STEPS):
                 actionIndex = self._epsilonGreedyPolicy(currState=state)
@@ -117,6 +119,8 @@ class RLAlgorithm:
                              np.max(self.Q[nextState]) - self.Q[state][actionIndex])
                 state = nextState
                 if done:
+                    endTime = time.time()
+                    totalReward += 10000 - (endTime-startTime) * 10
                     break
             print(f"Episode {e + 1}: total reward -> {totalReward}")
 
