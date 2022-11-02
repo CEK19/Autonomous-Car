@@ -62,7 +62,11 @@ class RLAlgorithm:
         centerState = stateArr[-1]
         
         # Obstacles block car
-        # if()
+        # Todo
+        
+        
+        # Car out of lane
+        # todo
         
         print(lidarState, "-", centerState)
         pass
