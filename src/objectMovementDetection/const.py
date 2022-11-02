@@ -51,16 +51,20 @@ class RLParam:
 
     AREA_RAY_CASTING_NUMBERS = 10
     
+    DISTANCE_OF_RAY_CASTING = [10, 20, 30, 9999999] # 9999999 is infinity
+    
     class LEVEL_OF_RAY_CASTING:
         INFINITY = "3" # NO TOUCH OBSTACLE 
         SAFETY_DISTANCE = "2" # LIDAR TOUCH OBSTACLE, BUT SAFE
         DANGEROUS_DISTANCE = "1" # LIDAR TOUCH OBSTACLE, BUT IN DANGEROUS MODE
         FAILED_DISTANCE = "0" # LIDAR TOUCH OBSTACLE, AND OUCH
         
+    DISTANCE_FROM_CENTER_OF_LANE = [20, 10, -9999] # -9999 is infinity
+    
     class LEVEL_OF_LANE:
-        MIDDLE =  "4"
-        LEFT = "3"
+        LEFT = "4"
         MOST_LEFT = "3"
+        MIDDLE =  "2"
         RIGHT = "1"
         MOST_RIGHT = "0"
         
