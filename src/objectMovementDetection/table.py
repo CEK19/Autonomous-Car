@@ -60,18 +60,35 @@ class RLAlgorithm:
         return hashFromRayCasting + hashFromCeneterOfLane
     
     def getReward(self, currState, currActionIndex): 
+        finalReward = 0
         stateArr = [int(char) for char in currState]
-        lidarState = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
+        lidarStates = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
         centerState = stateArr[-1]
         
         # Obstacles block car
-        # Todo
-        
+        for lidarState in lidarStates:
+            if lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
+                finalReward -= 100
+            elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE and currActionIndex != RLParam.ACTIONS_INDEX.STOP:
+                finalReward -= 6
+            elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE and currActionIndex == RLParam.ACTIONS_INDEX.STOP:
+                finalReward += 1
         
         # Car out of lane
-        # todo
-        
-        print(lidarState, "-", centerState)
+        if centerState == RLParam.LEVEL_OF_LANE.MIDDLE:
+            finalReward += 2
+        elif centerState == RLParam.LEVEL_OF_LANE.RIGHT or centerState == RLParam.LEVEL_OF_LANE.LEFT:
+            finalReward -= 1
+        elif centerState == RLParam.LEVEL_OF_LANE.MOST_RIGHT or centerState == RLParam.LEVEL_OF_LANE.MOST_LEFT:
+            finalReward -= 10
+            
+        # Prevent stop and go back action
+        if currActionIndex == RLParam.ACTIONS_INDEX.STOP:
+            finalReward -= 5
+        elif currActionIndex == RLParam.ACTIONS_INDEX.DESC_FORWARD_VELO:
+            finalReward -= 5
+
+        print(lidarStates, "-", centerState)
         pass
 
     def _epsilonGreedyPolicy(self, currState):

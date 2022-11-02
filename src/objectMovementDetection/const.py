@@ -69,6 +69,13 @@ class RLParam:
                PlayerParam.STOP,
                PlayerParam.INC_FORWARD_VELO,
                PlayerParam.DESC_FORWARD_VELO]
+    
+    class ACTIONS_INDEX:
+        INC_ROTATION_VELO = 0
+        DESC_ROTATION_VELO = 1
+        STOP = 2
+        INC_FORWARD_VELO = 3
+        DESC_FORWARD_VELO = 4
 
     DISTANCE_OF_RAY_CASTING = [10, 20, 30, 9999999] # 9999999 is infinity
     
