@@ -1,6 +1,7 @@
 from const import *
 import random
 import numpy as np
+import time
 
 
 class RLAlgorithm:
@@ -34,9 +35,10 @@ class RLAlgorithm:
     def _initQTable(self, actions):
         pass
     
-    def _hashFromDistanceToState(self): # Tu
+    @staticmethod
+    def hashFromDistanceToState(signalPerAreaData, leftSideDistance, rightSideDistance): # Tu
         hashFromRayCasting = ""
-        for signal in self.signalPerAreaData:
+        for signal in signalPerAreaData:
             for index, distanceRange in enumerate(RLParam.DISTANCE_OF_RAY_CASTING):
                 if index == len(RLParam.DISTANCE_OF_RAY_CASTING) - 1:
                     hashFromRayCasting += RLParam.LEVEL_OF_RAY_CASTING.INFINITY
@@ -46,33 +48,52 @@ class RLAlgorithm:
                     break
         
         hashFromCeneterOfLane = ""
-        distanceFromCenterOfLane = abs(self.leftSideDistance - self.rightSideDistance) / 2
+        distanceFromCenterOfLane = abs(leftSideDistance - rightSideDistance) / 2
         for index, distance in enumerate(RLParam.DISTANCE_FROM_CENTER_OF_LANE):
             if index == len(RLParam.DISTANCE_FROM_CENTER_OF_LANE) - 1:
                 hashFromCeneterOfLane += RLParam.LEVEL_OF_LANE.MIDDLE
                 break
             elif distanceFromCenterOfLane > distance:
-                if self.leftSideDistance < self.rightSideDistance:
+                if leftSideDistance < rightSideDistance:
                     hashFromCeneterOfLane += str(index + int(RLParam.LEVEL_OF_LANE.MIDDLE) + 1)
                 else:
                     hashFromCeneterOfLane += str(index)
                 break
         return hashFromRayCasting + hashFromCeneterOfLane
     
-    def getReward(self, currState, currActionIndex): 
-        stateArr = [int(char) for char in currState]
-        lidarState = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
+    @staticmethod
+    def getReward(currState, currActionIndex): 
+        finalReward = 0
+        stateArr = [char for char in currState]
+        lidarStates = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
         centerState = stateArr[-1]
+        print(lidarStates)
+        print(centerState)
         
         # Obstacles block car
-        # Todo
-        
+        for lidarState in lidarStates:
+            if lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
+                return RLParam.SCORE.OBSTACLE_TOUCH
+            elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE and RLParam.ACTIONS[currActionIndex] != PlayerParam.STOP:
+                finalReward += RLParam.SCORE.DANGEROUS_ZONE_CONTINUE_MOVING
+            elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE and RLParam.ACTIONS[currActionIndex] == PlayerParam.STOP:
+                finalReward += RLParam.SCORE.DANGEROUS_ZONE_STOP
         
         # Car out of lane
-        # todo
-        
-        print(lidarState, "-", centerState)
-        pass
+        if centerState == RLParam.LEVEL_OF_LANE.MIDDLE:
+            finalReward += RLParam.SCORE.STAY_AT_CENTER_OF_LANE
+        elif centerState == RLParam.LEVEL_OF_LANE.RIGHT or centerState == RLParam.LEVEL_OF_LANE.LEFT:
+            finalReward += RLParam.SCORE.STAY_AT_LEFT_OR_RIGHT_OF_LANE
+        elif centerState == RLParam.LEVEL_OF_LANE.MOST_RIGHT or centerState == RLParam.LEVEL_OF_LANE.MOST_LEFT:
+            finalReward += RLParam.SCORE.STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE
+            
+        # Prevent stop and go back action
+        if RLParam.ACTIONS[currActionIndex] == PlayerParam.STOP:
+            finalReward += RLParam.SCORE.STOP_ACTION
+        elif RLParam.ACTIONS[currActionIndex] == PlayerParam.DESC_FORWARD_VELO:
+            finalReward += RLParam.SCORE.DESC_FORWARD_VELO_ACTION
+        print('--->', finalReward)
+        return finalReward
 
     def _epsilonGreedyPolicy(self, currState):
         if random.uniform(0, 1) < RLParam.EPSILON:
@@ -90,6 +111,7 @@ class RLAlgorithm:
             state = "START STATE"
             totalReward = 0
             alpha = alphas[e]
+            startTime = time.time()
 
             for _ in range(RLParam.MAX_EPISODE_STEPS):
                 actionIndex = self._epsilonGreedyPolicy(currState=state)
@@ -100,12 +122,14 @@ class RLAlgorithm:
                              np.max(self.Q[nextState]) - self.Q[state][actionIndex])
                 state = nextState
                 if done:
+                    endTime = time.time()
+                    totalReward += 1500 - (endTime-startTime) * 10
                     break
             print(f"Episode {e + 1}: total reward -> {totalReward}")
 
 
 RL = RLAlgorithm(range(90), [1, 2, 3, 4])
 print(RL.signalPerAreaData)
-state = RL._hashFromDistanceToState()
+state = RL.hashFromDistanceToState(RL.signalPerAreaData, RL.leftSideDistance, RL.rightSideDistance)
 print(state)
-RL.getReward(state, 0)
+print(RL.getReward(state, 2))
