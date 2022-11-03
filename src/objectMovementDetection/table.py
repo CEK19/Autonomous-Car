@@ -7,14 +7,18 @@ import time
 class RLAlgorithm:
     def __init__(self, rayCastingData, actions) -> None:
         # Converting n raycasting to signal in area , min raycast of each area
-        self.signalPerAreaData = self._initSignalPerArea(rayCastingData=rayCastingData)
+        self.signalPerAreaData = self.convertRaycastingDataToSignalPerArea(rayCastingData=rayCastingData)
         self.leftSideDistance = 16
         self.rightSideDistance = 19
                 
         self.Q = self._initQTable(actions=actions)
         self.actions = actions
 
-    def _initSignalPerArea(self, rayCastingData):
+    def _initQTable(self, actions):
+        pass
+    
+    @staticmethod
+    def convertRayCastingDataToSignalPerArea( rayCastingData):
         div = len(rayCastingData) // RLParam.AREA_RAY_CASTING_NUMBERS
         mod = len(rayCastingData) % RLParam.AREA_RAY_CASTING_NUMBERS
 
@@ -31,9 +35,6 @@ class RLAlgorithm:
                     break
             tmpData[i] = min(tmp)
         return tmpData
-
-    def _initQTable(self, actions):
-        pass
     
     @staticmethod
     def hashFromDistanceToState(signalPerAreaData, leftSideDistance, rightSideDistance): # Tu
@@ -115,7 +116,7 @@ class RLAlgorithm:
 
             for _ in range(RLParam.MAX_EPISODE_STEPS):
                 actionIndex = self._epsilonGreedyPolicy(currState=state)
-                nextState, reward, done = act(state, actionIndex)
+                nextState, reward, done = env.updateStateByAction(state, actionIndex)
                 totalReward += reward
                 self.Q[state][actionIndex] = self.Q[state][actionIndex] + \
                     alpha * (reward + RLParam.GAMMA *
@@ -125,7 +126,8 @@ class RLAlgorithm:
                     endTime = time.time()
                     totalReward += 1500 - (endTime-startTime) * 10
                     break
-            print(f"Episode {e + 1}: total reward -> {totalReward}")
+            print(f"Episode {e + 1}: total reward -> {totalReward}")            
+            env.reset()
 
 
 RL = RLAlgorithm(range(90), [1, 2, 3, 4])

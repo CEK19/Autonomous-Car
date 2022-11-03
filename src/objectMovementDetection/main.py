@@ -223,22 +223,38 @@ class Environment:
         for obstacle in currentObstacles:
             obstacle.mode = MODE_PLAY.RL_TRAIN
             obstacle.displayGUI = GUI.HIDDEN
+            
+    def _isDoneEpisode(self):
+        return self.yPos <= 0
+
+    def _selfUpdated(self):
+        self.rayCastingData = self.currPlayer.raycastingLists
+        self.xPos, self.yPos = self.currPlayer.xPos, self.currPlayer.yPos
 
     def updateStateByAction(self, actionIndex):
         self.currPlayer.draw(actionIndex=actionIndex)
+        self._selfUpdated()
+        
         # TODO: ADD STATE USING HASHING
-        nextState = ""
-        reward = RLAlgorithm.getReward(currState=nextState, currAction="")
-        done = ""
+        nextState = RLAlgorithm.hashFromDistanceToState(
+            signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData), 
+            leftSideDistance="", 
+            rightSideDistance="")
+        
+        reward = RLAlgorithm.getReward(
+            currState=nextState, currAction=actionIndex)
+        
+        done = self._isDoneEpisode()
+        
         return nextState, reward, done
 
-    def getState():
-        pass
-
-    def reset():
-        pass
-
-
+    def reset(self):
+        self.currPlayer = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
+                maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
+        self.currObstacles = []
+        for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
+            self.currObstacles.append(Obstacle())        
+                    
 ###########################################################################################
 
 # Game setting
