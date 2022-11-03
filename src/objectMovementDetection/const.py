@@ -93,6 +93,16 @@ class RLParam:
         MIDDLE =  "2"
         RIGHT = "1"
         MOST_RIGHT = "0"
+        
+    class SCORE:
+        OBSTACLE_TOUCH = -100
+        DANGEROUS_ZONE_CONTINUE_MOVING = -6
+        DANGEROUS_ZONE_STOP = 1
+        STAY_AT_CENTER_OF_LANE = 2
+        STAY_AT_LEFT_OR_RIGHT_OF_LANE = -1
+        STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -10
+        STOP_ACTION = -5
+        DESC_FORWARD_VELO_ACTION = -5
 
 
 class CustomColor:
