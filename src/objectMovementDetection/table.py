@@ -89,8 +89,7 @@ class RLAlgorithm:
         elif currActionIndex == RLParam.ACTIONS_INDEX.DESC_FORWARD_VELO:
             finalReward -= 5
 
-        print(lidarStates, "-", centerState)
-        pass
+        return finalReward
 
     def _epsilonGreedyPolicy(self, currState):
         if random.uniform(0, 1) < RLParam.EPSILON:
@@ -120,7 +119,7 @@ class RLAlgorithm:
                 state = nextState
                 if done:
                     endTime = time.time()
-                    totalReward += 10000 - (endTime-startTime) * 10
+                    totalReward += 1500 - (endTime-startTime) * 10
                     break
             print(f"Episode {e + 1}: total reward -> {totalReward}")
 
