@@ -147,12 +147,13 @@ class RLAlgorithm:
                 if done or actionCount == RLParam.MAX_EPISODE_STEPS - 1: 
                     totalReward -=  (actionCount + 1) * 0.01 # 120s * 1 = 120
                     break
-            comment = f"Episode {e + 1}: total reward in {actionCount} -> {totalReward}"
-            print(f"Episode {e + 1}: total reward in {actionCount} -> {totalReward}")
+            comment = f"Episode {e + 1}: total reward in {actionCount} -> {totalReward}\n"
+            
+            print(f"Episode {e + 1}: total reward in {actionCount} actions -> {totalReward}")
             file = open("rl-learning.txt", "w")
             file.write(json.dumps(self.Q))
             
             progressFile = open("progress.txt", "a")
-            progressFile(json.dumps(comment))
+            progressFile.write(comment)
             
             env = env.reset()

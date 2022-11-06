@@ -1,0 +1,2 @@
+Episode 1: total reward in 9 -> -52.1
+Episode 2: total reward in 9 -> 49.9
