@@ -63,7 +63,7 @@ class RLParam:
     AREA_RAY_CASTING_NUMBERS = 10
 
     N_EPISODES = 1000
-    MAX_EPISODE_STEPS = 100000
+    MAX_EPISODE_STEPS = 1000000
 
     ACTIONS = [PlayerParam.INC_ROTATION_VELO,
                PlayerParam.DESC_ROTATION_VELO,
@@ -103,14 +103,18 @@ class RLParam:
         LIST_LEVEL_OF_LANE = [LEFT, MOST_LEFT, MIDDLE, RIGHT, MOST_RIGHT]
         
     class SCORE:
+        # lidar detect obstacle
         OBSTACLE_TOUCH = -100
-        DANGEROUS_ZONE_CONTINUE_MOVING = -6
-        DANGEROUS_ZONE_STOP = 1
-        STAY_AT_CENTER_OF_LANE = 2
-        STAY_AT_LEFT_OR_RIGHT_OF_LANE = -1
-        STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -10
+        DANGEROUS_ZONE_TOUCH = -3 # need to implemented
+        
+        # stay in middle of lane
+        STAY_AT_CENTER_OF_LANE = 30 # Nhana keeu < 50
+        STAY_AT_LEFT_OR_RIGHT_OF_LANE = 0
+        STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -1000
+        
+        # action
         STOP_ACTION = -5
-        DESC_FORWARD_VELO_ACTION = -5    
+        TURN_LEFT_OR_RIGHT = -1 # need to be implemented
 
 
 class CustomColor:

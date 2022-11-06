@@ -98,29 +98,22 @@ class RLAlgorithm:
         for lidarState in lidarStates:
             if lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
                 finalReward += RLParam.SCORE.OBSTACLE_TOUCH
-            elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE and RLParam.ACTIONS[currActionIndex] != PlayerParam.STOP:
-                # print("2")
-                finalReward += RLParam.SCORE.DANGEROUS_ZONE_CONTINUE_MOVING
-            elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE and RLParam.ACTIONS[currActionIndex] == PlayerParam.STOP:
-                # print("3")
-                finalReward += RLParam.SCORE.DANGEROUS_ZONE_STOP
+            elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE:
+                finalReward += RLParam.SCORE.DANGEROUS_ZONE_TOUCH
 
         # Car out of lane
         if centerState == RLParam.LEVEL_OF_LANE.MIDDLE:
-            # print("4")
             finalReward += RLParam.SCORE.STAY_AT_CENTER_OF_LANE
         elif centerState == RLParam.LEVEL_OF_LANE.RIGHT or centerState == RLParam.LEVEL_OF_LANE.LEFT:
-            # print("5")
             finalReward += RLParam.SCORE.STAY_AT_LEFT_OR_RIGHT_OF_LANE
         elif centerState == RLParam.LEVEL_OF_LANE.MOST_RIGHT or centerState == RLParam.LEVEL_OF_LANE.MOST_LEFT:
-            # print("6")
             finalReward += RLParam.SCORE.STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE
 
         # Prevent stop and go back action
         if RLParam.ACTIONS[currActionIndex] == PlayerParam.STOP:
             finalReward += RLParam.SCORE.STOP_ACTION
-        elif RLParam.ACTIONS[currActionIndex] == PlayerParam.DESC_FORWARD_VELO:
-            finalReward += RLParam.SCORE.DESC_FORWARD_VELO_ACTION
+        elif RLParam.ACTIONS[currActionIndex] == PlayerParam.INC_ROTATION_VELO or RLParam.ACTIONS[currActionIndex] == PlayerParam.DESC_ROTATION_VELO:
+            finalReward += RLParam.SCORE.TURN_LEFT_OR_RIGHT
             
         return finalReward
 
