@@ -26,7 +26,7 @@ class Player():
             GLOBAL_SCREEN, CustomColor.RED, (self.xPos, self.yPos), PlayerParam.RADIUS_OBJECT)
 
         # Raycasting
-        self.raycastingLists = []
+        self.rayCastingLists = [PlayerParam.INFINITY] * PlayerParam.CASTED_RAYS
 
         self.mode = MODE_PLAY.MANUAL
         self.displayGUI = GUI.DISPLAY
@@ -103,14 +103,14 @@ class Player():
                     distance = Utils.distanceBetweenTwoPoints(
                         target_x, target_y, obstacle.xPos, obstacle.yPos)
                     if distance <= PlayerParam.RADIUS_OBJECT:
-                        self.raycastingLists.append(distance)
+                        self.rayCastingLists[ray] = distance
                         isDetectObject = True
                         if self.displayGUI == GUI.DISPLAY:
                             pygame.draw.line(
                                 GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
                         break
                     if depth == PlayerParam.RADIUS_LIDAR and not isDetectObject:
-                        self.raycastingLists.append(PlayerParam.INFINITY)
+                        self.rayCastingLists[ray] = PlayerParam.INFINITY
                         if self.displayGUI == GUI.DISPLAY:
                             pygame.draw.line(
                                 GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
@@ -214,39 +214,46 @@ class Environment:
         self.currPlayer = currentPlayer
         self.currObstacles = currentObstacles
 
-        self.rayCastingData = currentPlayer.raycastingLists
+        self.rayCastingData = currentPlayer.rayCastingLists
         self.xPos, self.yPos = currentPlayer.xPos, currentPlayer.yPos
 
         currentPlayer.mode = MODE_PLAY.RL_TRAIN
-        currentPlayer.displayGUI = GUI.HIDDEN
+        currentPlayer.displayGUI = GUI.DISPLAY
 
         for obstacle in currentObstacles:
             obstacle.mode = MODE_PLAY.RL_TRAIN
-            obstacle.displayGUI = GUI.HIDDEN
+            obstacle.displayGUI = GUI.DISPLAY
             
     def _isDoneEpisode(self):
         return self.yPos <= 0
 
     def _selfUpdated(self):
-        self.rayCastingData = self.currPlayer.raycastingLists
+        self.rayCastingData = self.currPlayer.rayCastingLists
         self.xPos, self.yPos = self.currPlayer.xPos, self.currPlayer.yPos
 
     def updateStateByAction(self, actionIndex):
-        self.currPlayer.draw(actionIndex=actionIndex)
+        for obstacle in obstacles:
+            obstacle.draw()
+            
+        self.currPlayer.draw(actionIndex=actionIndex)            
         self._selfUpdated()
         
-        # TODO: ADD STATE USING HASHING
         nextState = RLAlgorithm.hashFromDistanceToState(
             signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData), 
-            leftSideDistance="", 
-            rightSideDistance="")
+            leftSideDistance=abs(self.xPos), 
+            rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH))
         
         reward = RLAlgorithm.getReward(
-            currState=nextState, currAction=actionIndex)
+            currState=nextState, currActionIndex=actionIndex)
         
         done = self._isDoneEpisode()
         
         return nextState, reward, done
+    
+    def getCurrentState(self):
+        return RLAlgorithm.hashFromDistanceToState(signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData),
+                                                   leftSideDistance=abs(self.xPos),
+                                                   rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH))
 
     def reset(self):
         self.currPlayer = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
@@ -284,16 +291,24 @@ def startGame(mode=MODE_PLAY.MANUAL):
                     pygame.quit()
                     exit()
 
-            player.draw(actionIndex=None)
+            player.draw(actionIndex=None)            
             for obstacle in obstacles:
                 obstacle.draw()
 
             pygame.display.flip()
     elif (mode == MODE_PLAY.RL_TRAIN):
+        # GLOBAL_CLOCK.tick(GameSettingParam.FPS)
+        # GLOBAL_SCREEN.fill(CustomColor.BLACK)
+        # GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))
+        
+        player.draw(actionIndex=2)
+        for obstacle in obstacles:
+            obstacle.draw()
+        
         env = Environment(currentPlayer=player, currentObstacles=obstacles)
         RL = RLAlgorithm(rayCastingData=env.rayCastingData,
                          actions=RLParam.ACTIONS)
         RL.train(env)
 
 
-startGame()
+startGame(mode=MODE_PLAY.RL_TRAIN)

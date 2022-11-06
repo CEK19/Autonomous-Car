@@ -69,15 +69,8 @@ class RLParam:
                PlayerParam.STOP,
                PlayerParam.INC_FORWARD_VELO,
                PlayerParam.DESC_FORWARD_VELO]
-    
-    class ACTIONS_INDEX:
-        INC_ROTATION_VELO = 0
-        DESC_ROTATION_VELO = 1
-        STOP = 2
-        INC_FORWARD_VELO = 3
-        DESC_FORWARD_VELO = 4
 
-    DISTANCE_OF_RAY_CASTING = [10, 20, 30, 9999999] # 9999999 is infinity
+    DISTANCE_OF_RAY_CASTING = [10, 20, 30, PlayerParam.INFINITY] # 9999999 is infinity    
     
     class LEVEL_OF_RAY_CASTING:
         INFINITY = "3" # NO TOUCH OBSTACLE 
@@ -94,6 +87,8 @@ class RLParam:
         RIGHT = "1"
         MOST_RIGHT = "0"
         
+        LIST_LEVEL_OF_LANE = [LEFT, MOST_LEFT, MIDDLE, RIGHT, MOST_RIGHT]
+        
     class SCORE:
         OBSTACLE_TOUCH = -100
         DANGEROUS_ZONE_CONTINUE_MOVING = -6
@@ -102,7 +97,7 @@ class RLParam:
         STAY_AT_LEFT_OR_RIGHT_OF_LANE = -1
         STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -10
         STOP_ACTION = -5
-        DESC_FORWARD_VELO_ACTION = -5
+        DESC_FORWARD_VELO_ACTION = -5    
 
 
 class CustomColor:
