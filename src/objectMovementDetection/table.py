@@ -3,14 +3,19 @@ from utils import *
 import random
 import numpy as np
 import time
-
+import json
 
 class RLAlgorithm:
     def __init__(self, rayCastingData, actions) -> None:
         # Converting n raycasting to signal in area , min raycast of each area
         self.signalPerAreaData = self.convertRayCastingDataToSignalPerArea(
             rayCastingData=rayCastingData)
-        self.Q = self._initQTable(actions=actions)
+        file = open("rl-learning.txt", "r")
+        RLInFile = file.read()
+        if not RLInFile:
+            self.Q = self._initQTable(actions=actions) 
+        else:
+            self.Q = json.loads(RLInFile)
         self.actions = actions
 
     def _initQTable(self, actions):
@@ -66,21 +71,21 @@ class RLAlgorithm:
                     hashFromRayCasting += str(index)
                     break
 
-        hashFromCeneterOfLane = ""
+        hashFromCenterOfLane = ""
         distanceFromCenterOfLane = abs(
             leftSideDistance - rightSideDistance) / 2
         for index, distance in enumerate(RLParam.DISTANCE_FROM_CENTER_OF_LANE):
             if index == len(RLParam.DISTANCE_FROM_CENTER_OF_LANE) - 1:
-                hashFromCeneterOfLane += RLParam.LEVEL_OF_LANE.MIDDLE
+                hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.MIDDLE
                 break
             elif distanceFromCenterOfLane > distance:
                 if leftSideDistance < rightSideDistance:
-                    hashFromCeneterOfLane += str(index +
+                    hashFromCenterOfLane += str(index +
                                                  int(RLParam.LEVEL_OF_LANE.MIDDLE) + 1)
                 else:
-                    hashFromCeneterOfLane += str(index)
+                    hashFromCenterOfLane += str(index)
                 break
-        return hashFromRayCasting + hashFromCeneterOfLane
+        return hashFromRayCasting + hashFromCenterOfLane
 
     @staticmethod
     def getReward(currState, currActionIndex):
@@ -92,8 +97,7 @@ class RLAlgorithm:
         # Obstacles block car
         for lidarState in lidarStates:
             if lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
-                print("1")
-                return RLParam.SCORE.OBSTACLE_TOUCH
+                finalReward += RLParam.SCORE.OBSTACLE_TOUCH
             elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE and RLParam.ACTIONS[currActionIndex] != PlayerParam.STOP:
                 # print("2")
                 finalReward += RLParam.SCORE.DANGEROUS_ZONE_CONTINUE_MOVING
@@ -137,6 +141,7 @@ class RLAlgorithm:
             startTime = time.time()
 
             for _ in range(RLParam.MAX_EPISODE_STEPS):
+                # print(self.signalPerAreaData);
                 actionIndex = self._epsilonGreedyPolicy(currState=state)
                 nextState, reward, done = env.updateStateByAction(actionIndex)
                 totalReward += reward
@@ -150,4 +155,6 @@ class RLAlgorithm:
                     totalReward -=  (endTime-startTime) * 0.01
                     break
             print(f"Episode {e + 1}: total reward -> {totalReward}")
+            file = open("rl-learning.txt", "w")
+            file.write(json.dumps(self.Q))
             env = env.reset()

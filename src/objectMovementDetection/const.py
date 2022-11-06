@@ -71,7 +71,12 @@ class RLParam:
                PlayerParam.INC_FORWARD_VELO,
                PlayerParam.DESC_FORWARD_VELO]
 
-    DISTANCE_OF_RAY_CASTING = [10, 20, 50, PlayerParam.INFINITY]
+    DISTANCE_OF_RAY_CASTING = [
+        int(PlayerParam.RADIUS_LIDAR*1/3), 
+        int(PlayerParam.RADIUS_LIDAR*2/3), 
+        PlayerParam.RADIUS_LIDAR, 
+        PlayerParam.INFINITY
+    ]
     MAX_TIME_MS = 2*60
     
     class LEVEL_OF_RAY_CASTING:
@@ -80,7 +85,13 @@ class RLParam:
         DANGEROUS_DISTANCE = "1" # LIDAR TOUCH OBSTACLE, BUT IN DANGEROUS MODE
         FAILED_DISTANCE = "0" # LIDAR TOUCH OBSTACLE, AND OUCH
         
-    DISTANCE_FROM_CENTER_OF_LANE = [20, 10, -9999] # -9999 is infinity
+    # | x | 3x | 2x | 3x | x |
+    # split the middle area into 2 parts, each part will be x
+    DISTANCE_FROM_CENTER_OF_LANE = [
+        GameSettingParam.WIDTH * 4 / 10,    # most left or most right (distance > 4x/10) (1/2 of middle + 3x area)
+        GameSettingParam.WIDTH * 1 / 10,    # left or right (distance > x/10) (1/2 of middle)
+        0                                   # center (distance > 0) (inside 1/2 of middle)
+    ] # 0 is lucky number, no meaning
     
     class LEVEL_OF_LANE:
         LEFT = "4"

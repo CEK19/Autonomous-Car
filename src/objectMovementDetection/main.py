@@ -124,6 +124,7 @@ class Player():
                 self.xPos, self.yPos, obstacle.xPos, obstacle.yPos)
             # https://stackoverflow.com/questions/22135712/pygame-collision-detection-with-two-circles
             if distanceBetweenCenter <= 2*PlayerParam.RADIUS_OBJECT:
+                print("Ouch!!!")
                 pass
 
     def draw(self, actionIndex):
