@@ -138,9 +138,6 @@ class RLAlgorithm:
 
             for _ in range(RLParam.MAX_EPISODE_STEPS):
                 actionIndex = self._epsilonGreedyPolicy(currState=state)
-                print("action index: ", actionIndex)
-                # print("signal: ", self.signalPerAreaData)
-                # print("left, right: ", env.xPos, env.yPos)
                 nextState, reward, done = env.updateStateByAction(actionIndex)
                 totalReward += reward
                 self.Q[state][actionIndex] = self.Q[state][actionIndex] + \
@@ -153,4 +150,4 @@ class RLAlgorithm:
                     totalReward -=  (endTime-startTime) * 0.01
                     break
             print(f"Episode {e + 1}: total reward -> {totalReward}")
-            env.reset()
+            env = env.reset()

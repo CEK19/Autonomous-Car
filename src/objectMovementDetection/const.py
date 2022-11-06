@@ -4,7 +4,8 @@ import math
 class GameSettingParam:
     CAPTION = "Reinforcement Learning"
     WIDTH = 400
-    HEIGHT = 1000
+    # HEIGHT = 1000
+    HEIGHT = 750
     FPS = 60
 
 

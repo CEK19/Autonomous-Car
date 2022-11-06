@@ -128,6 +128,7 @@ class Player():
                 pass
 
     def draw(self, actionIndex):
+        print("draw(), ")
         global GLOBAL_SCREEN
         self._playerInput(actionIndex=actionIndex)
         self._rayCasting()
@@ -232,6 +233,7 @@ class Environment:
         self.xPos, self.yPos = self.currPlayer.xPos, self.currPlayer.yPos
 
     def updateStateByAction(self, actionIndex):
+        print('updateStateByAction()')
         for obstacle in obstacles:
             obstacle.draw()
             
@@ -257,16 +259,31 @@ class Environment:
                                                    rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH))
 
     def reset(self):
-        self.currPlayer = None
-        self.currPlayer = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
-                maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
-        self.currObstacles = []
-        for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
-            self.currObstacles.append(Obstacle())
+        # self.currPlayer = None
+        # self.currPlayer = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
+        #         maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
+        # self.currObstacles = []
+        # for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
+        #     self.currObstacles.append(Obstacle())
+        
+        # self.currentPlayer.mode = MODE_PLAY.RL_TRAIN
+        # self.currentPlayer.displayGUI = GUI.DISPLAY
+
+        # for obstacle in self.currentObstacles:
+        #     obstacle.mode = MODE_PLAY.RL_TRAIN
+        #     obstacle.displayGUI = GUI.DISPLAY
             
-        self.currPlayer.draw(actionIndex=2)
-        for obstacle in self.currObstacles:
-            obstacle.draw()
+        # self.currPlayer.draw(actionIndex=2)
+        # for obstacle in self.currObstacles:
+        #     obstacle.draw()
+        del self
+        global player, obstacles
+        player = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
+                maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY) 
+        obstacles = []
+        for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
+            obstacles.append(Obstacle())
+        return Environment(currentPlayer=player, currentObstacles=obstacles)
                     
 ###########################################################################################
 
@@ -303,6 +320,10 @@ def startGame(mode=MODE_PLAY.MANUAL):
 
             pygame.display.flip()
     elif (mode == MODE_PLAY.RL_TRAIN):
+        # pygame.display.flip()
+        # GLOBAL_CLOCK.tick(GameSettingParam.FPS)
+        # GLOBAL_SCREEN.fill(CustomColor.BLACK)
+        # GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))
         
         env = Environment(currentPlayer=player, currentObstacles=obstacles)
         RL = RLAlgorithm(rayCastingData=env.rayCastingData,
@@ -311,3 +332,4 @@ def startGame(mode=MODE_PLAY.MANUAL):
 
 
 startGame(mode=MODE_PLAY.RL_TRAIN)
+# startGame(mode=MODE_PLAY.MANUAL)
