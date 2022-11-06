@@ -230,7 +230,7 @@ class Environment:
     def _selfUpdated(self):
         self.rayCastingData = self.currPlayer.rayCastingLists
         self.xPos, self.yPos = self.currPlayer.xPos, self.currPlayer.yPos
-        print("yPos: ", self.currPlayer.yPos)
+        print("xPos: ", self.currPlayer.xPos, ",yPos: ", self.currPlayer.yPos)
 
     def updateStateByAction(self, actionIndex):
         for obstacle in obstacles:

@@ -2,7 +2,6 @@ from const import *
 from utils import *
 import random
 import numpy as np
-import time
 import json
 
 class RLAlgorithm:
@@ -127,14 +126,14 @@ class RLAlgorithm:
         alphas = np.linspace(
             RLParam.MAX_ALPHA, RLParam.MIN_ALPHA, RLParam.N_EPISODES)
 
-        for e in range(RLParam.N_EPISODES):            
+        for e in range(RLParam.N_EPISODES):
             state = env.getCurrentState()
             totalReward = 0
             alpha = alphas[e]
-            startTime = time.time()
+            # startTime = time.time()
 
-            for _ in range(RLParam.MAX_EPISODE_STEPS):
-                # print(self.signalPerAreaData);
+            for actionCount in range(RLParam.MAX_EPISODE_STEPS):
+                print("state: ", state)
                 actionIndex = self._epsilonGreedyPolicy(currState=state)
                 nextState, reward, done = env.updateStateByAction(actionIndex)
                 totalReward += reward
@@ -142,12 +141,13 @@ class RLAlgorithm:
                     alpha * (reward + RLParam.GAMMA *
                              np.max(self.Q[nextState]) - self.Q[state][actionIndex])
                 state = nextState
-                endTime = time.time()
+                print()
+                print()
 
-                if done or (endTime - startTime >= RLParam.MAX_TIME_MS): 
-                    totalReward -=  (endTime-startTime) * 0.01
+                if done or actionCount == RLParam.MAX_EPISODE_STEPS - 1: 
+                    totalReward -=  (actionCount + 1) * 0.01 # 120s * 1 = 120
                     break
-            print(f"Episode {e + 1}: total reward -> {totalReward}")
+            print(f"Episode {e + 1}: total reward in {actionCount} -> {totalReward}")
             file = open("rl-learning.txt", "w")
             file.write(json.dumps(self.Q))
             env = env.reset()

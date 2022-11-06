@@ -104,16 +104,16 @@ class RLParam:
         
     class SCORE:
         # lidar detect obstacle
-        OBSTACLE_TOUCH = -100
+        OBSTACLE_TOUCH = -500
         DANGEROUS_ZONE_TOUCH = -3 # need to implemented
         
         # stay in middle of lane
-        STAY_AT_CENTER_OF_LANE = 30 # Nhana keeu < 50
+        STAY_AT_CENTER_OF_LANE = 5 # Nhana keeu < 50
         STAY_AT_LEFT_OR_RIGHT_OF_LANE = 0
-        STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -1000
+        STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -200
         
         # action
-        STOP_ACTION = -5
+        STOP_ACTION = -100
         TURN_LEFT_OR_RIGHT = -1 # need to be implemented
 
 
