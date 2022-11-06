@@ -124,11 +124,9 @@ class Player():
                 self.xPos, self.yPos, obstacle.xPos, obstacle.yPos)
             # https://stackoverflow.com/questions/22135712/pygame-collision-detection-with-two-circles
             if distanceBetweenCenter <= 2*PlayerParam.RADIUS_OBJECT:
-                print(datetime.datetime.now(), "ouchhhh")
                 pass
 
     def draw(self, actionIndex):
-        print("draw(), ")
         global GLOBAL_SCREEN
         self._playerInput(actionIndex=actionIndex)
         self._rayCasting()
@@ -233,13 +231,11 @@ class Environment:
         self.xPos, self.yPos = self.currPlayer.xPos, self.currPlayer.yPos
 
     def updateStateByAction(self, actionIndex):
-        print('updateStateByAction()')
         for obstacle in obstacles:
             obstacle.draw()
             
         self.currPlayer.draw(actionIndex=actionIndex)                    
         self._selfUpdated()
-        print("player", self.currPlayer.xPos, self.currPlayer.yPos)
         
         nextState = RLAlgorithm.hashFromDistanceToState(
             signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData), 
