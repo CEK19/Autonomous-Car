@@ -225,7 +225,7 @@ class Environment:
             obstacle.displayGUI = GUI.DISPLAY
             
     def _isDoneEpisode(self):
-        return self.yPos <= 0
+        return self.yPos <= 0 or self.yPos > GameSettingParam.HEIGHT   or self.xPos <= 0 or self.xPos >= GameSettingParam.WIDTH
 
     def _selfUpdated(self):
         self.rayCastingData = self.currPlayer.rayCastingLists
@@ -235,8 +235,9 @@ class Environment:
         for obstacle in obstacles:
             obstacle.draw()
             
-        self.currPlayer.draw(actionIndex=actionIndex)            
+        self.currPlayer.draw(actionIndex=actionIndex)                    
         self._selfUpdated()
+        print("player", self.currPlayer.xPos, self.currPlayer.yPos)
         
         nextState = RLAlgorithm.hashFromDistanceToState(
             signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData), 
@@ -256,11 +257,16 @@ class Environment:
                                                    rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH))
 
     def reset(self):
+        self.currPlayer = None
         self.currPlayer = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
                 maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
         self.currObstacles = []
         for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
-            self.currObstacles.append(Obstacle())        
+            self.currObstacles.append(Obstacle())
+            
+        self.currPlayer.draw(actionIndex=2)
+        for obstacle in self.currObstacles:
+            obstacle.draw()
                     
 ###########################################################################################
 
@@ -297,13 +303,6 @@ def startGame(mode=MODE_PLAY.MANUAL):
 
             pygame.display.flip()
     elif (mode == MODE_PLAY.RL_TRAIN):
-        # GLOBAL_CLOCK.tick(GameSettingParam.FPS)
-        # GLOBAL_SCREEN.fill(CustomColor.BLACK)
-        # GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))
-        
-        player.draw(actionIndex=2)
-        for obstacle in obstacles:
-            obstacle.draw()
         
         env = Environment(currentPlayer=player, currentObstacles=obstacles)
         RL = RLAlgorithm(rayCastingData=env.rayCastingData,

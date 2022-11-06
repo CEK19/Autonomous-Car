@@ -61,8 +61,8 @@ class RLParam:
 
     AREA_RAY_CASTING_NUMBERS = 10
 
-    N_EPISODES = 20
-    MAX_EPISODE_STEPS = 100
+    N_EPISODES = 1000
+    MAX_EPISODE_STEPS = 100000
 
     ACTIONS = [PlayerParam.INC_ROTATION_VELO,
                PlayerParam.DESC_ROTATION_VELO,
@@ -70,7 +70,8 @@ class RLParam:
                PlayerParam.INC_FORWARD_VELO,
                PlayerParam.DESC_FORWARD_VELO]
 
-    DISTANCE_OF_RAY_CASTING = [10, 20, 30, PlayerParam.INFINITY] # 9999999 is infinity    
+    DISTANCE_OF_RAY_CASTING = [10, 20, 50, PlayerParam.INFINITY]
+    MAX_TIME_MS = 2*60
     
     class LEVEL_OF_RAY_CASTING:
         INFINITY = "3" # NO TOUCH OBSTACLE 

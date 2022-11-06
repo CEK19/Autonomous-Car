@@ -121,7 +121,7 @@ class RLAlgorithm:
         return finalReward
 
     def _epsilonGreedyPolicy(self, currState):
-        if random.uniform(0, 1) < RLParam.EPSILON:
+        if np.random.uniform(0, 1) < RLParam.EPSILON:
             return random.choice(range(len(self.actions)))
         else:
             return np.argmax(self.Q[currState])
@@ -139,17 +139,18 @@ class RLAlgorithm:
             for _ in range(RLParam.MAX_EPISODE_STEPS):
                 actionIndex = self._epsilonGreedyPolicy(currState=state)
                 print("action index: ", actionIndex)
-                print("signal: ", self.signalPerAreaData)
-                print("left, right: ", env.xPos, env.yPos)
+                # print("signal: ", self.signalPerAreaData)
+                # print("left, right: ", env.xPos, env.yPos)
                 nextState, reward, done = env.updateStateByAction(actionIndex)
                 totalReward += reward
                 self.Q[state][actionIndex] = self.Q[state][actionIndex] + \
                     alpha * (reward + RLParam.GAMMA *
                              np.max(self.Q[nextState]) - self.Q[state][actionIndex])
                 state = nextState
-                if done:
-                    endTime = time.time()
-                    totalReward += 1500 - (endTime-startTime) * 10
+                endTime = time.time()
+
+                if done or (endTime - startTime >= RLParam.MAX_TIME_MS): 
+                    totalReward -=  (endTime-startTime) * 0.01
                     break
             print(f"Episode {e + 1}: total reward -> {totalReward}")
             env.reset()
