@@ -150,16 +150,17 @@ class RLAlgorithm:
             comment = f"Episode {e + 1}, xPos={env.xPos} - yPos={env.yPos} : total reward in {actionCount} actions -> {totalReward}\n"
             print(comment, end="")
             
-            print("--> start write to file")
-            file = open("rl-learning.txt", "w")
-            file.write(json.dumps(self.Q))
-            file.close()
             progressFile = open("progress.txt", "a")
             progressFile.write(comment)
             progressFile.close()
-            print("end write to file !!!")
+            if e % 20 == 0:
+                print("--> start write to file")
+                file = open("rl-learning.txt", "w")
+                file.write(json.dumps(self.Q))
+                file.close()
+                print("end write to file !!!")
             
-            if(e % 10 == 0):
+            if(e % 50 == 0):
                 print("backup Q table")
                 file1 = open("rl-learning.txt", "r")
                 fileBackup = open("rl-learning-backup.txt", "w")
