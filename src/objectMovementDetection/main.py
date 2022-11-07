@@ -86,36 +86,46 @@ class Player():
 
     def _rayCasting(self):
         global obstacles
+        inRangedObj = []
+
+        for obstacle in obstacles:
+            if Utils.distanceBetweenTwoPoints(self.xPos, self.yPos, obstacle.xPos, obstacle.yPos) < PlayerParam.RADIUS_OBJECT*2 + PlayerParam.RADIUS_LIDAR:
+                inRangedObj.append(obstacle)
         startAngle = self.currAngle - PlayerParam.HALF_FOV
-        for ray in range(PlayerParam.CASTED_RAYS):
-            # get ray target coordinates
-            isDetectObject = False
+        if len(inRangedObj) == 0:
+            for ray in range(PlayerParam.CASTED_RAYS):
+                target_x = self.xPos - math.sin(startAngle) * PlayerParam.RADIUS_LIDAR
+                target_y = self.yPos + math.cos(startAngle) * PlayerParam.RADIUS_LIDAR
+                pygame.draw.line(GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
+                self.rayCastingLists[ray] = PlayerParam.INFINITY
+                startAngle += PlayerParam.STEP_ANGLE
+        else:
+            for ray in range(PlayerParam.CASTED_RAYS):
+                # get ray target coordinates
+                isDetectObject = False
 
-            for depth in range(PlayerParam.RADIUS_LIDAR + 1):
-                if (isDetectObject):
-                    break
-                target_x = self.xPos - \
-                    math.sin(startAngle) * depth
-                target_y = self.yPos + \
-                    math.cos(startAngle) * depth
-
-                for obstacle in obstacles:
-                    distance = Utils.distanceBetweenTwoPoints(
-                        target_x, target_y, obstacle.xPos, obstacle.yPos)
-                    if distance <= PlayerParam.RADIUS_LIDAR:
-                        self.rayCastingLists[ray] = distance
-                        isDetectObject = True
-                        if self.displayGUI == GUI.DISPLAY:
-                            pygame.draw.line(
-                                GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
+                for depth in range(PlayerParam.RADIUS_LIDAR + 1):
+                    if (isDetectObject):
                         break
-                    if depth == PlayerParam.RADIUS_LIDAR and not isDetectObject:
-                        self.rayCastingLists[ray] = PlayerParam.INFINITY
-                        if self.displayGUI == GUI.DISPLAY:
-                            pygame.draw.line(
-                                GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
+                    target_x = self.xPos - \
+                        math.sin(startAngle) * depth
+                    target_y = self.yPos + \
+                        math.cos(startAngle) * depth
 
-            startAngle += PlayerParam.STEP_ANGLE
+                    for obstacle in inRangedObj:
+                        distance = Utils.distanceBetweenTwoPoints(target_x, target_y, obstacle.xPos, obstacle.yPos)
+                        if distance <= PlayerParam.RADIUS_OBJECT:
+                            self.rayCastingLists[ray] = Utils.distanceBetweenTwoPoints(target_x, target_y, self.xPos, self.yPos)
+                            isDetectObject = True
+                            if self.displayGUI == GUI.DISPLAY:
+                                pygame.draw.line(GLOBAL_SCREEN, CustomColor.CYAN, (self.xPos, self.yPos), (target_x, target_y))
+                            break
+                        if depth == PlayerParam.RADIUS_LIDAR and not isDetectObject:
+                            self.rayCastingLists[ray] = PlayerParam.INFINITY
+                            if self.displayGUI == GUI.DISPLAY:
+                                pygame.draw.line(GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
+
+                startAngle += PlayerParam.STEP_ANGLE
 
     def _checkCollision(self):
         global obstacles
@@ -124,7 +134,7 @@ class Player():
                 self.xPos, self.yPos, obstacle.xPos, obstacle.yPos)
             # https://stackoverflow.com/questions/22135712/pygame-collision-detection-with-two-circles
             if distanceBetweenCenter <= 2*PlayerParam.RADIUS_OBJECT:
-                print("Ouch!!!")
+                # print("Ouch!!!")
                 pass
 
     def draw(self, actionIndex):
@@ -239,8 +249,8 @@ class Environment:
         self.currPlayer.draw(actionIndex=actionIndex)                    
         self._selfUpdated()
         
-        print("rayCastingData: ", self.rayCastingData)
-        print("signalPerArea: ", RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData))
+        # print("rayCastingData: ", self.rayCastingData)
+        # print("signalPerArea: ", RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData))
         
         nextState = RLAlgorithm.hashFromDistanceToState(
             signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData), 

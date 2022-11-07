@@ -63,7 +63,7 @@ class RLParam:
     AREA_RAY_CASTING_NUMBERS = 10
 
     N_EPISODES = 1000
-    MAX_EPISODE_STEPS = 1000000
+    MAX_EPISODE_STEPS = 100000
 
     ACTIONS = [PlayerParam.INC_ROTATION_VELO,
                PlayerParam.DESC_ROTATION_VELO,
@@ -122,7 +122,7 @@ class CustomColor:
     WHITE = (255, 255, 255)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
-
+    CYAN = (0, 255, 255)
 
 class MODE_PLAY:
     MANUAL = "MANUAL"
