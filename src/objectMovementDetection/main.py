@@ -102,7 +102,7 @@ class Player():
                 for obstacle in obstacles:
                     distance = Utils.distanceBetweenTwoPoints(
                         target_x, target_y, obstacle.xPos, obstacle.yPos)
-                    if distance <= PlayerParam.RADIUS_OBJECT:
+                    if distance <= PlayerParam.RADIUS_LIDAR:
                         self.rayCastingLists[ray] = distance
                         isDetectObject = True
                         if self.displayGUI == GUI.DISPLAY:
@@ -230,7 +230,7 @@ class Environment:
     def _selfUpdated(self):
         self.rayCastingData = self.currPlayer.rayCastingLists
         self.xPos, self.yPos = self.currPlayer.xPos, self.currPlayer.yPos
-        print("xPos: ", self.currPlayer.xPos, ",yPos: ", self.currPlayer.yPos)
+        # print("xPos: ", self.currPlayer.xPos, ",yPos: ", self.currPlayer.yPos)
 
     def updateStateByAction(self, actionIndex):
         for obstacle in obstacles:
@@ -238,6 +238,9 @@ class Environment:
             
         self.currPlayer.draw(actionIndex=actionIndex)                    
         self._selfUpdated()
+        
+        print("rayCastingData: ", self.rayCastingData)
+        print("signalPerArea: ", RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData))
         
         nextState = RLAlgorithm.hashFromDistanceToState(
             signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData), 
