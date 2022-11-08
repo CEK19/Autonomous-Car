@@ -240,7 +240,6 @@ class Environment:
     def _selfUpdated(self):
         self.rayCastingData = self.currPlayer.rayCastingLists
         self.xPos, self.yPos = self.currPlayer.xPos, self.currPlayer.yPos
-        # print("xPos: ", self.currPlayer.xPos, ",yPos: ", self.currPlayer.yPos)
 
     def updateStateByAction(self, actionIndex):
         for obstacle in obstacles:
@@ -248,9 +247,6 @@ class Environment:
             
         self.currPlayer.draw(actionIndex=actionIndex)                    
         self._selfUpdated()
-        
-        # print("rayCastingData: ", self.rayCastingData)
-        # print("signalPerArea: ", RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData))
         
         nextState = RLAlgorithm.hashFromDistanceToState(
             signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData), 
@@ -330,12 +326,7 @@ def startGame(mode=MODE_PLAY.MANUAL):
                 obstacle.draw()
 
             pygame.display.flip()
-    elif (mode == MODE_PLAY.RL_TRAIN):
-        # pygame.display.flip()
-        # GLOBAL_CLOCK.tick(GameSettingParam.FPS)
-        # GLOBAL_SCREEN.fill(CustomColor.BLACK)
-        # GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))
-        
+    elif (mode == MODE_PLAY.RL_TRAIN):        
         env = Environment(currentPlayer=player, currentObstacles=obstacles)
         RL = RLAlgorithm(rayCastingData=env.rayCastingData,
                          actions=RLParam.ACTIONS)
