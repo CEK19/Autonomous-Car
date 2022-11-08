@@ -266,23 +266,6 @@ class Environment:
                                                    rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH))
 
     def reset(self):
-        # self.currPlayer = None
-        # self.currPlayer = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
-        #         maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
-        # self.currObstacles = []
-        # for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
-        #     self.currObstacles.append(Obstacle())
-        
-        # self.currentPlayer.mode = MODE_PLAY.RL_TRAIN
-        # self.currentPlayer.displayGUI = GUI.DISPLAY
-
-        # for obstacle in self.currentObstacles:
-        #     obstacle.mode = MODE_PLAY.RL_TRAIN
-        #     obstacle.displayGUI = GUI.DISPLAY
-            
-        # self.currPlayer.draw(actionIndex=2)
-        # for obstacle in self.currObstacles:
-        #     obstacle.draw()
         del self
         global player, obstacles
         player = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
