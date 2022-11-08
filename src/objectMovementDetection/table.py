@@ -9,7 +9,7 @@ class RLAlgorithm:
         # Converting n raycasting to signal in area , min raycast of each area
         self.signalPerAreaData = self.convertRayCastingDataToSignalPerArea(
             rayCastingData=rayCastingData)
-        file = open("rl-learning.txt", "r")
+        file = open(FILE.MODEL_SAVE, "r")
         RLInFile = file.read()
         if not RLInFile:
             self.Q = self._initQTable(actions=actions) 
@@ -152,27 +152,27 @@ class RLAlgorithm:
             comment = f"Episode {e + 1}, xPos={env.xPos} - yPos={env.yPos} : total reward in {actionCount} actions -> {totalReward}\n"
             print(comment, end="")
             
-            progressFile = open("progress.txt", "a")
+            progressFile = open(FILE.PROGRESS, "a")
             progressFile.write(comment)
             progressFile.close()
             if e % 20 == 0:
                 print("--> start write to file")
-                file = open("rl-learning.txt", "w")
+                file = open(FILE.MODEL_SAVE, "w")
                 file.write(json.dumps(self.Q))
                 file.close()
                 print("end write to file !!!")
             
             if(e % 50 == 0):
                 print("backup Q table")
-                file1 = open("rl-learning.txt", "r")
-                fileBackup = open("rl-learning-backup.txt", "w")
+                file1 = open(FILE.MODEL_SAVE, "r")
+                fileBackup = open("", "w")
                 fileBackup.write(file1.read())
                 fileBackup.close()
                 file1.close()
                 
                 print("backup progress")
-                file2 = open("progress.txt", "r")
-                fileBackup = open("progress-backup.txt", "w")
+                file2 = open(FILE.PROGRESS, "r")
+                fileBackup = open(FILE.PROGRESS_BACKUP, "w")
                 fileBackup.write(file2.read())
                 fileBackup.close()
                 file2.close()

@@ -129,8 +129,15 @@ class CustomColor:
 class MODE_PLAY:
     MANUAL = "MANUAL"
     RL_TRAIN = "RL_TRAIN"
+    RL_DEPLOY = "RL_DEPLOY"
 
 
 class GUI:
-    DISPLAY = True
-    HIDDEN = False
+    DISPLAY = "DISPLAY"
+    HIDDEN = "HIDDEN"
+
+class FILE:
+    PROGRESS = "progress.txt"
+    PROGRESS_BACKUP = "progress-backup.txt"
+    MODEL_SAVE = "rl-learning.txt"
+    MODEL_SAVE_BACKUP = "rl-learning-backup.txt"

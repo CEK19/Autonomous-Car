@@ -42,7 +42,7 @@ for line in lines:
     totalRewardList.append(totalReward)
         
 file.close() 
-print()
+print(totalRewardList)
 fig, axs = plt.subplots(2, 2)
 axs[0, 0].plot(episodeList, xPosList)
 axs[0, 0].set_title('xPos per episode')
