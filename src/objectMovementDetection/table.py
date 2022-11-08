@@ -36,7 +36,16 @@ class RLAlgorithm:
             
             for level in RLParam.LEVEL_OF_LANE.LIST_LEVEL_OF_LANE:    
                 rs[combinedString + level] = [0] * len(RLParam.ACTIONS)            
-
+        
+        # Just use for sếp
+        # tmpTable = rs.copy()
+        # for key in rs:
+        #     for idx in range(len(tmpTable[key])):
+        #         tmpTable[key][idx] = np.random.randint(-10, 11)
+                
+        # file = open("q-random.txt", "w")
+        # file.write(json.dumps(tmpTable))
+        # file.close()
         return rs
 
     @staticmethod
@@ -165,7 +174,7 @@ class RLAlgorithm:
             if(e % 50 == 0):
                 print("backup Q table")
                 file1 = open(FILE.MODEL_SAVE, "r")
-                fileBackup = open("", "w")
+                fileBackup = open(FILE.MODEL_SAVE_BACKUP, "w")
                 fileBackup.write(file1.read())
                 fileBackup.close()
                 file1.close()
