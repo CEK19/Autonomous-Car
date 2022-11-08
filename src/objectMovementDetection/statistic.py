@@ -42,8 +42,8 @@ for line in lines:
     totalRewardList.append(totalReward)
         
 file.close() 
-print(totalRewardList)
 fig, axs = plt.subplots(2, 2)
+fig.set_size_inches(18.5, 8.5)
 axs[0, 0].plot(episodeList, xPosList)
 axs[0, 0].set_title('xPos per episode')
 axs[0, 1].plot(episodeList, yPosList, 'tab:orange')
