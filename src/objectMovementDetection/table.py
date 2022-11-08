@@ -133,7 +133,7 @@ class RLAlgorithm:
             # startTime = time.time()
 
             for actionCount in range(RLParam.MAX_EPISODE_STEPS):
-                print("state: ", state)
+                # print("state: ", state)
                 actionIndex = self._epsilonGreedyPolicy(currState=state)
                 nextState, reward, done = env.updateStateByAction(actionIndex)
                 totalReward += reward
@@ -141,19 +141,38 @@ class RLAlgorithm:
                     alpha * (reward + RLParam.GAMMA *
                              np.max(self.Q[nextState]) - self.Q[state][actionIndex])
                 state = nextState
-                print()
-                print()
+                # print()
+                # print()
 
                 if done or actionCount == RLParam.MAX_EPISODE_STEPS - 1: 
                     totalReward -=  (actionCount + 1) * 0.01 # 120s * 1 = 120
                     break
-            comment = f"Episode {e + 1}: total reward in {actionCount} -> {totalReward}\n"
-            
-            print(f"Episode {e + 1}: total reward in {actionCount} actions -> {totalReward}")
-            file = open("rl-learning.txt", "w")
-            file.write(json.dumps(self.Q))
+            comment = f"Episode {e + 1}, xPos={env.xPos} - yPos={env.yPos} : total reward in {actionCount} actions -> {totalReward}\n"
+            print(comment, end="")
             
             progressFile = open("progress.txt", "a")
             progressFile.write(comment)
+            progressFile.close()
+            if e % 20 == 0:
+                print("--> start write to file")
+                file = open("rl-learning.txt", "w")
+                file.write(json.dumps(self.Q))
+                file.close()
+                print("end write to file !!!")
+            
+            if(e % 50 == 0):
+                print("backup Q table")
+                file1 = open("rl-learning.txt", "r")
+                fileBackup = open("rl-learning-backup.txt", "w")
+                fileBackup.write(file1.read())
+                fileBackup.close()
+                file1.close()
+                
+                print("backup progress")
+                file2 = open("progress.txt", "r")
+                fileBackup = open("progress-backup.txt", "w")
+                fileBackup.write(file2.read())
+                fileBackup.close()
+                file2.close()
             
             env = env.reset()
