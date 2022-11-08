@@ -26,7 +26,7 @@ yPosList = []
 totalActionsList = []
 totalRewardList = []
 
-for line in lines:
+for idx, line in enumerate(lines):    
     regex = re.findall(r"[-+]?\d*\.\d+|\d+", line)
     
     episode = getEpisode(regex)
@@ -39,7 +39,7 @@ for line in lines:
     xPosList.append(xPos)
     yPosList.append(yPos)
     totalActionsList.append(totalAction)
-    totalRewardList.append(totalReward)
+    totalRewardList.append(totalReward)        
         
 file.close() 
 fig, axs = plt.subplots(2, 2)
