@@ -116,8 +116,8 @@ class RLAlgorithm:
             
         return finalReward
 
-    def _epsilonGreedyPolicy(self, currState):
-        if np.random.uniform(0, 1) < RLParam.EPSILON:
+    def _epsilonGreedyPolicy(self, currState, currentEpsilon):
+        if np.random.uniform(0, 1) < currentEpsilon:
             return random.choice(range(len(self.actions)))
         else:
             return np.argmax(self.Q[currState])
@@ -125,24 +125,26 @@ class RLAlgorithm:
     def train(self, env):
         alphas = np.linspace(
             RLParam.MAX_ALPHA, RLParam.MIN_ALPHA, RLParam.N_EPISODES)
+        epsilons = np.linspace(
+            RLParam.MAX_EPSILON, RLParam.MIN_EPSILON, RLParam.N_EPISODES
+        )
 
         for e in range(RLParam.N_EPISODES):
             state = env.getCurrentState()
             totalReward = 0
             alpha = alphas[e]
+            epsilon = epsilons[e]
             # startTime = time.time()
 
             for actionCount in range(RLParam.MAX_EPISODE_STEPS):
                 # print("state: ", state)
-                actionIndex = self._epsilonGreedyPolicy(currState=state)
+                actionIndex = self._epsilonGreedyPolicy(currState=state, currentEpsilon=epsilon)
                 nextState, reward, done = env.updateStateByAction(actionIndex)
                 totalReward += reward
                 self.Q[state][actionIndex] = self.Q[state][actionIndex] + \
                     alpha * (reward + RLParam.GAMMA *
                              np.max(self.Q[nextState]) - self.Q[state][actionIndex])
                 state = nextState
-                # print()
-                # print()
 
                 if done or actionCount == RLParam.MAX_EPISODE_STEPS - 1: 
                     totalReward -=  (actionCount + 1) * 0.01 # 120s * 1 = 120

@@ -53,7 +53,9 @@ class ObstacleParam:
                             0.3]
 
 class RLParam:
-    EPSILON = 0.2
+    
+    MIN_EPSILON = 0
+    MAX_EPSILON = 0.3
 
     MAX_ALPHA = 0.1
     MIN_ALPHA = 1
