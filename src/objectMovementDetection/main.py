@@ -170,61 +170,93 @@ class Player():
                 startAngle += PlayerParam.STEP_ANGLE
 
     def _rayCasting(self):
+        # print("  ///")
+        # startTime = time.time()
         global obstacles
         inRangedObj = []
 
+        # stop = False
+
         for obstacle in obstacles:
-            if Utils.distanceBetweenTwoPoints(self.xPos, self.yPos, obstacle.xPos, obstacle.yPos) < PlayerParam.RADIUS_LIDAR:
+            # vector = (obstacle.xPos - self.xPos,obstacle.yPos - self.yPos)
+            # standa = (math.sin(self.currAngle),math.cos(self.currAngle))
+            # alpha = math.acos((vector[0]*standa[0] + vector[1]*standa[1])/((math.sqrt(vector[0]**2 + vector[1]**2))*math.sqrt(standa[0]**2 + standa[1]**2)))
+            #   and math.degrees(alpha) < 90
+            if Utils.distanceBetweenTwoPoints(self.xPos, self.yPos, obstacle.xPos, obstacle.yPos) < PlayerParam.RADIUS_LIDAR + PlayerParam.RADIUS_OBJECT:
                 inRangedObj.append(obstacle)
-                
+                # print("alpha: ",alpha)
         startAngle = self.currAngle - PlayerParam.HALF_FOV
+        # print(len(inRangedObj), " obg time: ",time.time() - startTime)
+        
+        # print("currr angel",math.degrees(self.currAngle))
 
         if len(inRangedObj) == 0:
             for ray in range(PlayerParam.CASTED_RAYS):
+                target_x = self.xPos - math.sin(startAngle) * PlayerParam.RADIUS_LIDAR
+                target_y = self.yPos + math.cos(startAngle) * PlayerParam.RADIUS_LIDAR
+                pygame.draw.line(GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos), (target_x, target_y))
                 self.rayCastingLists[ray] = PlayerParam.INFINITY
                 startAngle += PlayerParam.STEP_ANGLE
+            # print("none obj: ",time.time() - startTime)  
         else:
             for ray in range(PlayerParam.CASTED_RAYS):
                 # get ray target coordinates
                 isDetectObject = False
 
-                theda = math.sqrt((obstacle.xPos - self.xPos)
-                                  ** 2+(obstacle.yPos - self.yPos)**2)
-                beta = math.acos(
-                    (obstacle.yPos - self.yPos)/theda) - startAngle
-                height = theda*math.sin(beta)
+                for obstacle in inRangedObj:
+                    theda = math.sqrt((obstacle.xPos - self.xPos)**2+(obstacle.yPos - self.yPos)**2)
+                    beta = 0
+                    if obstacle.xPos - self.xPos < 0:
+                        beta = math.acos((obstacle.yPos - self.yPos)/theda) - startAngle
+                    else:
+                        beta = math.acos((obstacle.yPos - self.yPos)/theda) + startAngle
+                    height = theda*math.sin(beta)
 
-                if abs(height) > PlayerParam.RADIUS_OBJECT:
+                    if abs(height) < PlayerParam.RADIUS_OBJECT:
+                        isDetectObject = True
+
+                if not isDetectObject:
+                    self.rayCastingLists[ray] = PlayerParam.INFINITY
+                    target_x = self.xPos - math.sin(startAngle) * PlayerParam.RADIUS_LIDAR
+                    target_y = self.yPos + math.cos(startAngle) * PlayerParam.RADIUS_LIDAR
+                    pygame.draw.line(GLOBAL_SCREEN, CustomColor.RED, (self.xPos, self.yPos), (target_x, target_y))
                     self.rayCastingLists[ray] = PlayerParam.INFINITY
                     startAngle += PlayerParam.STEP_ANGLE
                     continue
 
+                isDetectObject = False
+
+
                 for depth in range(PlayerParam.RADIUS_LIDAR + 1):
-                    if (isDetectObject):
-                        break
                     target_x = self.xPos - \
                         math.sin(startAngle) * depth
                     target_y = self.yPos + \
                         math.cos(startAngle) * depth
+
+                    # print(int(target_x),int(target_y),":",end="")
 
                     for obstacle in inRangedObj:
                         distance = Utils.distanceBetweenTwoPoints(
                             target_x, target_y, obstacle.xPos, obstacle.yPos)
                         if distance <= PlayerParam.RADIUS_OBJECT:
                             self.rayCastingLists[ray] = Utils.distanceBetweenTwoPoints(
-                                target_x, target_y, self.xPos, self.yPos)
+                            target_x, target_y, self.xPos, self.yPos)
+                            # stop = True
                             isDetectObject = True
-                            if self.displayGUI == GUI.DISPLAY:
-                                pygame.draw.line(
-                                    GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
-                            break
+                            pygame.draw.line(GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
                         if depth == PlayerParam.RADIUS_LIDAR and not isDetectObject:
                             self.rayCastingLists[ray] = PlayerParam.INFINITY
-                            if self.displayGUI == GUI.DISPLAY:
-                                pygame.draw.line(
-                                    GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos), (target_x, target_y))
-
+                            # if self.displayGUI == GUI.DISPLAY:
+                            pygame.draw.line(GLOBAL_SCREEN, CustomColor.PINK, (self.xPos, self.yPos), (target_x, target_y))
+                        if isDetectObject:
+                            break
+                # print("\n\n")
                 startAngle += PlayerParam.STEP_ANGLE
+            # print("obj: ",time.time() - startTime)  
+        # print("_rayCasting: ",time.time() - startTime)
+        # print(self.rayCastingLists)
+        # if (stop):
+        #     time.sleep(1)
 
     def _checkCollision(self):
         global obstacles
@@ -440,6 +472,6 @@ def startGame(mode=MODE_PLAY.MANUAL):
             pygame.display.flip()
 
 
-startGame(mode=MODE_PLAY.RL_TRAIN)
+# startGame(mode=MODE_PLAY.RL_TRAIN)
 # startGame(mode=MODE_PLAY.MANUAL)
-# startGame(mode=MODE_PLAY.MANUAL)
+startGame(mode=MODE_PLAY.RL_DEPLOY)

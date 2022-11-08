@@ -6,7 +6,7 @@ class GameSettingParam:
     WIDTH = 400
     # HEIGHT = 1000
     HEIGHT = 750
-    FPS = 60
+    FPS = 30
 
 
 class PlayerParam:
@@ -125,6 +125,7 @@ class CustomColor:
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
     CYAN = (0, 255, 255)
+    PINK = (255, 0, 255)
 
 class MODE_PLAY:
     MANUAL = "MANUAL"
