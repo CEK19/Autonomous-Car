@@ -3,18 +3,22 @@ from utils import *
 import random
 import numpy as np
 import json
+import time
+
+# from main import getGlobalX
 
 class RLAlgorithm:
     def __init__(self, rayCastingData, actions) -> None:
-        # Converting n raycasting to signal in area , min raycast of each area
         self.signalPerAreaData = self.convertRayCastingDataToSignalPerArea(
             rayCastingData=rayCastingData)
-        file = open(FILE.MODEL_SAVE, "r")
-        RLInFile = file.read()
-        if not RLInFile:
-            self.Q = self._initQTable(actions=actions) 
-        else:
-            self.Q = json.loads(RLInFile)
+        # file = open("rl-learning.txt", "r")
+        # RLInFile = file.read()
+        # if not RLInFile:
+        #     self.Q = self._initQTable(actions=actions) 
+        # else:
+        #     self.Q = json.loads(RLInFile)
+        #     print("Load completed")
+        self.Q = self._initQTable(actions=actions) 
         self.actions = actions
 
     def _initQTable(self, actions):
@@ -41,6 +45,7 @@ class RLAlgorithm:
 
     @staticmethod
     def convertRayCastingDataToSignalPerArea(rayCastingData):
+        # print("rayCastingData",rayCastingData)
         div = len(rayCastingData) // RLParam.AREA_RAY_CASTING_NUMBERS
         mod = len(rayCastingData) % RLParam.AREA_RAY_CASTING_NUMBERS
 
@@ -56,6 +61,7 @@ class RLAlgorithm:
                 if (tmpCount == len(rayCastingData)):
                     break
             tmpData[i] = min(tmp)
+        # print("tmpData",tmpData)
         return tmpData
 
     @staticmethod
@@ -69,7 +75,6 @@ class RLAlgorithm:
                 elif signal < distanceRange:
                     hashFromRayCasting += str(index)
                     break
-
         hashFromCenterOfLane = ""
         distanceFromCenterOfLane = abs(
             leftSideDistance - rightSideDistance) / 2
@@ -87,7 +92,7 @@ class RLAlgorithm:
         return hashFromRayCasting + hashFromCenterOfLane
 
     @staticmethod
-    def getReward(currState, currActionIndex):
+    def getReward(currState, currActionIndex, ypos):
         finalReward = 0
         stateArr = [char for char in currState]
         lidarStates = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
@@ -113,11 +118,15 @@ class RLAlgorithm:
             finalReward += RLParam.SCORE.STOP_ACTION
         elif RLParam.ACTIONS[currActionIndex] == PlayerParam.INC_ROTATION_VELO or RLParam.ACTIONS[currActionIndex] == PlayerParam.DESC_ROTATION_VELO:
             finalReward += RLParam.SCORE.TURN_LEFT_OR_RIGHT
+
+        finalReward += (750 - ypos)/10
+
+        # print(getGlobalX())
             
         return finalReward
 
-    def _epsilonGreedyPolicy(self, currState, currentEpsilon):
-        if np.random.uniform(0, 1) < currentEpsilon:
+    def _epsilonGreedyPolicy(self, currState):
+        if np.random.uniform(0, 1) < RLParam.EPSILON:
             return random.choice(range(len(self.actions)))
         else:
             return np.argmax(self.Q[currState])
@@ -125,56 +134,43 @@ class RLAlgorithm:
     def train(self, env):
         alphas = np.linspace(
             RLParam.MAX_ALPHA, RLParam.MIN_ALPHA, RLParam.N_EPISODES)
-        epsilons = np.linspace(
-            RLParam.MAX_EPSILON, RLParam.MIN_EPSILON, RLParam.N_EPISODES
-        )
 
-        for e in range(RLParam.N_EPISODES):
+        for e in range(14800,RLParam.N_EPISODES):
             state = env.getCurrentState()
             totalReward = 0
             alpha = alphas[e]
-            epsilon = epsilons[e]
-            # startTime = time.time()
+            
 
             for actionCount in range(RLParam.MAX_EPISODE_STEPS):
-                # print("state: ", state)
-                actionIndex = self._epsilonGreedyPolicy(currState=state, currentEpsilon=epsilon)
+                startTime = time.time()
+                # print(" action:",actionCount,"episode:",e+1,"state:", state, "currentReward",totalReward,end="   ")
+                actionIndex = self._epsilonGreedyPolicy(currState=state)
                 nextState, reward, done = env.updateStateByAction(actionIndex)
                 totalReward += reward
                 self.Q[state][actionIndex] = self.Q[state][actionIndex] + \
                     alpha * (reward + RLParam.GAMMA *
                              np.max(self.Q[nextState]) - self.Q[state][actionIndex])
                 state = nextState
+                # print("state:", state)
 
                 if done or actionCount == RLParam.MAX_EPISODE_STEPS - 1: 
-                    totalReward -=  (actionCount + 1) * 0.01 # 120s * 1 = 120
+                    # totalReward -=  (actionCount + 1) * 0.01 # 120s * 1 = 120
                     break
-            comment = f"Episode {e + 1}, xPos={env.xPos} - yPos={env.yPos} : total reward in {actionCount} actions -> {totalReward}\n"
-            print(comment, end="")
+                # print("step time: ",time.time() - startTime)
+            comment = f"Episode {e + 1}: total reward in {actionCount} -> {totalReward}\n"
             
-            progressFile = open(FILE.PROGRESS, "a")
-            progressFile.write(comment)
-            progressFile.close()
-            if e % 20 == 0:
-                print("--> start write to file")
-                file = open(FILE.MODEL_SAVE, "w")
+            print(f"Episode {e + 1}: total reward in {actionCount} actions -> {totalReward}")
+
+            if (e%1000 == 0):
+                file = open("D:/RL/abc.txt", "w")
                 file.write(json.dumps(self.Q))
                 file.close()
-                print("end write to file !!!")
-            
-            if(e % 50 == 0):
-                print("backup Q table")
-                file1 = open(FILE.MODEL_SAVE, "r")
-                fileBackup = open("", "w")
-                fileBackup.write(file1.read())
-                fileBackup.close()
-                file1.close()
-                
-                print("backup progress")
-                file2 = open(FILE.PROGRESS, "r")
-                fileBackup = open(FILE.PROGRESS_BACKUP, "w")
-                fileBackup.write(file2.read())
-                fileBackup.close()
+
+                file2 = open("D:/RL/abc2.txt", "w")
+                file2.write(json.dumps(self.Q))
                 file2.close()
+            
+            progressFile = open("progress.txt", "a")
+            progressFile.write(comment)
             
             env = env.reset()

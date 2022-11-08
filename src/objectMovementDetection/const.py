@@ -6,7 +6,7 @@ class GameSettingParam:
     WIDTH = 400
     # HEIGHT = 1000
     HEIGHT = 750
-    FPS = 60
+    FPS = 20
 
 
 class PlayerParam:
@@ -51,11 +51,10 @@ class ObstacleParam:
                             0.1,
                             0.4,
                             0.3]
+    # PROBABILITIES_ACTION = [0.001,0.001,0.001,0.001,0.001]
 
 class RLParam:
-    
-    MIN_EPSILON = 0
-    MAX_EPSILON = 0.3
+    EPSILON = 0.2
 
     MAX_ALPHA = 0.1
     MIN_ALPHA = 1
@@ -64,8 +63,8 @@ class RLParam:
 
     AREA_RAY_CASTING_NUMBERS = 10
 
-    N_EPISODES = 1000
-    MAX_EPISODE_STEPS = 100000
+    N_EPISODES = 50000
+    MAX_EPISODE_STEPS = 500
 
     ACTIONS = [PlayerParam.INC_ROTATION_VELO,
                PlayerParam.DESC_ROTATION_VELO,
@@ -106,13 +105,13 @@ class RLParam:
         
     class SCORE:
         # lidar detect obstacle
-        OBSTACLE_TOUCH = -500
-        DANGEROUS_ZONE_TOUCH = -3 # need to implemented
+        OBSTACLE_TOUCH = -20
+        DANGEROUS_ZONE_TOUCH = -1 # need to implemented
         
         # stay in middle of lane
         STAY_AT_CENTER_OF_LANE = 5 # Nhana keeu < 50
         STAY_AT_LEFT_OR_RIGHT_OF_LANE = 0
-        STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -200
+        STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -100
         
         # action
         STOP_ACTION = -100
@@ -124,20 +123,13 @@ class CustomColor:
     WHITE = (255, 255, 255)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
-    CYAN = (0, 255, 255)
+
 
 class MODE_PLAY:
     MANUAL = "MANUAL"
     RL_TRAIN = "RL_TRAIN"
-    RL_DEPLOY = "RL_DEPLOY"
 
 
 class GUI:
-    DISPLAY = "DISPLAY"
-    HIDDEN = "HIDDEN"
-
-class FILE:
-    PROGRESS = "progress.txt"
-    PROGRESS_BACKUP = "progress-backup.txt"
-    MODEL_SAVE = "rl-learning.txt"
-    MODEL_SAVE_BACKUP = "rl-learning-backup.txt"
+    DISPLAY = True
+    HIDDEN = False

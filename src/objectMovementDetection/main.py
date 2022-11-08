@@ -6,6 +6,15 @@ import random
 from const import *
 from utils import *
 from table import *
+import datetime
+import time
+
+# from table import RLAlgorithm
+
+globalX = 0
+
+def getGlobalX():
+    return globalX
 
 
 class Player():
@@ -16,7 +25,7 @@ class Player():
         self.maxVelocity = maxVelocity
         self.maxRotationVelocity = maxRotationVelocity
 
-        self.currVelocity = 0  # always >= 0
+        self.currVelocity = 10  # always >= 0
         self.currRotationVelocity = 0  # rotate left < 0, rotate right > 0
         self.currAngle = math.pi
         self.accelerationForward = PlayerParam.ACCELERATION_FORWARD
@@ -30,16 +39,6 @@ class Player():
         self.mode = MODE_PLAY.MANUAL
         self.displayGUI = GUI.DISPLAY
 
-        # FOR DEPLOY MODE
-        self.deployedQTabled = None
-
-    def loadQTable(self):
-        if (self.mode == MODE_PLAY.RL_DEPLOY):
-            file = open(FILE.MODEL_SAVE, "r+")            
-            RLInFile = file.read()
-            self.deployedQTabled = json.loads(RLInFile) 
-            file.close()    
-
     def _move(self):
         dt = float(1/GameSettingParam.FPS)
 
@@ -47,7 +46,7 @@ class Player():
         self.xPos += -math.sin(self.currAngle) * self.currVelocity * dt
         self.currAngle += self.currRotationVelocity*dt
 
-    def _playerInput(self, actionIndex=None):
+    def _playerInput(self, actionIndex):
         if (self.mode == MODE_PLAY.MANUAL):
             keys = pygame.key.get_pressed()
 
@@ -93,53 +92,39 @@ class Player():
                 self.currVelocity = max(
                     self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
 
-        elif (self.mode == MODE_PLAY.RL_DEPLOY):
-            currentState = RLAlgorithm.hashFromDistanceToState(signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingLists),
-                                                               leftSideDistance=abs(self.xPos),
-                                                               rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH))
-            
-            decidedAction = np.argmax(self.deployedQTabled[currentState])
-            
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_ROTATION_VELO:
-                self.currRotationVelocity -= PlayerParam.ACCELERATION_ROTATE
-
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_ROTATION_VELO:
-                self.currRotationVelocity += PlayerParam.ACCELERATION_ROTATE
-
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.STOP:
-                self.currVelocity = 0
-                self.currRotationVelocity = 0
-
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_FORWARD_VELO:
-                self.currVelocity = min(
-                    self.currVelocity + PlayerParam.ACCELERATION_FORWARD, self.maxVelocity)
-
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_FORWARD_VELO:
-                self.currVelocity = max(
-                    self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)            
-
     def _rayCasting(self):
+        startTime = time.time()
         global obstacles
         inRangedObj = []
 
         for obstacle in obstacles:
-            if Utils.distanceBetweenTwoPoints(self.xPos, self.yPos, obstacle.xPos, obstacle.yPos) < PlayerParam.RADIUS_OBJECT*2 + PlayerParam.RADIUS_LIDAR:
+            if Utils.distanceBetweenTwoPoints(self.xPos, self.yPos, obstacle.xPos, obstacle.yPos) < PlayerParam.RADIUS_LIDAR:
                 inRangedObj.append(obstacle)
+                # print(Utils.distanceBetweenTwoPoints(self.xPos, self.yPos, obstacle.xPos, obstacle.yPos))
         startAngle = self.currAngle - PlayerParam.HALF_FOV
+        # print(len(inRangedObj), " obg time: ",time.time() - startTime)
         if len(inRangedObj) == 0:
             for ray in range(PlayerParam.CASTED_RAYS):
-                target_x = self.xPos - \
-                    math.sin(startAngle) * PlayerParam.RADIUS_LIDAR
-                target_y = self.yPos + \
-                    math.cos(startAngle) * PlayerParam.RADIUS_LIDAR
-                pygame.draw.line(GLOBAL_SCREEN, CustomColor.WHITE,
-                                 (self.xPos, self.yPos), (target_x, target_y))
+                # target_x = self.xPos - math.sin(startAngle) * PlayerParam.RADIUS_LIDAR
+                # target_y = self.yPos + math.cos(startAngle) * PlayerParam.RADIUS_LIDAR
+                # pygame.draw.line(GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos), (target_x, target_y))
                 self.rayCastingLists[ray] = PlayerParam.INFINITY
                 startAngle += PlayerParam.STEP_ANGLE
+            # print("none obj: ",time.time() - startTime)  
         else:
             for ray in range(PlayerParam.CASTED_RAYS):
                 # get ray target coordinates
                 isDetectObject = False
+
+                theda = math.sqrt((obstacle.xPos - self.xPos)**2+(obstacle.yPos - self.yPos)**2)
+                beta = math.acos((obstacle.yPos - self.yPos)/theda) - startAngle
+                height = theda*math.sin(beta)
+
+                if abs(height) > PlayerParam.RADIUS_OBJECT:
+                    self.rayCastingLists[ray] = PlayerParam.INFINITY
+                    startAngle += PlayerParam.STEP_ANGLE
+                    continue
+
 
                 for depth in range(PlayerParam.RADIUS_LIDAR + 1):
                     if (isDetectObject):
@@ -149,24 +134,31 @@ class Player():
                     target_y = self.yPos + \
                         math.cos(startAngle) * depth
 
+                    # print(int(target_x),int(target_y),":",end="")
+
                     for obstacle in inRangedObj:
                         distance = Utils.distanceBetweenTwoPoints(
                             target_x, target_y, obstacle.xPos, obstacle.yPos)
                         if distance <= PlayerParam.RADIUS_OBJECT:
                             self.rayCastingLists[ray] = Utils.distanceBetweenTwoPoints(
-                                target_x, target_y, self.xPos, self.yPos)
+                            target_x, target_y, self.xPos, self.yPos)
                             isDetectObject = True
                             if self.displayGUI == GUI.DISPLAY:
                                 pygame.draw.line(
-                                    GLOBAL_SCREEN, CustomColor.CYAN, (self.xPos, self.yPos), (target_x, target_y))
+                                    GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
                             break
                         if depth == PlayerParam.RADIUS_LIDAR and not isDetectObject:
                             self.rayCastingLists[ray] = PlayerParam.INFINITY
                             if self.displayGUI == GUI.DISPLAY:
                                 pygame.draw.line(
-                                    GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
-
+                                    GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos), (target_x, target_y))
+                # print("\n\n")
                 startAngle += PlayerParam.STEP_ANGLE
+            # print("obj: ",time.time() - startTime)  
+        # print("_rayCasting: ",time.time() - startTime)
+        # print(self.rayCastingLists)
+        # if (len(inRangedObj) != 0):
+        #     time.sleep(1)
 
     def _checkCollision(self):
         global obstacles
@@ -175,7 +167,7 @@ class Player():
                 self.xPos, self.yPos, obstacle.xPos, obstacle.yPos)
             # https://stackoverflow.com/questions/22135712/pygame-collision-detection-with-two-circles
             if distanceBetweenCenter <= 2*PlayerParam.RADIUS_OBJECT:
-                # print("Ouch!!!")
+                # print("Ouch!!!",end="")
                 pass
 
     def draw(self, actionIndex):
@@ -213,10 +205,7 @@ class Obstacle(Player):
 
         # Is random ?
         self.randomVelo = False
-        
-    def _loadQTable(self):
-        pass
-    
+
     def _playerInput(self):
         keys = RLParam.ACTIONS
         probs = ObstacleParam.PROBABILITIES_ACTION
@@ -272,57 +261,74 @@ class Environment:
         self.xPos, self.yPos = currentPlayer.xPos, currentPlayer.yPos
 
         currentPlayer.mode = MODE_PLAY.RL_TRAIN
-        currentPlayer.displayGUI = GUI.HIDDEN
+        currentPlayer.displayGUI = GUI.DISPLAY
 
         for obstacle in currentObstacles:
             obstacle.mode = MODE_PLAY.RL_TRAIN
-            obstacle.displayGUI = GUI.HIDDEN
-
+            obstacle.displayGUI = GUI.DISPLAY
+            
     def _isDoneEpisode(self):
-        return self.yPos <= 0 or self.yPos > GameSettingParam.HEIGHT or self.xPos <= 0 or self.xPos >= GameSettingParam.WIDTH
+        return self.yPos <= 0 or self.yPos > GameSettingParam.HEIGHT   or self.xPos <= 0 or self.xPos >= GameSettingParam.WIDTH
 
     def _selfUpdated(self):
+        # global globalX
         self.rayCastingData = self.currPlayer.rayCastingLists
         self.xPos, self.yPos = self.currPlayer.xPos, self.currPlayer.yPos
+        globalX = self.currPlayer.yPos
+        # print("(x,y): ", int(self.currPlayer.xPos),int(self.currPlayer.yPos),end="")
 
     def updateStateByAction(self, actionIndex):
         for obstacle in obstacles:
             obstacle.draw()
-
-        self.currPlayer.draw(actionIndex=actionIndex)
+            
+        self.currPlayer.draw(actionIndex=actionIndex)                    
         self._selfUpdated()
-
+        
         nextState = RLAlgorithm.hashFromDistanceToState(
-            signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(
-                rayCastingData=self.rayCastingData),
-            leftSideDistance=abs(self.xPos),
+            signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData), 
+            leftSideDistance=abs(self.xPos), 
             rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH))
-
+        
         reward = RLAlgorithm.getReward(
-            currState=nextState, currActionIndex=actionIndex)
-
+            currState=nextState, currActionIndex=actionIndex,ypos = self.currPlayer.yPos)
+        
         done = self._isDoneEpisode()
-
+        
         return nextState, reward, done
-
+    
     def getCurrentState(self):
         return RLAlgorithm.hashFromDistanceToState(signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingData),
-                                                   leftSideDistance=abs(
-                                                       self.xPos),
+                                                   leftSideDistance=abs(self.xPos),
                                                    rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH))
 
     def reset(self):
+        # self.currPlayer = None
+        # self.currPlayer = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
+        #         maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
+        # self.currObstacles = []
+        # for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
+        #     self.currObstacles.append(Obstacle())
+        
+        # self.currentPlayer.mode = MODE_PLAY.RL_TRAIN
+        # self.currentPlayer.displayGUI = GUI.DISPLAY
+
+        # for obstacle in self.currentObstacles:
+        #     obstacle.mode = MODE_PLAY.RL_TRAIN
+        #     obstacle.displayGUI = GUI.DISPLAY
+            
+        # self.currPlayer.draw(actionIndex=2)
+        # for obstacle in self.currObstacles:
+        #     obstacle.draw()
         del self
         global player, obstacles
         player = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
-                        maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
+                maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY) 
         obstacles = []
         for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
             obstacles.append(Obstacle())
         return Environment(currentPlayer=player, currentObstacles=obstacles)
-
+                    
 ###########################################################################################
-
 
 # Game setting
 pygame.init()
@@ -351,36 +357,21 @@ def startGame(mode=MODE_PLAY.MANUAL):
                     pygame.quit()
                     exit()
 
-            player.draw(actionIndex=None)
+            player.draw(actionIndex=None)            
             for obstacle in obstacles:
                 obstacle.draw()
 
             pygame.display.flip()
-            
     elif (mode == MODE_PLAY.RL_TRAIN):
+        # pygame.display.flip()
+        # GLOBAL_CLOCK.tick(GameSettingParam.FPS)
+        # GLOBAL_SCREEN.fill(CustomColor.BLACK)
+        # GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))
+        
         env = Environment(currentPlayer=player, currentObstacles=obstacles)
         RL = RLAlgorithm(rayCastingData=env.rayCastingData,
                          actions=RLParam.ACTIONS)
         RL.train(env)
-    elif (mode == MODE_PLAY.RL_DEPLOY):
-        player.mode = MODE_PLAY.RL_DEPLOY
-        player.loadQTable()
-        while True:
-            GLOBAL_CLOCK.tick(GameSettingParam.FPS)
-            GLOBAL_SCREEN.fill(CustomColor.BLACK)
-            GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-
-            player.draw(actionIndex=None)
-            for obstacle in obstacles:
-                obstacle.draw()
-
-            pygame.display.flip()
-            
-# startGame(mode=MODE_PLAY.RL_TRAIN)
+startGame(mode=MODE_PLAY.RL_TRAIN)
 # startGame(mode=MODE_PLAY.MANUAL)
-startGame(mode=MODE_PLAY.RL_DEPLOY)
