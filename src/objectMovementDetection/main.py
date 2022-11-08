@@ -342,5 +342,5 @@ def startGame(mode=MODE_PLAY.MANUAL):
         RL.train(env)
 
 
-startGame(mode=MODE_PLAY.RL_TRAIN)
-# startGame(mode=MODE_PLAY.MANUAL)
+# startGame(mode=MODE_PLAY.RL_TRAIN)
+startGame(mode=MODE_PLAY.MANUAL)
