@@ -92,7 +92,7 @@ class RLAlgorithm:
         return hashFromRayCasting + hashFromCenterOfLane
 
     @staticmethod
-    def getReward(currState, currActionIndex, ypos):
+    def getReward(currState, currActionIndex, currPlayer):
         finalReward = 0
         stateArr = [char for char in currState]
         lidarStates = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
@@ -100,28 +100,24 @@ class RLAlgorithm:
 
         # Obstacles block car
         for lidarState in lidarStates:
-            if lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
-                finalReward += RLParam.SCORE.OBSTACLE_TOUCH
-            elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE:
-                finalReward += RLParam.SCORE.DANGEROUS_ZONE_TOUCH
+            if lidarState == 0:
+                finalReward += -100
+            elif lidarState == 1:
+                finalReward += -10
+            elif lidarState == 2:
+                finalReward += -2
 
         # Car out of lane
         if centerState == RLParam.LEVEL_OF_LANE.MIDDLE:
-            finalReward += RLParam.SCORE.STAY_AT_CENTER_OF_LANE
+            finalReward += 2
         elif centerState == RLParam.LEVEL_OF_LANE.RIGHT or centerState == RLParam.LEVEL_OF_LANE.LEFT:
-            finalReward += RLParam.SCORE.STAY_AT_LEFT_OR_RIGHT_OF_LANE
+            finalReward += -10
         elif centerState == RLParam.LEVEL_OF_LANE.MOST_RIGHT or centerState == RLParam.LEVEL_OF_LANE.MOST_LEFT:
-            finalReward += RLParam.SCORE.STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE
+            finalReward += -100
 
         # Prevent stop and go back action
-        if RLParam.ACTIONS[currActionIndex] == PlayerParam.STOP:
-            finalReward += RLParam.SCORE.STOP_ACTION
-        elif RLParam.ACTIONS[currActionIndex] == PlayerParam.INC_ROTATION_VELO or RLParam.ACTIONS[currActionIndex] == PlayerParam.DESC_ROTATION_VELO:
-            finalReward += RLParam.SCORE.TURN_LEFT_OR_RIGHT
-
-        finalReward += (750 - ypos)/10
-
-        # print(getGlobalX())
+        y_Ver = math.cos(currPlayer.currAngle)*currPlayer.currVelocity
+        finalReward += -1*y_Ver*0.01
             
         return finalReward
 
