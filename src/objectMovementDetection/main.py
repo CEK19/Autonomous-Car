@@ -266,7 +266,8 @@ class Player():
             # https://stackoverflow.com/questions/22135712/pygame-collision-detection-with-two-circles
             if distanceBetweenCenter <= 2*PlayerParam.RADIUS_OBJECT:
                 # print("Ouch!!!")
-                pass
+                return True
+        return False
 
     def draw(self, actionIndex):
         global GLOBAL_SCREEN
@@ -369,7 +370,10 @@ class Environment:
             obstacle.displayGUI = GUI.HIDDEN
 
     def _isDoneEpisode(self):
-        return self.yPos <= 0 or self.yPos > GameSettingParam.HEIGHT or self.xPos <= 0 or self.xPos >= GameSettingParam.WIDTH
+        condition1 = self.yPos <= 0 or self.yPos > GameSettingParam.HEIGHT
+        condition2 = self.xPos <= 0 or self.xPos >= GameSettingParam.WIDTH
+        condition3 = self.currPlayer._checkCollision()
+        return condition1 or condition2 or condition3
 
     def _selfUpdated(self):
         self.rayCastingData = self.currPlayer.rayCastingLists
