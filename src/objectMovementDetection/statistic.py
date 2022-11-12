@@ -40,7 +40,7 @@ for idx, line in enumerate(lines):
     yPosList.append(yPos)
     totalActionsList.append(totalAction)
     totalRewardList.append(totalReward)        
-        
+
 file.close() 
 fig, axs = plt.subplots(2, 2)
 fig.set_size_inches(18.5, 8.5)
