@@ -7,6 +7,15 @@ class GameSettingParam:
     # HEIGHT = 1000
     HEIGHT = 750
     FPS = 30
+    DRAW = True
+    
+    class EndGameReason:
+        NOT_END_GAME = ""
+        WIN = "win"
+        TOUCH_OBSTACLE = "touch_obstacle"
+        TOUCH_SIDE = "touch_side"
+        TOUCH_BOTTOM = "touch_bottom"
+        OVER_ROTAION = "over_rotation"
 
 
 class PlayerParam:
@@ -66,7 +75,8 @@ class RLParam:
 
     AREA_RAY_CASTING_NUMBERS = 6
 
-    N_EPISODES = 1000
+    N_EPISODES = 3000
+    N_EPISODES_PER_SAVE_MODEL = 400
     MAX_EPISODE_STEPS = 100000
 
     ACTIONS = [PlayerParam.INC_ROTATION_VELO,
@@ -129,21 +139,31 @@ class RLParam:
         OVER_ROTATION_RIGHT_ANGLE = math.pi + math.pi/2
         
         LIST_LEVEL_ANGLES = [FRONT, NORMAL_LEFT, NORMAL_RIGHT, OVER_ROTATION_LEFT, OVER_ROTATION_RIGHT]
+        
     class SCORE:
         # lidar detect obstacle
-        OBSTACLE_TOUCH = -10000000
-        DANGEROUS_ZONE_TOUCH = -1000
+        OBSTACLE_TOUCH = -1_000_000_000
+        FAILED_DISTANCE_TOUCH = -15000
+        DANGEROUS_ZONE_TOUCH = -5000
+        SAFETY_ZONE_TOUCH = -1000
 
         # stay in middle of lane
         STAY_AT_CENTER_OF_LANE = 1000
-        STAY_AT_LEFT_OR_RIGHT_OF_LANE = -500
+        STAY_AT_LEFT_OR_RIGHT_OF_LANE = -100
         STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -10000
-
+        
+        # angle of car
+        STAY_IN_FRONT = 1000
+        STAY_IN_NORMAL_ANGLE = -100
+        
         # Actions
         STOPS_TO_ENJOY = -10000
-        TURN_AROUND = -1000000
-        INCREASE_Y = -100000
+        TURN_AROUND = -2000000
+        INCREASE_Y = -300000
         INCREASE_SPEED_FORWARD = 10000
+        
+        FINISH_LINE = 10000000
+        TOUCH_BOTTOM = -2_000_000_000
 
 
 class CustomColor:
@@ -151,7 +171,7 @@ class CustomColor:
     WHITE = (255, 255, 255)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
-    CYAN = (0, 255, 255)
+    CRYAN = (0, 255, 255)
     PINK = (255, 0, 255)
 
 
@@ -171,3 +191,8 @@ class FILE:
     PROGRESS_BACKUP = "progress-backup.txt"
     MODEL_SAVE = "rl-learning.txt"
     MODEL_SAVE_BACKUP = "rl-learning-backup.txt"
+
+class Equation:
+    NO_SOLUTION = 0
+    ONE_SOLUTION = 1
+    TWO_SOLUTION = 2

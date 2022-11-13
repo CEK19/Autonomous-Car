@@ -1,5 +1,6 @@
 import re
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+# import matplotlib.pyplot as plt
 
 file = open("progress.txt", "r+") 
 lines = file.readlines()
