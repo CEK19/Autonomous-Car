@@ -28,7 +28,7 @@ class Player():
         self.currVelocity = 10  # always >= 0
         self.currRotationVelocity = 0  # rotate left < 0, rotate right > 0
         self.currAngle = math.pi
-        self.accelerationForward = PlayerParam.ACCELERATION_FORWARD
+        # self.accelerationForward = PlayerParam.ACCELERATION_FORWARD
 
         self.circleRect = pygame.draw.circle(
             GLOBAL_SCREEN, CustomColor.RED, (self.xPos, self.yPos), PlayerParam.RADIUS_OBJECT)
@@ -36,9 +36,24 @@ class Player():
         # Raycasting
         self.rayCastingLists = [PlayerParam.INFINITY] * PlayerParam.CASTED_RAYS
 
-        self.mode = MODE_PLAY.MANUAL
+        self.mode = MODE_PLAY.I_AM_A_ROBOT
         self.displayGUI = GUI.DISPLAY
 
+<<<<<<< Updated upstream
+=======
+        self.memAction = dict()
+
+        # FOR DEPLOY MODE
+        self.deployedQTabled = None
+
+    def loadQTable(self):
+        if (self.mode == MODE_PLAY.RL_DEPLOY):
+            file = open(FILE.MODEL_SAVE, "r+")
+            RLInFile = file.read()
+            self.deployedQTabled = json.loads(RLInFile)
+            file.close()
+
+>>>>>>> Stashed changes
     def _move(self):
         dt = float(1/GameSettingParam.FPS)
 
@@ -92,6 +107,92 @@ class Player():
                 self.currVelocity = max(
                     self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
 
+<<<<<<< Updated upstream
+=======
+        elif (self.mode == MODE_PLAY.RL_DEPLOY):
+            currentState = RLAlgorithm.hashFromDistanceToState(signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingLists),
+                                                               leftSideDistance=abs(
+                                                                   self.xPos),
+                                                               rightSideDistance=abs(
+                                                                   self.xPos - GameSettingParam.WIDTH),
+                                                               angle=self.currAngle)
+
+            decidedAction = np.argmax(self.deployedQTabled[currentState])
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_FORWARD_VELO:
+                self.currRotationVelocity -= PlayerParam.ACCELERATION_ROTATE
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_FORWARD_VELO:
+                self.currRotationVelocity += PlayerParam.ACCELERATION_ROTATE
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.STOP:
+                self.currVelocity = 0
+                self.currRotationVelocity = 0
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_FORWARD_VELO:
+                self.currVelocity = min(
+                    self.currVelocity + PlayerParam.ACCELERATION_FORWARD, self.maxVelocity)
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_FORWARD_VELO:
+                self.currVelocity = max(
+                    self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
+
+        elif (self.mode == MODE_PLAY.I_AM_A_ROBOT):
+            currentState = RLAlgorithm.hashFromDistanceToState(signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingLists),
+                                                               leftSideDistance=abs(
+                                                                   self.xPos),
+                                                               rightSideDistance=abs(
+                                                                   self.xPos - GameSettingParam.WIDTH),
+                                                               angle=self.currAngle)
+
+            # decidedAction = np.argmax(self.deployedQTabled[currentState])
+
+            if currentState not in self.memAction.keys():
+                print("state:",currentState,"is unknow, decide a action now.")
+                while True:
+                    event = pygame.event.wait()
+                    if event.type == pygame.KEYDOWN:
+                                    # Rotate left ()
+                        if event.key == pygame.K_a:
+                            self.memAction[currentState] = 1
+                        elif event.key == pygame.K_d:
+                            self.memAction[currentState] = 0
+                        elif event.key == pygame.K_w:
+                            self.memAction[currentState] = 3
+                            # print("here")
+                        elif event.key == pygame.K_s:
+                            self.memAction[currentState] = 2
+                        elif event.key == pygame.K_x:
+                            self.memAction[currentState] = 4
+
+                        print("you decide state",currentState," is action ",self.memAction[currentState])
+                        break
+
+            
+
+            decidedAction = self.memAction[currentState]
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_ROTATION_VELO:
+                self.currRotationVelocity -= PlayerParam.ACCELERATION_ROTATE
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_ROTATION_VELO:
+                self.currRotationVelocity += PlayerParam.ACCELERATION_ROTATE
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.STOP:
+                self.currVelocity = 0
+                self.currRotationVelocity = 0
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_FORWARD_VELO:
+                self.currVelocity = min(
+                    self.currVelocity + PlayerParam.ACCELERATION_FORWARD, self.maxVelocity)
+                # print("go here")
+
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_FORWARD_VELO:
+                self.currVelocity = max(
+                    self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
+
+
+>>>>>>> Stashed changes
     def _rayCasting(self):
         startTime = time.time()
         global obstacles
@@ -175,6 +276,24 @@ class Player():
         self._playerInput(actionIndex=actionIndex)
         self._rayCasting()
         self._checkCollision()
+        self._move()
+
+        if (self.displayGUI == GUI.DISPLAY):
+            # draw player on 2D board
+            pygame.draw.circle(GLOBAL_SCREEN, CustomColor.RED,
+                               (self.xPos, self.yPos), PlayerParam.RADIUS_OBJECT)
+
+            # draw player direction
+            pygame.draw.line(GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos),
+                             (self.xPos - math.sin(self.currAngle) * 20,
+                              self.yPos + math.cos(self.currAngle) * 20), 3)
+
+    def I_AM_A_ROBOT(self, actionIndex):
+        global GLOBAL_SCREEN
+        
+        self._playerInput(actionIndex=actionIndex)
+        self._rayCasting()
+        self.checkCollision()
         self._move()
 
         if (self.displayGUI == GUI.DISPLAY):
@@ -346,7 +465,7 @@ for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
 
 
 def startGame(mode=MODE_PLAY.MANUAL):
-    if (mode == MODE_PLAY.MANUAL):
+    if (mode == MODE_PLAY.MANUAL) or (mode == MODE_PLAY.I_AM_A_ROBOT):
         while True:
             GLOBAL_CLOCK.tick(GameSettingParam.FPS)
             GLOBAL_SCREEN.fill(CustomColor.BLACK)
@@ -373,5 +492,13 @@ def startGame(mode=MODE_PLAY.MANUAL):
                          actions=RLParam.ACTIONS)
         RL.train(env)
 
+<<<<<<< Updated upstream
 startGame(mode=MODE_PLAY.RL_TRAIN)
 # startGame(mode=MODE_PLAY.MANUAL)
+=======
+
+# startGame(mode=MODE_PLAY.RL_TRAIN)
+# startGame(mode=MODE_PLAY.MANUAL)
+# startGame(mode=MODE_PLAY.RL_DEPLOY)
+startGame(mode=MODE_PLAY.I_AM_A_ROBOT)
+>>>>>>> Stashed changes

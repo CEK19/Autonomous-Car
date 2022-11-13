@@ -41,8 +41,14 @@ class PlayerParam:
 
 class ObstacleParam:
     NUMBER_OF_OBSTACLES = 10
+<<<<<<< Updated upstream
     OBSTACLE_ACCELERATION_FORWARD = 50
     OBSTACLE_ACCELERATION_ROTATE = 0.5
+=======
+    OBSTACLE_ACCELERATION_FORWARD = 0
+    OBSTACLE_ACCELERATION_ROTATE = 0
+    MAX_VELOCITY = 70
+>>>>>>> Stashed changes
     INITIAL_OBSTACLE_X = GameSettingParam.WIDTH//2
     INITIAL_OBSTACLE_Y = 0
     
@@ -128,6 +134,11 @@ class CustomColor:
 class MODE_PLAY:
     MANUAL = "MANUAL"
     RL_TRAIN = "RL_TRAIN"
+<<<<<<< Updated upstream
+=======
+    RL_DEPLOY = "RL_DEPLOY"
+    I_AM_A_ROBOT = "YOU NOT SMART ENOUGHT TOBE A ROBOT OK ???"
+>>>>>>> Stashed changes
 
 
 class GUI:
