@@ -77,19 +77,17 @@ class RLAlgorithm:
                     break
 
         hashFromCenterOfLane = ""
-        distanceFromCenterOfLane = abs(
-            leftSideDistance - rightSideDistance) / 2
-        for index, distance in enumerate(RLParam.DISTANCE_FROM_CENTER_OF_LANE):
-            if index == len(RLParam.DISTANCE_FROM_CENTER_OF_LANE) - 1:
-                hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.MIDDLE
-                break
-            elif distanceFromCenterOfLane > distance:
-                if leftSideDistance < rightSideDistance:
-                    hashFromCenterOfLane += str(index +
-                                                int(RLParam.LEVEL_OF_LANE.MIDDLE) + 1)
-                else:
-                    hashFromCenterOfLane += str(index)
-                break
+        if leftSideDistance < RLParam.LEVEL_OF_LANE.DISTANCE_MOST_LEFT:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.MOST_LEFT
+        elif leftSideDistance < RLParam.LEVEL_OF_LANE.DISTANCE_LEFT:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.LEFT
+        elif rightSideDistance < RLParam.LEVEL_OF_LANE.DISTANCE_MOST_RIGHT:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.MOST_RIGHT        
+        elif rightSideDistance < RLParam.LEVEL_OF_LANE.DISTANCE_RIGHT:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.RIGHT
+        else:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.MIDDLE
+        
             
         hashFromAngle = ""
         if angle > RLParam.LEVEL_OF_ANGLE.NORMAL_LEFT_ANGLE and angle < RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT_ANGLE:
@@ -119,7 +117,7 @@ class RLAlgorithm:
             currYPos = current["yPos"]
             
             reward += (currYPos - preYPos)*RLParam.SCORE.INCREASE_Y
-            reward += ((-currVelocity*math.cos(currAngle))- (-preVelocity*math.cos(prevAngle)))*RLParam.SCORE.INCREASE_SPEED_FORWARD
+            reward += ((-currVelocity*math.cos(currAngle)) - (-preVelocity*math.cos(prevAngle)))*RLParam.SCORE.INCREASE_SPEED_FORWARD
             return reward
 
         def g(state):
@@ -146,7 +144,7 @@ class RLAlgorithm:
             elif centerState == RLParam.LEVEL_OF_LANE.MOST_RIGHT or centerState == RLParam.LEVEL_OF_LANE.MOST_LEFT:
                 finalReward += RLParam.SCORE.STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE                        
             
-            if (currForwardVelocity < 10):
+            if (currForwardVelocity < 20):
                 finalReward += RLParam.SCORE.STOPS_TO_ENJOY
             
             if (currAngle <= math.pi/2 or currAngle >= math.pi + math.pi/2):
@@ -171,8 +169,8 @@ class RLAlgorithm:
         )
         
         #------------------------------------------ THINH BEDE ---------------------------
-        # visualMap = np.zeros((GameSettingParam.HEIGHT,GameSettingParam.WIDTH,3),dtype="uint8")
-        # outputVideo = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 30, (GameSettingParam.WIDTH,GameSettingParam.HEIGHT))        
+        visualMap = np.zeros((GameSettingParam.HEIGHT,GameSettingParam.WIDTH,3),dtype="uint8")
+        outputVideo = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 30, (GameSettingParam.WIDTH,GameSettingParam.HEIGHT))        
         #------------------------------------------ THINH BEDE ---------------------------
         
         for e in range(RLParam.N_EPISODES):

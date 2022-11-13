@@ -10,7 +10,7 @@ class GameSettingParam:
 
 
 class PlayerParam:
-    RADIUS_OBJECT = 20
+    RADIUS_OBJECT = 10
 
     ACCELERATION_FORWARD = 10
     ACCELERATION_ROTATE = 0.05
@@ -40,7 +40,7 @@ class PlayerParam:
 
 
 class ObstacleParam:
-    NUMBER_OF_OBSTACLES = 10
+    NUMBER_OF_OBSTACLES = 30
     OBSTACLE_ACCELERATION_FORWARD = 50
     OBSTACLE_ACCELERATION_ROTATE = 0.5
     MAX_VELOCITY = 70
@@ -57,9 +57,9 @@ class ObstacleParam:
 class RLParam:
 
     MIN_EPSILON = 0
-    MAX_EPSILON = 0.7
+    MAX_EPSILON = 0.5
 
-    MIN_ALPHA = 1
+    MIN_ALPHA = 0.3
     MAX_ALPHA = 0.1
 
     GAMMA = 0.5
@@ -89,25 +89,27 @@ class RLParam:
         DANGEROUS_DISTANCE = "1"  # LIDAR TOUCH OBSTACLE, BUT IN DANGEROUS MODE
         FAILED_DISTANCE = "0"  # LIDAR TOUCH OBSTACLE, AND OUCH
 
-    # | x | 3x | 2x | 3x | x |
-    # split the middle area into 2 parts, each part will be x
-    DISTANCE_FROM_CENTER_OF_LANE = [
-        # most left or most right (distance > 4x/10) (1/2 of middle + 3x area)
-        GameSettingParam.WIDTH * 4 / 10,
-        # left or right (distance > x/10) (1/2 of middle)
-        GameSettingParam.WIDTH * 1 / 10,
-        # center (distance > 0) (inside 1/2 of middle)
-        0
-    ]  # 0 is lucky number, no meaning
-
     class LEVEL_OF_LANE:
+        # | x | 3x | 2x | 3x | x |
+        # split the middle area into 2 parts, each part will be x    
+        
         LEFT = "4"
+        DISTANCE_LEFT = GameSettingParam.WIDTH * 4 / 10
+        
         MOST_LEFT = "3"
+        DISTANCE_MOST_LEFT =  GameSettingParam.WIDTH*1/10
+        
         MIDDLE = "2"
+        DISTANCE_MIDDLE = 0 # JUST LEAVE 0 FOR FUN
+        
+        
         RIGHT = "1"
+        DISTANCE_RIGHT = GameSettingParam.WIDTH * 4 / 10
+        
         MOST_RIGHT = "0"
+        DISTANCE_MOST_RIGHT =  GameSettingParam.WIDTH*1/10
 
-        LIST_LEVEL_OF_LANE = [LEFT, MOST_LEFT, MIDDLE, RIGHT, MOST_RIGHT]
+        LIST_LEVEL_OF_LANE = [LEFT, MOST_LEFT, MIDDLE, RIGHT, MOST_RIGHT]        
 
     class LEVEL_OF_ANGLE:
         FRONT = "0"
@@ -130,7 +132,7 @@ class RLParam:
     class SCORE:
         # lidar detect obstacle
         OBSTACLE_TOUCH = -10000000
-        DANGEROUS_ZONE_TOUCH = -10000000
+        DANGEROUS_ZONE_TOUCH = -1000
 
         # stay in middle of lane
         STAY_AT_CENTER_OF_LANE = 1000
@@ -139,8 +141,8 @@ class RLParam:
 
         # Actions
         STOPS_TO_ENJOY = -10000
-        TURN_AROUND = -10000000
-        INCREASE_Y = 10000
+        TURN_AROUND = -1000000
+        INCREASE_Y = -100000
         INCREASE_SPEED_FORWARD = 10000
 
 

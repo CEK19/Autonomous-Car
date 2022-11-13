@@ -44,13 +44,15 @@ class Player():
 
     def _move(self):
         dt = float(1/GameSettingParam.FPS)
-
-        self.yPos += math.cos(self.currAngle) * self.currVelocity * dt
-        print("tttt", self.yPos)
-        self.xPos += -math.sin(self.currAngle) * self.currVelocity * dt
         
-        print("yvelo", -self.currVelocity*math.cos(self.currAngle))
-        print("angle", self.currAngle)
+        self.currAngle += (self.currRotationVelocity*dt) 
+        if (self.currAngle < 0):
+            self.currAngle = 2*math.pi - abs(self.currAngle)
+        elif (self.currAngle > 2*math.pi):
+            self.currAngle = abs(self.currAngle - 2*math.pi)
+            
+        self.yPos += math.cos(self.currAngle) * self.currVelocity * dt
+        self.xPos += -math.sin(self.currAngle) * self.currVelocity * dt        
 
     def _playerInput(self, actionIndex=None):
         if (self.mode == MODE_PLAY.MANUAL):
@@ -108,10 +110,10 @@ class Player():
 
             decidedAction = np.argmax(self.deployedQTabled[currentState])
 
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_ROTATION_VELO:
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_FORWARD_VELO:
                 self.currRotationVelocity -= PlayerParam.ACCELERATION_ROTATE
 
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_ROTATION_VELO:
+            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_FORWARD_VELO:
                 self.currRotationVelocity += PlayerParam.ACCELERATION_ROTATE
 
             if RLParam.ACTIONS[decidedAction] == PlayerParam.STOP:
@@ -126,56 +128,6 @@ class Player():
                 self.currVelocity = max(
                     self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
 
-    def _rayCastingLagButFullUI(self):
-        global obstacles
-        inRangedObj = []
-
-        for obstacle in obstacles:
-            if Utils.distanceBetweenTwoPoints(self.xPos, self.yPos, obstacle.xPos, obstacle.yPos) < PlayerParam.RADIUS_OBJECT*2 + PlayerParam.RADIUS_LIDAR:
-                inRangedObj.append(obstacle)
-        startAngle = self.currAngle - PlayerParam.HALF_FOV
-        if len(inRangedObj) == 0:
-            for ray in range(PlayerParam.CASTED_RAYS):
-                target_x = self.xPos - \
-                    math.sin(startAngle) * PlayerParam.RADIUS_LIDAR
-                target_y = self.yPos + \
-                    math.cos(startAngle) * PlayerParam.RADIUS_LIDAR
-                pygame.draw.line(GLOBAL_SCREEN, CustomColor.WHITE,
-                                 (self.xPos, self.yPos), (target_x, target_y))
-                self.rayCastingLists[ray] = PlayerParam.INFINITY
-                startAngle += PlayerParam.STEP_ANGLE
-        else:
-            for ray in range(PlayerParam.CASTED_RAYS):
-                # get ray target coordinates
-                isDetectObject = False
-
-                for depth in range(PlayerParam.RADIUS_LIDAR + 1):
-                    if (isDetectObject):
-                        break
-                    target_x = self.xPos - \
-                        math.sin(startAngle) * depth
-                    target_y = self.yPos + \
-                        math.cos(startAngle) * depth
-
-                    for obstacle in inRangedObj:
-                        distance = Utils.distanceBetweenTwoPoints(
-                            target_x, target_y, obstacle.xPos, obstacle.yPos)
-                        if distance <= PlayerParam.RADIUS_OBJECT:
-                            self.rayCastingLists[ray] = Utils.distanceBetweenTwoPoints(
-                                target_x, target_y, self.xPos, self.yPos)
-                            isDetectObject = True
-                            if self.displayGUI == GUI.DISPLAY:
-                                pygame.draw.line(
-                                    GLOBAL_SCREEN, CustomColor.CYAN, (self.xPos, self.yPos), (target_x, target_y))
-                            break
-                        if depth == PlayerParam.RADIUS_LIDAR and not isDetectObject:
-                            self.rayCastingLists[ray] = PlayerParam.INFINITY
-                            if self.displayGUI == GUI.DISPLAY:
-                                pygame.draw.line(
-                                    GLOBAL_SCREEN, CustomColor.WHITE, (self.xPos, self.yPos), (target_x, target_y))
-
-                startAngle += PlayerParam.STEP_ANGLE
-
     def _rayCasting(self):
         # print("  ///")
         # startTime = time.time()
@@ -185,17 +137,9 @@ class Player():
         # stop = False
 
         for obstacle in obstacles:
-            # vector = (obstacle.xPos - self.xPos,obstacle.yPos - self.yPos)
-            # standa = (math.sin(self.currAngle),math.cos(self.currAngle))
-            # alpha = math.acos((vector[0]*standa[0] + vector[1]*standa[1])/((math.sqrt(vector[0]**2 + vector[1]**2))*math.sqrt(standa[0]**2 + standa[1]**2)))
-            #   and math.degrees(alpha) < 90
             if Utils.distanceBetweenTwoPoints(self.xPos, self.yPos, obstacle.xPos, obstacle.yPos) < PlayerParam.RADIUS_LIDAR + PlayerParam.RADIUS_OBJECT:
                 inRangedObj.append(obstacle)
-                # print("alpha: ",alpha)
         startAngle = self.currAngle - PlayerParam.HALF_FOV
-        # print(len(inRangedObj), " obg time: ",time.time() - startTime)
-
-        # print("currr angel",math.degrees(self.currAngle))
 
         if len(inRangedObj) == 0:
             for ray in range(PlayerParam.CASTED_RAYS):
@@ -207,7 +151,6 @@ class Player():
                                  (self.xPos, self.yPos), (target_x, target_y))
                 self.rayCastingLists[ray] = PlayerParam.INFINITY
                 startAngle += PlayerParam.STEP_ANGLE
-            # print("none obj: ",time.time() - startTime)
         else:
             for ray in range(PlayerParam.CASTED_RAYS):
                 # get ray target coordinates
@@ -225,7 +168,8 @@ class Player():
                             (obstacle.yPos - self.yPos)/theda) + startAngle
                     height = theda*math.sin(beta)
 
-                    if abs(height) < PlayerParam.RADIUS_OBJECT:
+                    tvh = (self.xPos-obstacle.xPos)*math.sin(startAngle) + (obstacle.yPos-self.yPos)*math.cos(startAngle)
+                    if abs(height) < PlayerParam.RADIUS_OBJECT and tvh > 0:
                         isDetectObject = True
 
                 if not isDetectObject:
@@ -242,14 +186,12 @@ class Player():
 
                 isDetectObject = False
 
-                for depth in range(PlayerParam.RADIUS_LIDAR + 1):
+                for depth in range(0, PlayerParam.RADIUS_LIDAR + 1, 10):
                     target_x = self.xPos - \
                         math.sin(startAngle) * depth
                     target_y = self.yPos + \
                         math.cos(startAngle) * depth
-
-                    # print(int(target_x),int(target_y),":",end="")
-
+                        
                     for obstacle in inRangedObj:
                         distance = Utils.distanceBetweenTwoPoints(
                             target_x, target_y, obstacle.xPos, obstacle.yPos)
@@ -267,13 +209,7 @@ class Player():
                                 GLOBAL_SCREEN, CustomColor.PINK, (self.xPos, self.yPos), (target_x, target_y))
                         if isDetectObject:
                             break
-                # print("\n\n")
                 startAngle += PlayerParam.STEP_ANGLE
-            # print("obj: ",time.time() - startTime)
-        # print("_rayCasting: ",time.time() - startTime)
-        # print(self.rayCastingLists)
-        # if (stop):
-        #     time.sleep(1)
 
     def checkCollision(self):
         global obstacles
