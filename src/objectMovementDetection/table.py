@@ -65,7 +65,7 @@ class RLAlgorithm:
         return tmpData
 
     @staticmethod
-    def hashFromDistanceToState(signalPerAreaData, leftSideDistance, rightSideDistance):  # Tu
+    def hashFromDistanceToState(signalPerAreaData, leftSideDistance, rightSideDistance, angle):
         hashFromRayCasting = ""
         for signal in signalPerAreaData:
             for index, distanceRange in enumerate(RLParam.DISTANCE_OF_RAY_CASTING):
@@ -75,21 +75,32 @@ class RLAlgorithm:
                 elif signal < distanceRange:
                     hashFromRayCasting += str(index)
                     break
+
         hashFromCenterOfLane = ""
-        distanceFromCenterOfLane = abs(
-            leftSideDistance - rightSideDistance) / 2
-        for index, distance in enumerate(RLParam.DISTANCE_FROM_CENTER_OF_LANE):
-            if index == len(RLParam.DISTANCE_FROM_CENTER_OF_LANE) - 1:
-                hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.MIDDLE
-                break
-            elif distanceFromCenterOfLane > distance:
-                if leftSideDistance < rightSideDistance:
-                    hashFromCenterOfLane += str(index +
-                                                 int(RLParam.LEVEL_OF_LANE.MIDDLE) + 1)
-                else:
-                    hashFromCenterOfLane += str(index)
-                break
-        return hashFromRayCasting + hashFromCenterOfLane
+        if leftSideDistance < RLParam.LEVEL_OF_LANE.DISTANCE_MOST_LEFT:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.MOST_LEFT
+        elif leftSideDistance < RLParam.LEVEL_OF_LANE.DISTANCE_LEFT:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.LEFT
+        elif rightSideDistance < RLParam.LEVEL_OF_LANE.DISTANCE_MOST_RIGHT:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.MOST_RIGHT        
+        elif rightSideDistance < RLParam.LEVEL_OF_LANE.DISTANCE_RIGHT:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.RIGHT
+        else:
+            hashFromCenterOfLane += RLParam.LEVEL_OF_LANE.MIDDLE
+        
+            
+        hashFromAngle = ""
+        if angle > RLParam.LEVEL_OF_ANGLE.NORMAL_LEFT_ANGLE and angle < RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT_ANGLE:
+            hashFromAngle += RLParam.LEVEL_OF_ANGLE.FRONT
+        elif angle < RLParam.LEVEL_OF_ANGLE.NORMAL_LEFT_ANGLE and angle > RLParam.LEVEL_OF_ANGLE.OVER_ROTATION_LEFT_ANGLE:
+            hashFromAngle += RLParam.LEVEL_OF_ANGLE.NORMAL_LEFT                        
+        elif angle > RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT_ANGLE and angle < RLParam.LEVEL_OF_ANGLE.OVER_ROTATION_RIGHT_ANGLE:
+            hashFromAngle += RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT
+        elif angle < RLParam.LEVEL_OF_ANGLE.OVER_ROTATION_LEFT_ANGLE:
+            hashFromAngle += RLParam.LEVEL_OF_ANGLE.OVER_ROTATION_LEFT
+        else:
+            hashFromAngle += RLParam.LEVEL_OF_ANGLE.OVER_ROTATION_RIGHT            
+        return hashFromRayCasting + hashFromCenterOfLane + hashFromAngle
 
     @staticmethod
     def getReward(currState, currActionIndex, currPlayer):
