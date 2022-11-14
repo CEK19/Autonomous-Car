@@ -35,23 +35,25 @@ class PlayerParam:
     STOP = "STOP"
     INC_FORWARD_VELO = "INC_FORWARD_VELO"
     DESC_FORWARD_VELO = "DESC_FORWARD_VELO"
+    DO_NOTHING_VELO = "DO_NOTHING_VELO"
 
     INFINITY = 9999
 
 
 class ObstacleParam:
-    NUMBER_OF_OBSTACLES = 10
-    OBSTACLE_ACCELERATION_FORWARD = 0
-    OBSTACLE_ACCELERATION_ROTATE = 0
+    NUMBER_OF_OBSTACLES = 20
+    OBSTACLE_ACCELERATION_FORWARD = 0 # 50
+    OBSTACLE_ACCELERATION_ROTATE = 0 # 0.5
     MAX_VELOCITY = 70
     INITIAL_OBSTACLE_X = GameSettingParam.WIDTH//2
     INITIAL_OBSTACLE_Y = 0
 
-    PROBABILITIES_ACTION = [0.1,
-                            0.1,
-                            0.1,
+    PROBABILITIES_ACTION = [0.08,
+                            0.08,
+                            0.08,
                             0.4,
-                            0.3]
+                            0.28,
+                            0.08]
 
 
 class RLParam:
@@ -73,9 +75,11 @@ class RLParam:
                PlayerParam.DESC_ROTATION_VELO,
                PlayerParam.STOP,
                PlayerParam.INC_FORWARD_VELO,
-               PlayerParam.DESC_FORWARD_VELO]
+               PlayerParam.DESC_FORWARD_VELO,
+               PlayerParam.DO_NOTHING_VELO]
 
     DISTANCE_OF_RAY_CASTING = [
+        # 0,
         int(PlayerParam.RADIUS_LIDAR*1/3),
         int(PlayerParam.RADIUS_LIDAR*2/3),
         PlayerParam.RADIUS_LIDAR,
@@ -85,6 +89,7 @@ class RLParam:
 
     class LEVEL_OF_RAY_CASTING:
         INFINITY = "3"  # NO TOUCH OBSTACLE
+        # FAR_DISTANCE = "3"
         SAFETY_DISTANCE = "2"  # LIDAR TOUCH OBSTACLE, BUT SAFE
         DANGEROUS_DISTANCE = "1"  # LIDAR TOUCH OBSTACLE, BUT IN DANGEROUS MODE
         FAILED_DISTANCE = "0"  # LIDAR TOUCH OBSTACLE, AND OUCH
@@ -129,21 +134,49 @@ class RLParam:
         OVER_ROTATION_RIGHT_ANGLE = math.pi + math.pi/2
         
         LIST_LEVEL_ANGLES = [FRONT, NORMAL_LEFT, NORMAL_RIGHT, OVER_ROTATION_LEFT, OVER_ROTATION_RIGHT]
+    
+    class LEVEL_OF_ROTATION:
+        MAX_LEFT = "0"
+        MAX_LEFT_ANGLE = -20
+        
+        LEFT = "1"
+        LEFT_ANGLE = -10
+        
+        CENTER = "2"
+        CENTER_ANGLE = 0
+        
+        RIGHT = "3"
+        RIGHT_ANGLE = 0
+        
+        MAX_RIGHT = "4"
+        MAX_RIGHT_ANGLE = 10
+        
+        LIST_LEVEL_OF_ROTATION = [MAX_LEFT, LEFT, CENTER, RIGHT, MAX_RIGHT]
+    
     class SCORE:
         # lidar detect obstacle
-        OBSTACLE_TOUCH = -10000000
-        DANGEROUS_ZONE_TOUCH = -1000
+        OBSTACLE_TOUCH = -1_000_000_000
+        FAILED_DISTANCE_TOUCH = -15000
+        DANGEROUS_ZONE_TOUCH = -5000
+        SAFETY_ZONE_TOUCH = -1000
 
         # stay in middle of lane
         STAY_AT_CENTER_OF_LANE = 1000
-        STAY_AT_LEFT_OR_RIGHT_OF_LANE = -500
+        STAY_AT_LEFT_OR_RIGHT_OF_LANE = -100
         STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -10000
-
+        
+        # angle of car
+        STAY_IN_FRONT = 1000
+        STAY_IN_NORMAL_ANGLE = -100
+        
         # Actions
         STOPS_TO_ENJOY = -10000
-        TURN_AROUND = -1000000
-        INCREASE_Y = -100000
+        TURN_AROUND = -2000000
+        INCREASE_Y = -300000
         INCREASE_SPEED_FORWARD = 10000
+        
+        FINISH_LINE = 10000000
+        TOUCH_BOTTOM = -2_000_000_000
 
 
 class CustomColor:

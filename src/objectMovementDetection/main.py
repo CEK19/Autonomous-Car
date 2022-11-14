@@ -29,7 +29,9 @@ class Player():
         # Raycasting
         self.rayCastingLists = [PlayerParam.INFINITY] * PlayerParam.CASTED_RAYS
 
-        self.mode = MODE_PLAY.I_AM_A_ROBOT
+        # self.mode = MODE_PLAY.I_AM_A_ROBOT
+        # self.mode = MODE_PLAY.RL_TRAIN
+        self.mode = MODE_PLAY.MANUAL
         self.displayGUI = GUI.DISPLAY
 
         self.memAction = dict()
@@ -136,7 +138,8 @@ class Player():
                                                                    self.xPos),
                                                                rightSideDistance=abs(
                                                                    self.xPos - GameSettingParam.WIDTH),
-                                                               angle=self.currAngle)
+                                                               angle=self.currAngle,
+                                                               RotationVelocity = self.currRotationVelocity)
 
             # decidedAction = np.argmax(self.deployedQTabled[currentState])
 
@@ -157,6 +160,8 @@ class Player():
                             self.memAction[currentState] = 2
                         elif event.key == pygame.K_x:
                             self.memAction[currentState] = 4
+                        elif event.key == pygame.K_SPACE:
+                            self.memAction[currentState] = 5
 
                         print("you decide state",currentState," is action ",self.memAction[currentState])
                         break
@@ -167,22 +172,25 @@ class Player():
 
             if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_ROTATION_VELO:
                 self.currRotationVelocity -= PlayerParam.ACCELERATION_ROTATE
-
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_ROTATION_VELO:
+                
+            elif RLParam.ACTIONS[decidedAction] == PlayerParam.INC_ROTATION_VELO:
                 self.currRotationVelocity += PlayerParam.ACCELERATION_ROTATE
 
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.STOP:
+            elif RLParam.ACTIONS[decidedAction] == PlayerParam.STOP:
                 self.currVelocity = 0
                 self.currRotationVelocity = 0
 
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.INC_FORWARD_VELO:
+            elif RLParam.ACTIONS[decidedAction] == PlayerParam.INC_FORWARD_VELO:
                 self.currVelocity = min(
                     self.currVelocity + PlayerParam.ACCELERATION_FORWARD, self.maxVelocity)
                 # print("go here")
 
-            if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_FORWARD_VELO:
+            elif RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_FORWARD_VELO:
                 self.currVelocity = max(
                     self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
+            
+            elif RLParam.ACTIONS[decidedAction] == PlayerParam.DO_NOTHING_VELO:
+                pass
 
 
     def _rayCasting(self):
@@ -269,13 +277,18 @@ class Player():
                 startAngle += PlayerParam.STEP_ANGLE
 
     def checkCollision(self):
-        global obstacles
+        global player, obstacles
         for obstacle in obstacles:
             distanceBetweenCenter = Utils.distanceBetweenTwoPoints(
                 self.xPos, self.yPos, obstacle.xPos, obstacle.yPos)
             # https://stackoverflow.com/questions/22135712/pygame-collision-detection-with-two-circles
-            if distanceBetweenCenter <= 2*PlayerParam.RADIUS_OBJECT:
+            if distanceBetweenCenter <= 2*PlayerParam.RADIUS_OBJECT or self.yPos < 0:
                 # print("Ouch!!!")
+                player = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
+                                maxRotationVelocity=PlayerParam.MAX_ROTATION_VELOCITY)
+                obstacles = []
+                for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
+                    obstacles.append(Obstacle())
                 return True
         return False
 
@@ -424,7 +437,8 @@ class Environment:
                 rayCastingData=self.rayCastingData),
             leftSideDistance=abs(self.xPos),
             rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH),
-            angle=self.currPlayer.currAngle)
+            angle=self.currPlayer.currAngle,
+            RotationVelocity=self.currPlayer.currRotationVelocity,)
 
         reward = RLAlgorithm.getReward(
             currState=nextState,
@@ -451,7 +465,8 @@ class Environment:
                                                        self.xPos),
                                                    rightSideDistance=abs(
                                                        self.xPos - GameSettingParam.WIDTH),
-                                                   angle=self.currPlayer.currAngle)
+                                                   angle=self.currPlayer.currAngle,
+                                                   RotationVelocity=self.currPlayer.currRotationVelocity,)
 
     def reset(self):
         del self
@@ -525,7 +540,7 @@ def startGame(mode=MODE_PLAY.MANUAL):
 
 
 
-# startGame(mode=MODE_PLAY.RL_TRAIN)
+startGame(mode=MODE_PLAY.RL_TRAIN)
 # startGame(mode=MODE_PLAY.MANUAL)
 # startGame(mode=MODE_PLAY.RL_DEPLOY)
-startGame(mode=MODE_PLAY.I_AM_A_ROBOT)
+# startGame(mode=MODE_PLAY.I_AM_A_ROBOT)
