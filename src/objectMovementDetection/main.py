@@ -110,7 +110,9 @@ class Player():
                                                                    self.xPos),
                                                                rightSideDistance=abs(
                                                                    self.xPos - GameSettingParam.WIDTH),
-                                                               angle=self.currAngle)
+                                                               angle=self.currAngle,
+                                                               RotationVelocity=self.currRotationVelocity,
+                                                               yVelo=- self.currVelocity * math.cos(self.currAngle),)
 
             decidedAction = np.argmax(self.deployedQTabled[currentState])
 
@@ -139,7 +141,8 @@ class Player():
                                                                rightSideDistance=abs(
                                                                    self.xPos - GameSettingParam.WIDTH),
                                                                angle=self.currAngle,
-                                                               RotationVelocity = self.currRotationVelocity)
+                                                               RotationVelocity=self.currRotationVelocity,
+                                                               yVelo=- self.currVelocity * math.cos(self.currAngle),)
 
             # decidedAction = np.argmax(self.deployedQTabled[currentState])
 
@@ -438,7 +441,8 @@ class Environment:
             leftSideDistance=abs(self.xPos),
             rightSideDistance=abs(self.xPos - GameSettingParam.WIDTH),
             angle=self.currPlayer.currAngle,
-            RotationVelocity=self.currPlayer.currRotationVelocity,)
+            RotationVelocity=self.currPlayer.currRotationVelocity,
+            yVelo=- self.currPlayer.currVelocity * math.cos(self.currPlayer.currAngle),)
 
         reward = RLAlgorithm.getReward(
             currState=nextState,
@@ -453,7 +457,8 @@ class Environment:
                 "yPos": self.yPos,
                 "velocity": self.currPlayer.currVelocity,
                 "angle": self.currPlayer.currAngle
-            })
+            },
+            actionIndex=actionIndex)
 
         done = self._isDoneEpisode()
 
@@ -466,7 +471,8 @@ class Environment:
                                                    rightSideDistance=abs(
                                                        self.xPos - GameSettingParam.WIDTH),
                                                    angle=self.currPlayer.currAngle,
-                                                   RotationVelocity=self.currPlayer.currRotationVelocity,)
+                                                   RotationVelocity=self.currPlayer.currRotationVelocity,
+                                                   yVelo=- self.currPlayer.currVelocity * math.cos(self.currPlayer.currAngle),)
 
     def reset(self):
         del self

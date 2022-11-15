@@ -66,9 +66,10 @@ class RLParam:
 
     GAMMA = 0.5
 
-    AREA_RAY_CASTING_NUMBERS = 6
+    AREA_RAY_CASTING_NUMBERS = 4 # 6
 
-    N_EPISODES = 1000
+    N_EPISODES = 80_000
+    SAVE_PER_EPISODE = 1_000
     MAX_EPISODE_STEPS = 100000
 
     ACTIONS = [PlayerParam.INC_ROTATION_VELO,
@@ -79,7 +80,7 @@ class RLParam:
                PlayerParam.DO_NOTHING_VELO]
 
     DISTANCE_OF_RAY_CASTING = [
-        # 0,
+        0 + 3,
         int(PlayerParam.RADIUS_LIDAR*1/3),
         int(PlayerParam.RADIUS_LIDAR*2/3),
         PlayerParam.RADIUS_LIDAR,
@@ -88,11 +89,14 @@ class RLParam:
     MAX_TIME_MS = 2*60
 
     class LEVEL_OF_RAY_CASTING:
-        INFINITY = "3"  # NO TOUCH OBSTACLE
-        # FAR_DISTANCE = "3"
+        INFINITY = "4"  # NO TOUCH OBSTACLE
+        FAR_DISTANCE = "3"
         SAFETY_DISTANCE = "2"  # LIDAR TOUCH OBSTACLE, BUT SAFE
         DANGEROUS_DISTANCE = "1"  # LIDAR TOUCH OBSTACLE, BUT IN DANGEROUS MODE
         FAILED_DISTANCE = "0"  # LIDAR TOUCH OBSTACLE, AND OUCH
+        
+        LIST_OF_ANGLE = [39, 6, 6, 39]
+
 
     class LEVEL_OF_LANE:
         # | x | 3x | 2x | 3x | x |
@@ -127,31 +131,42 @@ class RLParam:
         NORMAL_RIGHT = "2"
         NORMAL_RIGHT_ANGLE = math.pi + math.pi/4
         
-        OVER_ROTATION_LEFT = "3"
+        OVER_ROTATION = "3"
         OVER_ROTATION_LEFT_ANGLE = math.pi - math.pi/2
-        
-        OVER_ROTATION_RIGHT = "4"
         OVER_ROTATION_RIGHT_ANGLE = math.pi + math.pi/2
         
-        LIST_LEVEL_ANGLES = [FRONT, NORMAL_LEFT, NORMAL_RIGHT, OVER_ROTATION_LEFT, OVER_ROTATION_RIGHT]
+        LIST_LEVEL_ANGLES = [FRONT, NORMAL_LEFT, NORMAL_RIGHT, OVER_ROTATION]
     
     class LEVEL_OF_ROTATION:
         MAX_LEFT = "0"
-        MAX_LEFT_ANGLE = -20
+        MAX_LEFT_ANGLE = -10
         
         LEFT = "1"
-        LEFT_ANGLE = -10
+        LEFT_ANGLE = -0.1
         
         CENTER = "2"
-        CENTER_ANGLE = 0
         
         RIGHT = "3"
-        RIGHT_ANGLE = 0
+        RIGHT_ANGLE = 0.1
         
         MAX_RIGHT = "4"
         MAX_RIGHT_ANGLE = 10
         
         LIST_LEVEL_OF_ROTATION = [MAX_LEFT, LEFT, CENTER, RIGHT, MAX_RIGHT]
+    
+    class LEVEL_OF_Y_VELO:
+        BACKWARD_VEL = 0    # < 0
+        STOP_VEL = 10       # 0 <= x < 10
+        FORWARD_VEL = 30    # 10 <= x < 30
+        FAST_FORWARD_VEL = 60   # 30 <= x <= 60
+        
+        BACKWARD = "0"
+        STOP = "1"
+        FORWARD = "2"
+        FAST_FORWARD = "3"
+        
+        LIST_LEVEL_OF_Y_VELO = [BACKWARD, STOP, FORWARD, FAST_FORWARD]
+        
     
     class SCORE:
         # lidar detect obstacle

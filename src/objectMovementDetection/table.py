@@ -41,34 +41,50 @@ class RLAlgorithm:
             for level in RLParam.LEVEL_OF_LANE.LIST_LEVEL_OF_LANE:    
                 for angle in RLParam.LEVEL_OF_ANGLE.LIST_LEVEL_ANGLES:
                     for omega in RLParam.LEVEL_OF_ROTATION.LIST_LEVEL_OF_ROTATION:
-                        rs[combinedString + level + angle + omega] = [0] * len(RLParam.ACTIONS)
-                        for idx in range(len(RLParam.ACTIONS)):
-                            rs[combinedString + level + angle + omega][idx] = np.random.uniform(-10, 11)
+                        for yVelo in RLParam.LEVEL_OF_Y_VELO.LIST_LEVEL_OF_Y_VELO:
+                            rs[combinedString + level + angle + omega + yVelo] = [0] * len(RLParam.ACTIONS)
+                            for idx in range(len(RLParam.ACTIONS)):
+                                rs[combinedString + level + angle + omega + yVelo][idx] = np.random.uniform(-10, 11)
         return rs
 
+    # @staticmethod
+    # def convertRayCastingDataToSignalPerArea(rayCastingData):
+    #     # print("rayCastingData",rayCastingData)
+    #     div = len(rayCastingData) // RLParam.AREA_RAY_CASTING_NUMBERS
+    #     mod = len(rayCastingData) % RLParam.AREA_RAY_CASTING_NUMBERS
+
+    #     tmpData = [0] * (RLParam.AREA_RAY_CASTING_NUMBERS +
+    #                      (0 if mod == 0 else 1))
+        
+    #     tmpCount = 0
+    #     for i in range(len(tmpData)):
+    #         tmp = []
+    #         for _ in range(div):
+    #             tmp.append(rayCastingData[tmpCount])
+    #             tmpCount += 1
+    #             if (tmpCount == len(rayCastingData)):
+    #                 break
+    #         tmpData[i] = min(tmp)
+    #     # print("tmpData",tmpData)
+    #     return tmpData
+    
     @staticmethod
     def convertRayCastingDataToSignalPerArea(rayCastingData):
-        # print("rayCastingData",rayCastingData)
-        div = len(rayCastingData) // RLParam.AREA_RAY_CASTING_NUMBERS
-        mod = len(rayCastingData) % RLParam.AREA_RAY_CASTING_NUMBERS
-
-        tmpData = [0] * (RLParam.AREA_RAY_CASTING_NUMBERS +
-                         (0 if mod == 0 else 1))
+        tmpData = [0] * 4
         
         tmpCount = 0
         for i in range(len(tmpData)):
             tmp = []
-            for _ in range(div):
+            for _ in range(RLParam.LEVEL_OF_RAY_CASTING.LIST_OF_ANGLE[i]):
                 tmp.append(rayCastingData[tmpCount])
                 tmpCount += 1
-                if (tmpCount == len(rayCastingData)):
+                if tmpCount == len(rayCastingData):
                     break
             tmpData[i] = min(tmp)
-        # print("tmpData",tmpData)
         return tmpData
 
     @staticmethod
-    def hashFromDistanceToState(signalPerAreaData, leftSideDistance, rightSideDistance, angle, RotationVelocity):
+    def hashFromDistanceToState(signalPerAreaData, leftSideDistance, rightSideDistance, angle, RotationVelocity, yVelo):
         hashFromRayCasting = ""
         for signal in signalPerAreaData:
             for index, distanceRange in enumerate(RLParam.DISTANCE_OF_RAY_CASTING):
@@ -99,59 +115,69 @@ class RLAlgorithm:
             hashFromAngle += RLParam.LEVEL_OF_ANGLE.NORMAL_LEFT                        
         elif angle > RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT_ANGLE and angle < RLParam.LEVEL_OF_ANGLE.OVER_ROTATION_RIGHT_ANGLE:
             hashFromAngle += RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT
-        elif angle < RLParam.LEVEL_OF_ANGLE.OVER_ROTATION_LEFT_ANGLE:
-            hashFromAngle += RLParam.LEVEL_OF_ANGLE.OVER_ROTATION_LEFT
         else:
-            hashFromAngle += RLParam.LEVEL_OF_ANGLE.OVER_ROTATION_RIGHT            
+            hashFromAngle += RLParam.LEVEL_OF_ANGLE.OVER_ROTATION            
     
         hashFromOmega = ""
         if RotationVelocity >= RLParam.LEVEL_OF_ROTATION.MAX_RIGHT_ANGLE:
             hashFromOmega = RLParam.LEVEL_OF_ROTATION.MAX_RIGHT
-        elif RotationVelocity > RLParam.LEVEL_OF_ROTATION.RIGHT_ANGLE:
+        elif RotationVelocity >= RLParam.LEVEL_OF_ROTATION.RIGHT_ANGLE:
             hashFromOmega = RLParam.LEVEL_OF_ROTATION.RIGHT
-        elif RotationVelocity == RLParam.LEVEL_OF_ROTATION.CENTER_ANGLE:
-            hashFromOmega = RLParam.LEVEL_OF_ROTATION.CENTER
-        elif RotationVelocity > RLParam.LEVEL_OF_ROTATION.LEFT_ANGLE:
-            hashFromOmega = RLParam.LEVEL_OF_ROTATION.LEFT
-        elif RotationVelocity >= RLParam.LEVEL_OF_ROTATION.MAX_LEFT_ANGLE:
+        elif RotationVelocity <= RLParam.LEVEL_OF_ROTATION.MAX_LEFT_ANGLE:
             hashFromOmega = RLParam.LEVEL_OF_ROTATION.MAX_LEFT
+        elif RotationVelocity <= RLParam.LEVEL_OF_ROTATION.LEFT_ANGLE:
+            hashFromOmega = RLParam.LEVEL_OF_ROTATION.LEFT
+        else:
+            hashFromOmega = RLParam.LEVEL_OF_ROTATION.CENTER
+            
+        hashFromYVelo = ""
+        if yVelo < RLParam.LEVEL_OF_Y_VELO.BACKWARD_VEL:
+            hashFromYVelo = RLParam.LEVEL_OF_Y_VELO.BACKWARD
+        elif yVelo < RLParam.LEVEL_OF_Y_VELO.STOP_VEL:
+            hashFromYVelo = RLParam.LEVEL_OF_Y_VELO.STOP
+        elif yVelo < RLParam.LEVEL_OF_Y_VELO.FORWARD_VEL:
+            hashFromYVelo = RLParam.LEVEL_OF_Y_VELO.FORWARD
+        elif yVelo <= RLParam.LEVEL_OF_Y_VELO.FAST_FORWARD_VEL:
+            hashFromYVelo = RLParam.LEVEL_OF_Y_VELO.FAST_FORWARD
         
-        return hashFromRayCasting + hashFromCenterOfLane + hashFromAngle + hashFromOmega
+        return hashFromRayCasting + hashFromCenterOfLane + hashFromAngle + hashFromOmega + hashFromYVelo
 
     @staticmethod
-    def getReward(currState, previousInfo, currentInfo):
+    def getReward(currState, previousInfo, currentInfo, actionIndex):
         # reward = f_t - f_(t-1) + g(t)
-        def f(past, current):
-            reward = 0
+        # def f(past, current):
+        #     reward = 0
             
-            preVelocity = past["velocity"]
-            prevAngle = past["angle"]
-            preYPos = past["yPos"]
+        #     preVelocity = past["velocity"]
+        #     prevAngle = past["angle"]
+        #     preYPos = past["yPos"]
             
-            currVelocity = current["velocity"]            
-            currAngle = current["angle"]
-            currYPos = current["yPos"]
+        #     currVelocity = current["velocity"]            
+        #     currAngle = current["angle"]
+        #     currYPos = current["yPos"]
             
-            if currYPos < 10:
-                reward += RLParam.SCORE.FINISH_LINE
-            elif currYPos < GameSettingParam.HEIGHT * (1 / 4):
-                reward += 10000
-            elif currYPos < GameSettingParam.HEIGHT * (2 / 4):
-                reward += 1000
-            elif currYPos < GameSettingParam.HEIGHT * (3 / 4):
-                reward += 100
-            else: 
-                reward += 10
-            # reward += (currYPos - preYPos)*RLParam.SCORE.INCREASE_Y
-            # reward += ((-currVelocity*math.cos(currAngle)) - (-preVelocity*math.cos(prevAngle)))*RLParam.SCORE.INCREASE_SPEED_FORWARD
-            return reward
+        #     if currYPos < 10:
+        #         reward += RLParam.SCORE.FINISH_LINE
+        #     elif currYPos < GameSettingParam.HEIGHT * (1 / 4):
+        #         reward += 10000
+        #     elif currYPos < GameSettingParam.HEIGHT * (2 / 4):
+        #         reward += 1000
+        #     elif currYPos < GameSettingParam.HEIGHT * (3 / 4):
+        #         reward += 100
+        #     else: 
+        #         reward += 10
+        #     # reward += (currYPos - preYPos)*RLParam.SCORE.INCREASE_Y
+        #     # reward += ((-currVelocity*math.cos(currAngle)) - (-preVelocity*math.cos(prevAngle)))*RLParam.SCORE.INCREASE_SPEED_FORWARD
+        #     return reward
 
-        def g(state):
+        def g(state, actionIndex):
             finalReward = 0
             stateArr = [char for char in state]
             lidarStates = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
-            centerState = stateArr[-2]
-            angleState = stateArr[-1]
+            yVeloState = stateArr[-1]
+            omagaState = stateArr[-2]
+            angleState = stateArr[-3]
+            centerState = stateArr[-4]
             
             currForwardVelocity = currentInfo['velocity']
             currAngle = currentInfo['angle']
@@ -159,43 +185,68 @@ class RLAlgorithm:
             # Obstacles block car
             for index, lidarState in enumerate(lidarStates):
                 tempReward = 0
-                if lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
-                    tempReward = RLParam.SCORE.FAILED_DISTANCE_TOUCH
-                elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE:
-                    tempReward = RLParam.SCORE.DANGEROUS_ZONE_TOUCH
-                elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.SAFETY_DISTANCE:
-                    tempReward = RLParam.SCORE.SAFETY_ZONE_TOUCH
+                # Center ray
+                if index == 1 or index == 2:
+                    if lidarState == RLParam.LEVEL_OF_RAY_CASTING.INFINITY:
+                        tempReward = 0
+                    elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAR_DISTANCE:
+                        tempReward = -2
+                    elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.SAFETY_DISTANCE:
+                        tempReward = -25
+                    elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE:
+                        tempReward = -80
+                    elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
+                        tempReward = -1000
                 
-                if index == 0 or index == RLParam.AREA_RAY_CASTING_NUMBERS - 1:
-                    finalReward += 0.3 * tempReward
-                elif index == 1 or index == 4:
-                    finalReward += 0.6 * tempReward
+                # other ray
                 else:
-                    finalReward += tempReward
+                    if lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE:
+                        tempReward = -80
+                    elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
+                        tempReward = -1000
+                finalReward += tempReward
             
             # Angle of car
             if angleState == RLParam.LEVEL_OF_ANGLE.FRONT:
-                finalReward += RLParam.SCORE.STAY_IN_FRONT
+                finalReward += 3
             elif angleState == RLParam.LEVEL_OF_ANGLE.NORMAL_LEFT or angleState == RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT:
-                finalReward += RLParam.SCORE.STAY_IN_NORMAL_ANGLE
+                finalReward += -2
+            elif angleState == RLParam.LEVEL_OF_ANGLE.OVER_ROTATION:
+                # if lidarStates[0] != RLParam.LEVEL_OF_RAY_CASTING.INFINITY and lidarStates[0] != RLParam.LEVEL_OF_RAY_CASTING.FAR_DISTANCE and \
+                #    (lidarStates[1] != RLParam.LEVEL_OF_RAY_CASTING.INFINITY or \
+                #    lidarStates[2] != RLParam.LEVEL_OF_RAY_CASTING.INFINITY) and \
+                #    lidarStates[3] != RLParam.LEVEL_OF_RAY_CASTING.INFINITY and lidarStates[3] != RLParam.LEVEL_OF_RAY_CASTING.FAR_DISTANCE:
+                #     finalReward += 0
+                finalReward += -500
                     
             # Car out of lane
             if centerState == RLParam.LEVEL_OF_LANE.MIDDLE:
-                finalReward += RLParam.SCORE.STAY_AT_CENTER_OF_LANE
+                finalReward += 2
             elif centerState == RLParam.LEVEL_OF_LANE.RIGHT or centerState == RLParam.LEVEL_OF_LANE.LEFT:
-                finalReward += RLParam.SCORE.STAY_AT_LEFT_OR_RIGHT_OF_LANE
+                finalReward += -2
             elif centerState == RLParam.LEVEL_OF_LANE.MOST_RIGHT or centerState == RLParam.LEVEL_OF_LANE.MOST_LEFT:
-                finalReward += RLParam.SCORE.STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE                        
+                finalReward += -10
+                
+            # yVelo
+            if yVeloState == RLParam.LEVEL_OF_Y_VELO.FAST_FORWARD:
+                infState = RLParam.LEVEL_OF_RAY_CASTING.INFINITY
+                farState = RLParam.LEVEL_OF_RAY_CASTING.FAR_DISTANCE
+                if (lidarStates[0] == infState or lidarStates[0] == farState) and lidarStates[1] == infState and lidarStates[2] == infState and (lidarStates[3] == infState or lidarStates[3] == farState):
+                    finalReward += 10
+                finalReward += 3
+            elif yVeloState == RLParam.LEVEL_OF_Y_VELO.FORWARD:
+                finalReward += 0
+
             
-            if (currForwardVelocity < 20):
-                finalReward += RLParam.SCORE.STOPS_TO_ENJOY
+            # action
+            if RLParam.ACTIONS[actionIndex] == PlayerParam.STOP:
+                finalReward += -5
             
-            # if (currAngle <= math.pi/2 or currAngle >= math.pi + math.pi/2):
-            #     finalReward += abs(math.pi - currAngle)*RLParam.SCORE.TURN_AROUND
                 
             return finalReward
 
-        totalReward = f(past=previousInfo, current=currentInfo) + g(state=currState)
+        # totalReward = f(past=previousInfo, current=currentInfo) + g(state=currState)
+        totalReward = g(state=currState, actionIndex=actionIndex)
         return totalReward
 
     def _epsilonGreedyPolicy(self, currState, currentEpsilon):
@@ -211,6 +262,7 @@ class RLAlgorithm:
             RLParam.MAX_EPSILON, RLParam.MIN_EPSILON, RLParam.N_EPISODES
         )
         for e in range(RLParam.N_EPISODES):
+            keys = pygame.key.get_pressed()
             state = env.getCurrentState()
             totalReward = 0
             alpha = alphas[e]
@@ -226,27 +278,30 @@ class RLAlgorithm:
                     alpha * (reward + RLParam.GAMMA *
                              np.max(self.Q[nextState]) - self.Q[state][actionIndex])
                 state = nextState
-                # print("state:", state)
+                print("state:", state)
 
                 if done or actionCount == RLParam.MAX_EPISODE_STEPS - 1: 
                     # totalReward -=  (actionCount + 1) * 0.01 # 120s * 1 = 120
                     break
                 # print("step time: ",time.time() - startTime)
-            comment = f"Episode {e + 1}: total reward in {actionCount} -> {totalReward}\n"
+            comment = f"Episode {e + 1}, xPos={env.xPos} - yPos={env.yPos} : total reward in {actionCount} actions -> {totalReward}\n"
             
-            print(f"Episode {e + 1}: total reward in {actionCount} actions -> {totalReward}")
+            print(comment)
 
-            if (e%1000 == 0 and e != 0) or (e == RLParam.N_EPISODES - 1):
-                # file = open("D:/RL/abc.txt", "w")
+            if (e%RLParam.SAVE_PER_EPISODE == 0 and e != 0) or (e == RLParam.N_EPISODES - 1):
+                print("save file")
                 file = open("rl-learning.txt", "w")
                 file.write(json.dumps(self.Q))
                 file.close()
-
-                # file2 = open("D:/RL/abc2.txt", "w")
-                # file2.write(json.dumps(self.Q))
-                # file2.close()
             
             progressFile = open("progress.txt", "a")
             progressFile.write(comment)
+            
+            if (keys[pygame.K_p]):
+                print("save file and exit")
+                file = open("rl-learning.txt", "w")
+                file.write(json.dumps(self.Q))
+                file.close()
+                break
             
             env = env.reset()
