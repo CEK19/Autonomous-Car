@@ -201,7 +201,7 @@ class RLAlgorithm:
                 # other ray
                 else:
                     if lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE:
-                        tempReward = -80
+                        tempReward = -40
                     elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
                         tempReward = -1000
                 finalReward += tempReward
@@ -217,7 +217,7 @@ class RLAlgorithm:
                 #    lidarStates[2] != RLParam.LEVEL_OF_RAY_CASTING.INFINITY) and \
                 #    lidarStates[3] != RLParam.LEVEL_OF_RAY_CASTING.INFINITY and lidarStates[3] != RLParam.LEVEL_OF_RAY_CASTING.FAR_DISTANCE:
                 #     finalReward += 0
-                finalReward += -500
+                finalReward += -700
                     
             # Car out of lane
             if centerState == RLParam.LEVEL_OF_LANE.MIDDLE:
@@ -225,7 +225,7 @@ class RLAlgorithm:
             elif centerState == RLParam.LEVEL_OF_LANE.RIGHT or centerState == RLParam.LEVEL_OF_LANE.LEFT:
                 finalReward += -2
             elif centerState == RLParam.LEVEL_OF_LANE.MOST_RIGHT or centerState == RLParam.LEVEL_OF_LANE.MOST_LEFT:
-                finalReward += -10
+                finalReward += -100
                 
             # yVelo
             if yVeloState == RLParam.LEVEL_OF_Y_VELO.FAST_FORWARD:

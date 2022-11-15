@@ -61,6 +61,16 @@ class Player():
     def _playerInput(self, actionIndex=None):
         if (self.mode == MODE_PLAY.MANUAL):
             keys = pygame.key.get_pressed()
+            
+            currentState = RLAlgorithm.hashFromDistanceToState(signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingLists),
+                                                               leftSideDistance=abs(
+                                                                   self.xPos),
+                                                               rightSideDistance=abs(
+                                                                   self.xPos - GameSettingParam.WIDTH),
+                                                               angle=self.currAngle,
+                                                               RotationVelocity=self.currRotationVelocity,
+                                                               yVelo=- self.currVelocity * math.cos(self.currAngle),)
+            print(currentState)
 
             # Rotate left ()
             if keys[pygame.K_a]:
@@ -546,7 +556,7 @@ def startGame(mode=MODE_PLAY.MANUAL):
 
 
 
-startGame(mode=MODE_PLAY.RL_TRAIN)
+# startGame(mode=MODE_PLAY.RL_TRAIN)
 # startGame(mode=MODE_PLAY.MANUAL)
-# startGame(mode=MODE_PLAY.RL_DEPLOY)
+startGame(mode=MODE_PLAY.RL_DEPLOY)
 # startGame(mode=MODE_PLAY.I_AM_A_ROBOT)
