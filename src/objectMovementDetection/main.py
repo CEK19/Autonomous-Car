@@ -310,6 +310,8 @@ class Environment:
         self.xPos, self.yPos = currentPlayer.xPos, currentPlayer.yPos
 
         self.previousYPos, self.previousXPos, self.previousAngle, self.previousVelocity = self.yPos, self.xPos, self.currPlayer.currAngle, self.currPlayer.currVelocity
+        
+        self.modeGUI = modeGUI        
 
         currentPlayer.mode = MODE_PLAY.RL_TRAIN
         currentPlayer.displayGUI = modeGUI
@@ -403,6 +405,7 @@ class Environment:
                                                    angle=self.currPlayer.currAngle)
 
     def reset(self):
+        currGUIMode = self.modeGUI
         del self
         global player, obstacles
         player = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
@@ -410,7 +413,7 @@ class Environment:
         obstacles = []
         for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
             obstacles.append(Obstacle())
-        return Environment(currentPlayer=player, currentObstacles=obstacles)
+        return Environment(currentPlayer=player, currentObstacles=obstacles, modeGUI=currGUIMode)
 
 ###########################################################################################
 
