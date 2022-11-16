@@ -183,7 +183,9 @@ class Player():
                 distance = PlayerParam.INFINITY
 
                 for obstacle in inRangedObj:
-                    distance = min(distance,Utils.getDistanceFromObstacle(self.xPos, self.yPos, target_x, target_y, obstacle.xPos, obstacle.yPos))
+                    tvh = (self.xPos-obstacle.xPos)*math.sin(startAngle) + (obstacle.yPos-self.yPos)*math.cos(startAngle)
+                    if tvh > 0:
+                        distance = min(distance,Utils.getDistanceFromObstacle(self.xPos, self.yPos, target_x, target_y, obstacle.xPos, obstacle.yPos))
                     
                 self.rayCastingLists[ray] = distance
                 if distance <= PlayerParam.RADIUS_LIDAR:

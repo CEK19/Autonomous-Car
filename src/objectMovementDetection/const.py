@@ -6,7 +6,7 @@ class GameSettingParam:
     WIDTH = 400
     # HEIGHT = 1000
     HEIGHT = 750
-    FPS = 30
+    FPS = 700
     DRAW = True
     
     class EndGameReason:
