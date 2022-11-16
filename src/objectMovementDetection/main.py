@@ -243,7 +243,7 @@ class Obstacle(Player):
 
         self.yPos = ObstacleParam.INITIAL_OBSTACLE_Y + random.randint(0, int(
             0.7*GameSettingParam.HEIGHT))
-
+        
         self.circleRect = pygame.draw.circle(
             GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos), PlayerParam.RADIUS_OBJECT)
         self.currAngle = 0
@@ -453,7 +453,7 @@ def startGame(mode=MODE_PLAY.MANUAL):
 
     elif (mode == MODE_PLAY.RL_TRAIN):
         
-        env = Environment(currentPlayer=player, currentObstacles=obstacles, modeGUI=GUI.DISPLAY)
+        env = Environment(currentPlayer=player, currentObstacles=obstacles, modeGUI=GUI.HIDDEN)
         RL = RLAlgorithm(rayCastingData=env.rayCastingData,
                          actions=RLParam.ACTIONS)
         RL.train(env)
@@ -477,6 +477,6 @@ def startGame(mode=MODE_PLAY.MANUAL):
             pygame.display.flip()
 
 
-startGame(mode=MODE_PLAY.RL_TRAIN)
+# startGame(mode=MODE_PLAY.RL_TRAIN)
 # startGame(mode=MODE_PLAY.MANUAL)
-# startGame(mode=MODE_PLAY.RL_DEPLOY)
+startGame(mode=MODE_PLAY.RL_DEPLOY)
