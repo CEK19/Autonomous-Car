@@ -402,7 +402,7 @@ class Obstacle(Player):
 
 
 class Environment:
-    def __init__(self, currentPlayer, currentObstacles):
+    def __init__(self, currentPlayer, currentObstacles, modeGUI=GUI.HIDDEN):
         self.currPlayer = currentPlayer
         self.currObstacles = currentObstacles
 
@@ -411,12 +411,14 @@ class Environment:
 
         self.previousYPos, self.previousXPos, self.previousAngle, self.previousVelocity = self.yPos, self.xPos, self.currPlayer.currAngle, self.currPlayer.currVelocity
 
+        self.modeGUI = modeGUI
+        
         currentPlayer.mode = MODE_PLAY.RL_TRAIN
-        currentPlayer.displayGUI = GUI.HIDDEN
+        currentPlayer.displayGUI = modeGUI
 
         for obstacle in currentObstacles:
             obstacle.mode = MODE_PLAY.RL_TRAIN
-            obstacle.displayGUI = GUI.HIDDEN
+            obstacle.displayGUI = modeGUI
 
     def _isDoneEpisode(self):
         return \
@@ -431,6 +433,17 @@ class Environment:
         self.xPos, self.yPos = self.currPlayer.xPos, self.currPlayer.yPos
 
     def updateStateByAction(self, actionIndex):
+        # Use when want to visualize when training
+        if (self.currPlayer.displayGUI == GUI.DISPLAY):
+            GLOBAL_CLOCK.tick(GameSettingParam.FPS)
+            GLOBAL_SCREEN.fill(CustomColor.BLACK)
+            GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))            
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                    
         for obstacle in obstacles:
             obstacle.draw()
         self.previousYPos, self.previousXPos, self.previousAngle, self.previousVelocity = self.yPos, self.previousXPos, self.currPlayer.currAngle, self.currPlayer.currVelocity
@@ -463,6 +476,9 @@ class Environment:
             actionIndex=actionIndex)
 
         done = self._isDoneEpisode()
+        # Use when want to visualize when training
+        if (self.currPlayer.displayGUI == GUI.DISPLAY):
+            pygame.display.flip()
 
         return nextState, reward, done
 
@@ -477,6 +493,7 @@ class Environment:
                                                    yVelo=- self.currPlayer.currVelocity * math.cos(self.currPlayer.currAngle),)
 
     def reset(self):
+        currGUIMode = self.modeGUI
         del self
         global player, obstacles
         player = Player(maxVelocity=PlayerParam.MAX_VELOCITY,
@@ -484,7 +501,7 @@ class Environment:
         obstacles = []
         for _ in range(ObstacleParam.NUMBER_OF_OBSTACLES):
             obstacles.append(Obstacle())
-        return Environment(currentPlayer=player, currentObstacles=obstacles)
+        return Environment(currentPlayer=player, currentObstacles=obstacles, modeGUI=currGUIMode)
 
 ###########################################################################################
 
@@ -523,7 +540,7 @@ def startGame(mode=MODE_PLAY.MANUAL):
             pygame.display.flip()
 
     elif (mode == MODE_PLAY.RL_TRAIN):
-        env = Environment(currentPlayer=player, currentObstacles=obstacles)
+        env = Environment(currentPlayer=player, currentObstacles=obstacles, modeGUI=GUI.DISPLAY)
         RL = RLAlgorithm(rayCastingData=env.rayCastingData,
                          actions=RLParam.ACTIONS)
         RL.train(env)
@@ -573,7 +590,7 @@ def startGame(mode=MODE_PLAY.MANUAL):
 
 
 
-# startGame(mode=MODE_PLAY.RL_TRAIN)
+startGame(mode=MODE_PLAY.RL_TRAIN)
 # startGame(mode=MODE_PLAY.MANUAL)
-startGame(mode=MODE_PLAY.RL_DEPLOY)
+# startGame(mode=MODE_PLAY.RL_DEPLOY)
 # startGame(mode=MODE_PLAY.I_AM_A_ROBOT)

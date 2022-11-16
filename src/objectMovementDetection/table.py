@@ -191,6 +191,8 @@ class RLAlgorithm:
                 return "fast-forward"
             elif stateNumber == RLParam.LEVEL_OF_Y_VELO.FORWARD:
                 return "forward"
+            elif stateNumber == RLParam.LEVEL_OF_Y_VELO.STOP:
+                return "stop"
             elif stateNumber == RLParam.LEVEL_OF_Y_VELO.BACKWARD:
                 return "backward"
 
@@ -304,7 +306,7 @@ class RLAlgorithm:
             elif RLParam.ACTIONS[actionIndex] == PlayerParam.ACCELERATION_FORWARD:
                 finalReward += 2
             
-                
+            print(finalReward)
             return finalReward
 
         # totalReward = f(past=previousInfo, current=currentInfo) + g(state=currState)
