@@ -141,6 +141,58 @@ class RLAlgorithm:
             hashFromYVelo = RLParam.LEVEL_OF_Y_VELO.FAST_FORWARD
         
         return hashFromRayCasting + hashFromCenterOfLane + hashFromAngle + hashFromOmega + hashFromYVelo
+    
+    @staticmethod
+    def decodeStateToName(stateNumber, type):
+        if type == "lidar":
+            if stateNumber == RLParam.LEVEL_OF_RAY_CASTING.INFINITY:
+                return "infinity"
+            elif stateNumber == RLParam.LEVEL_OF_RAY_CASTING.FAR_DISTANCE:
+                return "far"
+            elif stateNumber == RLParam.LEVEL_OF_RAY_CASTING.SAFETY_DISTANCE:
+                return "safe"
+            elif stateNumber == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE:
+                return "dangerous"
+            elif stateNumber == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
+                return "failed"
+        elif type == "centerOfLane":
+            if stateNumber == RLParam.LEVEL_OF_LANE.MIDDLE:
+                return "middle"
+            elif stateNumber == RLParam.LEVEL_OF_LANE.LEFT:
+                return "left"
+            elif stateNumber == RLParam.LEVEL_OF_LANE.RIGHT:
+                return "right"
+            elif stateNumber == RLParam.LEVEL_OF_LANE.MOST_LEFT:
+                return "most-left"
+            elif stateNumber == RLParam.LEVEL_OF_LANE.MOST_RIGHT:
+                return "most-right"
+        elif type == "angle":
+            if stateNumber == RLParam.LEVEL_OF_ANGLE.FRONT:
+                return "front"
+            elif stateNumber == RLParam.LEVEL_OF_ANGLE.NORMAL_LEFT:
+                return "normal-left"
+            elif stateNumber == RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT:
+                return "normal-right"
+            elif stateNumber == RLParam.LEVEL_OF_ANGLE.OVER_ROTATION:
+                return "over-rotation"
+        elif type == "omega":
+            if stateNumber == RLParam.LEVEL_OF_ROTATION.CENTER:
+                return "center - no turning"
+            elif stateNumber == RLParam.LEVEL_OF_ROTATION.LEFT:
+                return "rotate-left"
+            elif stateNumber == RLParam.LEVEL_OF_ROTATION.MAX_LEFT:
+                return "rotate-max-left"
+            elif stateNumber == RLParam.LEVEL_OF_ROTATION.RIGHT:
+                return "rotate-right"
+            elif stateNumber == RLParam.LEVEL_OF_ROTATION.MAX_RIGHT:
+                return "rotate-max-right"
+        elif type == "yVelo":
+            if stateNumber == RLParam.LEVEL_OF_Y_VELO.FAST_FORWARD:
+                return "fast-forward"
+            elif stateNumber == RLParam.LEVEL_OF_Y_VELO.FORWARD:
+                return "forward"
+            elif stateNumber == RLParam.LEVEL_OF_Y_VELO.BACKWARD:
+                return "backward"
 
     @staticmethod
     def getReward(currState, previousInfo, currentInfo, actionIndex):
@@ -173,14 +225,22 @@ class RLAlgorithm:
         def g(state, actionIndex):
             finalReward = 0
             stateArr = [char for char in state]
+            print(state)
             lidarStates = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
             yVeloState = stateArr[-1]
             omagaState = stateArr[-2]
             angleState = stateArr[-3]
             centerState = stateArr[-4]
             
-            currForwardVelocity = currentInfo['velocity']
-            currAngle = currentInfo['angle']
+            print(f"===> gain state: lidar [{RLAlgorithm.decodeStateToName(lidarStates[0], 'lidar')}, {RLAlgorithm.decodeStateToName(lidarStates[1], 'lidar')}, {RLAlgorithm.decodeStateToName(lidarStates[2], 'lidar')}, {RLAlgorithm.decodeStateToName(lidarStates[3], 'lidar')}]")
+            print(f"                 centerState: {RLAlgorithm.decodeStateToName(centerState, 'centerOfLane')}")
+            print(f"                 angleState: {RLAlgorithm.decodeStateToName(angleState, 'angle')}")
+            print(f"                 omegaState: {RLAlgorithm.decodeStateToName(omagaState, 'omega')}")
+            print(f"                 yVelo: {RLAlgorithm.decodeStateToName(yVeloState, 'yVelo')}")
+
+            
+            # currForwardVelocity = currentInfo['velocity']
+            # currAngle = currentInfo['angle']
 
             # Obstacles block car
             for index, lidarState in enumerate(lidarStates):
@@ -210,7 +270,7 @@ class RLAlgorithm:
             if angleState == RLParam.LEVEL_OF_ANGLE.FRONT:
                 finalReward += 3
             elif angleState == RLParam.LEVEL_OF_ANGLE.NORMAL_LEFT or angleState == RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT:
-                finalReward += -2
+                finalReward += -5
             elif angleState == RLParam.LEVEL_OF_ANGLE.OVER_ROTATION:
                 # if lidarStates[0] != RLParam.LEVEL_OF_RAY_CASTING.INFINITY and lidarStates[0] != RLParam.LEVEL_OF_RAY_CASTING.FAR_DISTANCE and \
                 #    (lidarStates[1] != RLParam.LEVEL_OF_RAY_CASTING.INFINITY or \
@@ -241,6 +301,8 @@ class RLAlgorithm:
             # action
             if RLParam.ACTIONS[actionIndex] == PlayerParam.STOP:
                 finalReward += -5
+            elif RLParam.ACTIONS[actionIndex] == PlayerParam.ACCELERATION_FORWARD:
+                finalReward += 2
             
                 
             return finalReward

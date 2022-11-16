@@ -41,7 +41,7 @@ class PlayerParam:
 
 
 class ObstacleParam:
-    NUMBER_OF_OBSTACLES = 20
+    NUMBER_OF_OBSTACLES = 2
     OBSTACLE_ACCELERATION_FORWARD = 0 # 50
     OBSTACLE_ACCELERATION_ROTATE = 0 # 0.5
     MAX_VELOCITY = 70
@@ -126,10 +126,10 @@ class RLParam:
         
         
         NORMAL_LEFT = "1"
-        NORMAL_LEFT_ANGLE = math.pi - math.pi/4
+        NORMAL_LEFT_ANGLE = math.pi - math.pi/12
          
         NORMAL_RIGHT = "2"
-        NORMAL_RIGHT_ANGLE = math.pi + math.pi/4
+        NORMAL_RIGHT_ANGLE = math.pi + math.pi/12
         
         OVER_ROTATION = "3"
         OVER_ROTATION_LEFT_ANGLE = math.pi - math.pi/2
@@ -166,6 +166,10 @@ class RLParam:
         FAST_FORWARD = "3"
         
         LIST_LEVEL_OF_Y_VELO = [BACKWARD, STOP, FORWARD, FAST_FORWARD]
+    
+    class DECODE_TO_NAME:
+        LIDAR = "lidar"
+        CENTER = "centerOfLane"
         
     
     class SCORE:

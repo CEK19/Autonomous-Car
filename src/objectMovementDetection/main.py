@@ -29,9 +29,9 @@ class Player():
         # Raycasting
         self.rayCastingLists = [PlayerParam.INFINITY] * PlayerParam.CASTED_RAYS
 
-        # self.mode = MODE_PLAY.I_AM_A_ROBOT
+        self.mode = MODE_PLAY.I_AM_A_ROBOT
         # self.mode = MODE_PLAY.RL_TRAIN
-        self.mode = MODE_PLAY.MANUAL
+        # self.mode = MODE_PLAY.MANUAL
         self.displayGUI = GUI.DISPLAY
 
         self.memAction = dict()
@@ -61,16 +61,6 @@ class Player():
     def _playerInput(self, actionIndex=None):
         if (self.mode == MODE_PLAY.MANUAL):
             keys = pygame.key.get_pressed()
-            
-            currentState = RLAlgorithm.hashFromDistanceToState(signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingLists),
-                                                               leftSideDistance=abs(
-                                                                   self.xPos),
-                                                               rightSideDistance=abs(
-                                                                   self.xPos - GameSettingParam.WIDTH),
-                                                               angle=self.currAngle,
-                                                               RotationVelocity=self.currRotationVelocity,
-                                                               yVelo=- self.currVelocity * math.cos(self.currAngle),)
-            print(currentState)
 
             # Rotate left ()
             if keys[pygame.K_a]:
@@ -143,6 +133,7 @@ class Player():
             if RLParam.ACTIONS[decidedAction] == PlayerParam.DESC_FORWARD_VELO:
                 self.currVelocity = max(
                     self.currVelocity - PlayerParam.ACCELERATION_FORWARD, 0)
+            return decidedAction
 
         elif (self.mode == MODE_PLAY.I_AM_A_ROBOT):
             currentState = RLAlgorithm.hashFromDistanceToState(signalPerAreaData=RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=self.rayCastingLists),
@@ -307,7 +298,7 @@ class Player():
 
     def draw(self, actionIndex):
         global GLOBAL_SCREEN
-        self._playerInput(actionIndex=actionIndex)
+        tempActionIndex = self._playerInput(actionIndex=actionIndex)
         self._rayCasting()
         self.checkCollision()
         self._move()
@@ -321,6 +312,7 @@ class Player():
             pygame.draw.line(GLOBAL_SCREEN, CustomColor.GREEN, (self.xPos, self.yPos),
                              (self.xPos - math.sin(self.currAngle) * 20,
                               self.yPos + math.cos(self.currAngle) * 20), 3)
+            return tempActionIndex
 
     def I_AM_A_ROBOT(self, actionIndex):
         global GLOBAL_SCREEN
@@ -542,17 +534,42 @@ def startGame(mode=MODE_PLAY.MANUAL):
             GLOBAL_CLOCK.tick(GameSettingParam.FPS)
             GLOBAL_SCREEN.fill(CustomColor.BLACK)
             GLOBAL_SCREEN.blit(GLOBAL_SCREEN, (0, 0))
+            
+            # keys = pygame.key.get_pressed()
+            # if (keys[pygame.K_SPACE]):
+            #     pygame.time.wait(15000)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
 
-            player.draw(actionIndex=None)
+            actionIndex = player.draw(actionIndex=None)
+            print(f"==========> actionIndex {actionIndex}")
             for obstacle in obstacles:
                 obstacle.draw()
 
             pygame.display.flip()
+            
+            ray = RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=player.rayCastingLists)
+            currentState = RLAlgorithm.hashFromDistanceToState(signalPerAreaData=ray,
+                                                               leftSideDistance=abs(
+                                                                   player.xPos),
+                                                               rightSideDistance=abs(
+                                                                   player.xPos - GameSettingParam.WIDTH),
+                                                               angle=player.currAngle,
+                                                               RotationVelocity=player.currRotationVelocity,
+                                                               yVelo= -player.currVelocity * math.cos(player.currAngle),)
+            print(f"with lidar: [{ray[0]}, {ray[1]}, {ray[2]}, {ray[3]}], leftSide: {abs(player.xPos)}, angle: {player.currAngle}, RotationVelocity: {player.currRotationVelocity}, yVelo: {-player.currVelocity * math.cos(player.currAngle)}",)
+            # print("==> gain state {}", currentState)
+            
+            reward = RLAlgorithm.getReward(currState=currentState, actionIndex=actionIndex, previousInfo=5, currentInfo=4)
+            
+            print()
+            print(f"move {RLParam.ACTIONS[actionIndex]} then gain {reward} scores")
+            print("\n\n")
+            
+            pygame.time.wait(100)
 
 
 
