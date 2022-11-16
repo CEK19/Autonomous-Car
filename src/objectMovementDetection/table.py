@@ -42,7 +42,7 @@ class RLAlgorithm:
                 for angle in RLParam.LEVEL_OF_ANGLE.LIST_LEVEL_ANGLES:
                     rs[combinedString + level + angle] = [0] * len(RLParam.ACTIONS)
                     for idx in range(len(RLParam.ACTIONS)):
-                        rs[combinedString + level + angle][idx] = np.random.uniform(-10, 11)
+                        rs[combinedString + level + angle][idx] = np.random.uniform(-1, 1)
         return rs
 
     @staticmethod
@@ -106,62 +106,35 @@ class RLAlgorithm:
     def getReward(currState, previousInfo, currentInfo):
         # reward = f_t - f_(t-1) + g(t)
         def f(past, current):
-            reward = 0
-            
-            preVelocity = past["velocity"]
-            prevAngle = past["angle"]
-            preYPos = past["yPos"]
-            
-            currVelocity = current["velocity"]            
-            currAngle = current["angle"]
+            reward = 0            
+            preYPos = past["yPos"]            
             currYPos = current["yPos"]
-            
             if currYPos < 10:
                 reward += RLParam.SCORE.FINISH_LINE
-            elif currYPos < GameSettingParam.HEIGHT * (1 / 4):
-                reward += 10000
-            elif currYPos < GameSettingParam.HEIGHT * (2 / 4):
-                reward += 1000
-            elif currYPos < GameSettingParam.HEIGHT * (3 / 4):
-                reward += 100
-            else: 
-                reward += 10
-            # reward += (currYPos - preYPos)*RLParam.SCORE.INCREASE_Y
-            # reward += ((-currVelocity*math.cos(currAngle)) - (-preVelocity*math.cos(prevAngle)))*RLParam.SCORE.INCREASE_SPEED_FORWARD
+
+            reward += (( preYPos - currYPos)/GameSettingParam.HEIGHT)*10000
+            
             return reward
 
         def g(state):
             finalReward = 0
             stateArr = [char for char in state]
-            lidarStates = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]
+            lidarStates = stateArr[0:RLParam.AREA_RAY_CASTING_NUMBERS]            
             centerState = stateArr[-2]
-            angleState = stateArr[-1]
+            angleState = stateArr[-1]            
             
             currForwardVelocity = currentInfo['velocity']
             currAngle = currentInfo['angle']
 
             # Obstacles block car
-            for index, lidarState in enumerate(lidarStates):
-                tempReward = 0
-                if lidarState == RLParam.LEVEL_OF_RAY_CASTING.FAILED_DISTANCE:
-                    tempReward = RLParam.SCORE.FAILED_DISTANCE_TOUCH
-                elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.DANGEROUS_DISTANCE:
-                    tempReward = RLParam.SCORE.DANGEROUS_ZONE_TOUCH
-                elif lidarState == RLParam.LEVEL_OF_RAY_CASTING.SAFETY_DISTANCE:
-                    tempReward = RLParam.SCORE.SAFETY_ZONE_TOUCH
-                
-                if index == 0 or index == RLParam.AREA_RAY_CASTING_NUMBERS - 1:
-                    finalReward += 0.3 * tempReward
-                elif index == 1 or index == 4:
-                    finalReward += 0.6 * tempReward
-                else:
-                    finalReward += tempReward
+            angleGrid = np.linspace(-PlayerParam.HALF_FOV, PlayerParam.HALF_FOV, RLParam.AREA_RAY_CASTING_NUMBERS)
+            raycastRewardWeights = np.cos(angleGrid) + 0.2
+            raycastRewardWeights = (RLParam.SCORE.RAY_CAST_COST*raycastRewardWeights)/raycastRewardWeights.sum()
+            convertedDistanceIntoArea = RLAlgorithm.convertRayCastingDataToSignalPerArea(rayCastingData=currentInfo["rayCasting"])
             
-            # Angle of car
-            if angleState == RLParam.LEVEL_OF_ANGLE.FRONT:
-                finalReward += RLParam.SCORE.STAY_IN_FRONT
-            elif angleState == RLParam.LEVEL_OF_ANGLE.NORMAL_LEFT or angleState == RLParam.LEVEL_OF_ANGLE.NORMAL_RIGHT:
-                finalReward += RLParam.SCORE.STAY_IN_NORMAL_ANGLE
+            for i in range(len(lidarStates)):
+                if lidarStates[i] != PlayerParam.INFINITY:
+                    finalReward += raycastRewardWeights[i]*(PlayerParam.RADIUS_LIDAR/convertedDistanceIntoArea[i])*RLParam.SCORE.RAY_CAST_COST
                     
             # Car out of lane
             if centerState == RLParam.LEVEL_OF_LANE.MIDDLE:
@@ -169,13 +142,7 @@ class RLAlgorithm:
             elif centerState == RLParam.LEVEL_OF_LANE.RIGHT or centerState == RLParam.LEVEL_OF_LANE.LEFT:
                 finalReward += RLParam.SCORE.STAY_AT_LEFT_OR_RIGHT_OF_LANE
             elif centerState == RLParam.LEVEL_OF_LANE.MOST_RIGHT or centerState == RLParam.LEVEL_OF_LANE.MOST_LEFT:
-                finalReward += RLParam.SCORE.STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE                        
-            
-            if (currForwardVelocity < 20):
-                finalReward += RLParam.SCORE.STOPS_TO_ENJOY
-            
-            # if (currAngle <= math.pi/2 or currAngle >= math.pi + math.pi/2):
-            #     finalReward += abs(math.pi - currAngle)*RLParam.SCORE.TURN_AROUND
+                finalReward += RLParam.SCORE.STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE                                    
                 
             return finalReward
 
@@ -196,11 +163,12 @@ class RLAlgorithm:
         )
         
         #------------------------------------------ THINH BEDE ---------------------------
-        # visualMap = np.zeros((GameSettingParam.HEIGHT,GameSettingParam.WIDTH,3),dtype="uint8")
-        # outputVideo = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 30, (GameSettingParam.WIDTH,GameSettingParam.HEIGHT))        
+        visualMap = np.zeros((GameSettingParam.HEIGHT,GameSettingParam.WIDTH,3),dtype="uint8")
+        outputVideo = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 30, (GameSettingParam.WIDTH,GameSettingParam.HEIGHT))        
         #------------------------------------------ THINH BEDE ---------------------------
         
         for e in range(RLParam.N_EPISODES):
+            
             state = env.getCurrentState()
             totalReward = 0
             alpha = alphas[e]
@@ -208,16 +176,18 @@ class RLAlgorithm:
             startTime = time.time()
             
             #------------------------------------------ THINH BEDE ---------------------------
-            # startPoint = (env.xPos, env.yPos)
-            #------------------------------------------ THINH BEDE ---------------------------
-            
             curEpochMap = np.zeros((GameSettingParam.HEIGHT,GameSettingParam.WIDTH,3),dtype="uint8")
             whyReason = ""
+            for obj in env.currObstacles:
+                curEpochMap = cv2.circle(curEpochMap,(int(obj.xPos),int(obj.yPos)),10,(0,0,255),-1)
+            startPoint = (env.xPos, env.yPos)
+            #------------------------------------------ THINH BEDE ---------------------------        
 
             for actionCount in range(RLParam.MAX_EPISODE_STEPS):                            
                 # print("state: ", state)
                 actionIndex = self._epsilonGreedyPolicy(
                     currState=state, currentEpsilon=epsilon)
+
                 nextState, reward, done, doneReason = env.updateStateByAction(actionIndex)
                 whyReason = doneReason
                 totalReward += reward
@@ -227,20 +197,25 @@ class RLAlgorithm:
                 state = nextState                
 
 #------------------------------------------ THINH BEDE ---------------------------#
-                # curPoint = (int(env.xPos),int(env.yPos))
-                # drawColor = CustomColor.PINK
-                # if (int(actionCount/100)%2 == 0):
-                #     drawColor = CustomColor.GREEN
-                # curEpochMap = cv2.line(curEpochMap,curPoint,startPoint,drawColor,2)
-                # startPoint = curPoint
+                if (actionCount % 20 == 0) :
+                    curPoint = (int(env.xPos),int(env.yPos))
+                    drawColor = CustomColor.PINK
+                    if (int(actionCount/100)%2 == 0):
+                        drawColor = CustomColor.GREEN
+                    
+                    curEpochMap = cv2.line(curEpochMap,curPoint,startPoint,drawColor,2)
+                    startPoint = curPoint                    
 #------------------------------------------ THINH BEDE ---------------------------#       
         
                 if done or actionCount == RLParam.MAX_EPISODE_STEPS - 1:
                     # totalReward -= (actionCount + 1) * 0.01  # 120s * 1 = 120
                     if doneReason == GameSettingParam.EndGameReason.TOUCH_OBSTACLE:
-                        totalReward += RLParam.SCORE.OBSTACLE_TOUCH * env.currPlayer.yPos * 0.2
+                        pass
+                        # totalReward += RLParam.SCORE.OBSTACLE_TOUCH
                     elif doneReason == GameSettingParam.EndGameReason.TOUCH_BOTTOM:
                         totalReward += RLParam.SCORE.TOUCH_BOTTOM
+                    elif doneReason == GameSettingParam.EndGameReason.OVER_ROTAION:
+                        totalReward += RLParam.SCORE.OVER_ROTATION
                     break
             comment = f"Episode {e + 1}, xPos={env.xPos} - yPos={env.yPos} : total reward in {actionCount} actions -> {totalReward}\n"
             print(comment, end="")
@@ -257,15 +232,15 @@ class RLAlgorithm:
                 print("end write to file !!!")
                 
             #------------------------------------------ THINH BEDE ---------------------------#              
-            # cv2.addWeighted(visualMap,0.5,curEpochMap,1,0.0,visualMap)
-            # visualMapWText = visualMap.copy()
-            # visualMapWText = cv2.putText(visualMapWText,str(int(totalReward)),(20,GameSettingParam.HEIGHT - 50),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
-            # visualMapWText = cv2.putText(visualMapWText,str(e),(20,20),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
-            # visualMapWText = cv2.putText(visualMapWText,str(actionCount),(20,40),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
-            # visualMapWText = cv2.putText(visualMapWText,str(whyReason),(20,60),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
-            # cv2.imshow("Last Path",visualMapWText)
-            # outputVideo.write(visualMapWText)                
-            # cv2.waitKey(1)
+            cv2.addWeighted(visualMap,0.5,curEpochMap,1,0.0,visualMap)
+            visualMapWText = visualMap.copy()
+            visualMapWText = cv2.putText(visualMapWText,str(int(totalReward)),(20,GameSettingParam.HEIGHT - 50),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
+            visualMapWText = cv2.putText(visualMapWText,str(e),(20,20),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
+            visualMapWText = cv2.putText(visualMapWText,str(actionCount),(20,40),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
+            visualMapWText = cv2.putText(visualMapWText,str(whyReason),(20,60),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
+            cv2.imshow("Last Path",visualMapWText)
+            outputVideo.write(visualMapWText)                
+            cv2.waitKey(1)
             #------------------------------------------ THINH BEDE ---------------------------#  
             
             env = env.reset()
