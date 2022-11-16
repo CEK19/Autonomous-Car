@@ -196,8 +196,8 @@ class RLAlgorithm:
         )
         
         #------------------------------------------ THINH BEDE ---------------------------
-        visualMap = np.zeros((GameSettingParam.HEIGHT,GameSettingParam.WIDTH,3),dtype="uint8")
-        outputVideo = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 30, (GameSettingParam.WIDTH,GameSettingParam.HEIGHT))        
+        # visualMap = np.zeros((GameSettingParam.HEIGHT,GameSettingParam.WIDTH,3),dtype="uint8")
+        # outputVideo = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 30, (GameSettingParam.WIDTH,GameSettingParam.HEIGHT))        
         #------------------------------------------ THINH BEDE ---------------------------
         
         for e in range(RLParam.N_EPISODES):
@@ -208,13 +208,13 @@ class RLAlgorithm:
             startTime = time.time()
             
             #------------------------------------------ THINH BEDE ---------------------------
-            startPoint = (env.xPos, env.yPos)
+            # startPoint = (env.xPos, env.yPos)
             #------------------------------------------ THINH BEDE ---------------------------
             
             curEpochMap = np.zeros((GameSettingParam.HEIGHT,GameSettingParam.WIDTH,3),dtype="uint8")
             whyReason = ""
 
-            for actionCount in range(RLParam.MAX_EPISODE_STEPS):
+            for actionCount in range(RLParam.MAX_EPISODE_STEPS):                            
                 # print("state: ", state)
                 actionIndex = self._epsilonGreedyPolicy(
                     currState=state, currentEpsilon=epsilon)
@@ -224,15 +224,15 @@ class RLAlgorithm:
                 self.Q[state][actionIndex] = self.Q[state][actionIndex] + \
                     alpha * (reward + RLParam.GAMMA *
                              np.max(self.Q[nextState]) - self.Q[state][actionIndex])
-                state = nextState
+                state = nextState                
 
 #------------------------------------------ THINH BEDE ---------------------------#
-                curPoint = (int(env.xPos),int(env.yPos))
-                drawColor = CustomColor.PINK
-                if (int(actionCount/100)%2 == 0):
-                    drawColor = CustomColor.GREEN
-                curEpochMap = cv2.line(curEpochMap,curPoint,startPoint,drawColor,2)
-                startPoint = curPoint
+                # curPoint = (int(env.xPos),int(env.yPos))
+                # drawColor = CustomColor.PINK
+                # if (int(actionCount/100)%2 == 0):
+                #     drawColor = CustomColor.GREEN
+                # curEpochMap = cv2.line(curEpochMap,curPoint,startPoint,drawColor,2)
+                # startPoint = curPoint
 #------------------------------------------ THINH BEDE ---------------------------#       
         
                 if done or actionCount == RLParam.MAX_EPISODE_STEPS - 1:
@@ -257,15 +257,15 @@ class RLAlgorithm:
                 print("end write to file !!!")
                 
             #------------------------------------------ THINH BEDE ---------------------------#              
-            cv2.addWeighted(visualMap,0.5,curEpochMap,1,0.0,visualMap)
-            visualMapWText = visualMap.copy()
-            visualMapWText = cv2.putText(visualMapWText,str(int(totalReward)),(20,GameSettingParam.HEIGHT - 50),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
-            visualMapWText = cv2.putText(visualMapWText,str(e),(20,20),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
-            visualMapWText = cv2.putText(visualMapWText,str(actionCount),(20,40),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
-            visualMapWText = cv2.putText(visualMapWText,str(whyReason),(20,60),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
-            cv2.imshow("Last Path",visualMapWText)
-            outputVideo.write(visualMapWText)                
-            cv2.waitKey(1)
+            # cv2.addWeighted(visualMap,0.5,curEpochMap,1,0.0,visualMap)
+            # visualMapWText = visualMap.copy()
+            # visualMapWText = cv2.putText(visualMapWText,str(int(totalReward)),(20,GameSettingParam.HEIGHT - 50),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
+            # visualMapWText = cv2.putText(visualMapWText,str(e),(20,20),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
+            # visualMapWText = cv2.putText(visualMapWText,str(actionCount),(20,40),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
+            # visualMapWText = cv2.putText(visualMapWText,str(whyReason),(20,60),cv2.FONT_HERSHEY_SIMPLEX,0.8,(199,141,255),1,cv2.LINE_AA)
+            # cv2.imshow("Last Path",visualMapWText)
+            # outputVideo.write(visualMapWText)                
+            # cv2.waitKey(1)
             #------------------------------------------ THINH BEDE ---------------------------#  
             
             env = env.reset()
