@@ -68,7 +68,7 @@ def algorithm(preprocessImage, centerPoint):
     arrayRightX, arrayRightY = positionXs[rightCondition], positionYs[rightCondition]
 
     if (len(arrayLeftX) <= 10 or len(arrayRightX) <= 0):
-        return -1
+        return -1, None, None, None, None
 
     # y = a x + b
     aL, bL = np.polyfit(arrayLeftX, arrayLeftY, 1)
@@ -95,14 +95,14 @@ def algorithm(preprocessImage, centerPoint):
     if (fromRightX > col):
         xMax = fromRightX
 
-    plt.xlim([xMin, xMax])
-    plt.plot([fromLeftX, targetLeftX], [fromLeftY, targetLeftY], color='red', linewidth=3)
-    plt.plot([fromRightX, targetRightX],  [fromRightY, targetRightY], color='red', linewidth=3)
-    plt.imshow(cdstP)
-    plt.savefig(visualizeResultPath + "final" +str(time.time()) + ".jpg", bbox_inches='tight')
-    plt.clf()
+    # plt.xlim([xMin, xMax])
+    # plt.plot([fromLeftX, targetLeftX], [fromLeftY, targetLeftY], color='red', linewidth=3)
+    # plt.plot([fromRightX, targetRightX],  [fromRightY, targetRightY], color='red', linewidth=3)
+    # plt.imshow(cdstP)
+    # plt.savefig(visualizeResultPath + "final" +str(time.time()) + ".jpg", bbox_inches='tight')
+    # plt.clf()
 
-    return centerPoint[0]/abs(xMax - xMin)
+    return centerPoint[0]/abs(xMax - xMin), aL, bL, aR, bR
 
 
 def preprocessing(frame):
@@ -168,12 +168,17 @@ for singleLabelImage in listLabelImages:
     frame = cv2.imread(fullPath)
     detectedRoad, centerPoint = preprocessing(frame=frame)
     ratio = -1    
+    aL, bL, aR, bR = 0, 0 , 0 , 0
     if (detectedRoad.any() == None):
         pass
     else:
-        ratio = algorithm(detectedRoad, centerPoint=centerPoint)        
+        ratio, aL, bL, aR, bR = algorithm(detectedRoad, centerPoint=centerPoint)        
 
-    file.write(f'{singleLabelImage}: {ratio}\n')
+    if (ratio == -1):
+        file.write(f'{singleLabelImage}: left: invalid, right: invalid\n')    
+    else:
+        file.write(f'{singleLabelImage}: left: y={aL}x+{bL}, right: y={aR}x+{bR}\n')    
+    # file.write(f'{singleLabelImage}: {ratio}\n')
     # cv2.imshow("single label image", frame)
     if cv2.waitKey(25) == 27:
         break
