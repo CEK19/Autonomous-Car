@@ -95,12 +95,12 @@ def algorithm(preprocessImage, centerPoint):
     if (fromRightX > col):
         xMax = fromRightX
 
-    # plt.xlim([xMin, xMax])
-    # plt.plot([fromLeftX, targetLeftX], [fromLeftY, targetLeftY], color='red', linewidth=3)
-    # plt.plot([fromRightX, targetRightX],  [fromRightY, targetRightY], color='red', linewidth=3)
-    # plt.imshow(cdstP)
-    # plt.savefig(visualizeResultPath + "final" +str(time.time()) + ".jpg", bbox_inches='tight')
-    # plt.clf()
+    plt.xlim([xMin, xMax])
+    plt.plot([fromLeftX, targetLeftX], [fromLeftY, targetLeftY], color='red', linewidth=3)
+    plt.plot([fromRightX, targetRightX],  [fromRightY, targetRightY], color='red', linewidth=3)
+    plt.imshow(cdstP)
+    plt.savefig(visualizeResultPath + "final" +str(time.time()) + ".jpg", bbox_inches='tight')
+    plt.clf()
 
     return centerPoint[0]/abs(xMax - xMin)
 
