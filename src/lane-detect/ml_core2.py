@@ -10,6 +10,8 @@ orgImgPath = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/src/lane-detect/fu
 labelImgPath = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/src/lane-detect/fullOutput/label/"
 preprocessingPath = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/src/lane-detect/fullOutput/preprocessing/"
 visualizeResultPath = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/src/lane-detect/fullOutput/finalResult/"
+statisticLeftRoad = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/src/lane-detect/fullOutput/statisticLeftRoad/"
+statisticRightRoad = "/Users/mac/Desktop/EXTERNAL/NCKH/Autonomous-Car/src/lane-detect/fullOutput/statisticRightRoad/"
 
 
 def getIntersectionOfLines(coef1s, coef2s):
@@ -32,6 +34,13 @@ def load_images_from_folder(pathFolder):
 def findingAngleInRadian(startPoint, endPoint):  # (x,y), (x,y)
     return math.atan((endPoint[0] - startPoint[0])/(endPoint[1] - startPoint[1]))
 
+# https://stackoverflow.com/questions/11686720/is-there-a-numpy-builtin-to-reject-outliers-from-a-list
+# https://codereview.stackexchange.com/questions/230928/remove-outliers-from-n-dimensional-data
+def removingOutliners(data1D, m = 5.0):
+    d = np.abs(data1D - np.median(data1D))
+    mdev = np.median(d)
+    s = d/mdev if mdev else 0.
+    return np.where(s < m)
 
 def algorithm(preprocessImage, centerPoint):
     col = preprocessImage.shape[1]
@@ -61,14 +70,30 @@ def algorithm(preprocessImage, centerPoint):
     positionYs, positionXs = np.where(cdstP == 255)
 
     # find best fit line left points in images
-    leftCondition = np.where(positionXs < col//2)
+    leftCondition = np.where(positionXs < col//2)    
     rightCondition = np.where(positionXs >= col//2)
+        
     arrayLeftX, arrayLeftY = positionXs[leftCondition], positionYs[leftCondition]
+    
     # find best fit line right points in images
     arrayRightX, arrayRightY = positionXs[rightCondition], positionYs[rightCondition]
+    
+    # plt.scatter(arrayLeftX, arrayLeftY, c="blue")
+    # plt.savefig(statisticLeftRoad + "statLeft" +str(time.time()) + ".jpg", bbox_inches='tight')
+    # plt.clf()
+    
+    # plt.scatter(arrayRightX, arrayRightY, c="red")
+    # plt.savefig(statisticRightRoad + "statRight" +str(time.time()) + ".jpg", bbox_inches='tight')
+    # plt.clf()    
 
     if (len(arrayLeftX) <= 10 or len(arrayRightX) <= 0):
         return -1, None, None, None, None
+    
+    rmOutLinerConditionLeft  = removingOutliners(arrayLeftX) 
+    arrayLeftX, arrayLeftY = arrayLeftX[rmOutLinerConditionLeft], arrayLeftY[rmOutLinerConditionLeft]    
+    
+    rmOutLinerConditionRight = removingOutliners(arrayRightX) 
+    arrayRightX, arrayRightY = arrayRightX[rmOutLinerConditionRight], arrayRightY[rmOutLinerConditionRight]    
 
     # y = a x + b
     aL, bL = np.polyfit(arrayLeftX, arrayLeftY, 1)
@@ -140,7 +165,7 @@ def preprocessing(frame):
     if maxBoundAreaRect == -1:
         # cv2.imwrite(preprocessingPath + "err-" + str(time.time()) +
         #             ".jpg", cv2.vconcat([frameCopy, cannyEdgeDetection]))
-        return noMeaningValue, None
+        return noMeaningValue, None, None, None
     else:
         x, y, w, h = int(maxBoundRect[0]), int(maxBoundRect[1]), int(
             maxBoundRect[2]), int(maxBoundRect[3])
@@ -151,12 +176,12 @@ def preprocessing(frame):
             # cv2.rectangle(frameCopy, (x, y), (x + w, y + h), 0, 2)
             # cv2.imwrite(preprocessingPath + "err-" + str(time.time()
             #                                              ) + ".jpg", cv2.vconcat([frameCopy, cannyEdgeDetection]))
-            return noMeaningValue, None
+            return noMeaningValue, None, None, None
 
         # cv2.rectangle(frameCopy, (x, y), (x + w, y + h), 255, 2)
         # cv2.imwrite(preprocessingPath + str(time.time()) +
         #             ".jpg", cv2.vconcat([frameCopy, cannyEdgeDetection]))
-        return frameCopy[y: y + h, x: x + w], centerPoint
+        return frameCopy[y: y + h, x: x + w], centerPoint, x, y
 
 
 # listOrgImages = load_images_from_folder(pathFolder=orgImgPath)
@@ -166,7 +191,7 @@ file = open("nhan-backend.txt", 'a')
 for singleLabelImage in listLabelImages:
     fullPath = labelImgPath + singleLabelImage
     frame = cv2.imread(fullPath)
-    detectedRoad, centerPoint = preprocessing(frame=frame)
+    detectedRoad, centerPoint, x, y = preprocessing(frame=frame)
     ratio = -1    
     aL, bL, aR, bR = 0, 0 , 0 , 0
     if (detectedRoad.any() == None):
@@ -175,9 +200,9 @@ for singleLabelImage in listLabelImages:
         ratio, aL, bL, aR, bR = algorithm(detectedRoad, centerPoint=centerPoint)        
 
     if (ratio == -1):
-        file.write(f'{singleLabelImage}: left: invalid, right: invalid\n')    
+        file.write(f'{singleLabelImage}: left: invalid, right: invalid, x: invalud, y: invalid\n')    
     else:
-        file.write(f'{singleLabelImage}: left: y={aL}x+{bL}, right: y={aR}x+{bR}\n')    
+        file.write(f'{singleLabelImage}: left: y={aL}x+{bL}, right: y={aR}x+{bR}, x:{x}, y:{y}\n')    
     # file.write(f'{singleLabelImage}: {ratio}\n')
     # cv2.imshow("single label image", frame)
     if cv2.waitKey(25) == 27:
