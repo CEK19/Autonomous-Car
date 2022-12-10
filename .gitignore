@@ -5,3 +5,5 @@ rl-learning.txt
 rl-learning-backup.txt
 
 progress-backup.txt
+
+__pycache__
