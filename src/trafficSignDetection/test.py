@@ -6,6 +6,7 @@ from numpy.lib.type_check import imag
 from keras import models
 import time
 from const import *
+from utils import *
 from os import listdir
 from os.path import isfile, join
 
@@ -17,9 +18,14 @@ def distanceBetweenTwoPoint(PointA, PointB):
 
 
 def returnRedness(img):
-	yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
-	y, u, v = cv2.split(yuv)
-	return v
+	# yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+	# y, u, v = cv2.split(yuv)
+	# cv2.imshow("y", y)
+	# return v
+	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+	blur = cv2.GaussianBlur(gray, (5, 5), 0)
+	cv2.imshow("blur", blur)
+	return blur
 
 # T=145 - long range
 # T=150 - short range
@@ -339,6 +345,7 @@ def callbackFunctionVid(imgMatrix):
 			cv2.putText(img, text, org=(10,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
 			cv2.putText(img, timeText, org=(10,50), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
 			cv2.imshow('final', img)
+			return sign
 			# x, y, w, h = cv2.boundingRect(big)
 			# print("width= ", w, " - height= ", h)
 			# print(cv2.isContourConvex(big))
@@ -443,6 +450,30 @@ if MODE == Mode.CAMERA:
 		# if frame == None:
 		#	continue
 		callbackFunctionVid(frame)
+
+	cam.release()
+	cv2.destroyAllWindows()
+	pass
+
+
+if MODE == Mode.STORE_DATA:
+	cam = cv2.VideoCapture(1)
+	model = models.load_model(modelPath + "/" + "model-110.h5")
+	isStoreMode = True
+
+	while True:
+		ret, frame = cam.read()
+		if cv2.waitKey(1) & 0xFF == ord('q'):
+			break
+		elif cv2.waitKey(1) & 0xFF == ord('s'):
+			isStoreMode = not isStoreMode
+		sign = callbackFunctionVid(frame)
+
+		if isStoreMode and type(sign) != type(None):
+			path = "./TU_dataset/turnRight/"
+			index = Utils.getNumOfDataset(path)
+			img = preprocessingImageToClassifier(sign, imageSize=32)
+			cv2.imwrite(path + str(index + 1) + ".png", img)
 
 	cam.release()
 	cv2.destroyAllWindows()
