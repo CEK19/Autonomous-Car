@@ -58,8 +58,11 @@ def findBiggestContour(contours):
 
 def boundary_Green_Box(img, contours):
 	x, y, w, h = cv2.boundingRect(contours)
-	img = cv2.rectangle(img, (x-5, y-5), (x+w+4, y+h+4), (0, 255, 0), 10)
-	sign = img[(y-5):(y+h+4), (x-5):(x+w+4)]
+	extra = Sign.EXTRA_SAFETY
+	# img = cv2.rectangle(img, (x-5, y-5), (x+w+4, y+h+4), (0, 255, 0), 10)
+	# sign = img[(y-5):(y+h+4), (x-5):(x+w+4)]
+	img = cv2.rectangle(img, (x-extra, y-extra), (x+w+extra, y+h+extra), (0, 255, 0), 5)
+	sign = img[(y-extra):(y+h+extra), (x-extra):(x+w+extra)]
 	return img, sign
 
 
@@ -159,7 +162,7 @@ def callbackFunction(fileName, expectedResult=None, index=None):
 				continue
 			elif farest_w/w >= 1.1 or w/farest_w >= 1.1:
 				continue
-			elif area > 100 and area < 30000:  # 15000
+			elif area > Sign.MIN_AREA and area < Sign.MAX_AREA:  # 15000
 				area = cv2.contourArea(contour)
 				print("from red")
 				print(w/h)
@@ -196,7 +199,7 @@ def callbackFunction(fileName, expectedResult=None, index=None):
 				continue
 			elif farest_w/w >= 1.1 or w/farest_w >= 1.1:
 				continue
-			elif area > 100 and area < 30000:  # 15000
+			elif area > Sign.MIN_AREA and area < Sign.MAX_AREA:  # 15000
 				print("from blue")
 				final_sign.append(contour)
 			else:
@@ -282,7 +285,7 @@ def callbackFunctionVid(imgMatrix):
 				continue
 			elif farest_w/w >= 1.1 or w/farest_w >= 1.1:
 				continue
-			elif area > 100 and area < 30000:  # 15000
+			elif area > Sign.MIN_AREA and area < Sign.MAX_AREA:  # 15000
 				final_sign.append(contour)
 			else:
 				continue
@@ -310,7 +313,7 @@ def callbackFunctionVid(imgMatrix):
 				continue
 			elif farest_w/w >= 1.1 or w/farest_w >= 1.1:
 				continue
-			elif area > 100 and area < 30000:  # 15000
+			elif area > Sign.MIN_AREA and area < Sign.MAX_AREA:  # 15000
 				final_sign.append(contour)
 			else:
 				continue
@@ -430,7 +433,7 @@ if MODE == Mode.PIC:
 
 # camera mode
 if MODE == Mode.CAMERA:
-	cam = cv2.VideoCapture(0)
+	cam = cv2.VideoCapture(1)
 	model = models.load_model(modelPath + "/" + "model-110.h5")
 
 	while True:
