@@ -4,6 +4,9 @@ import os
 import math
 import time
 import matplotlib.pyplot as plt
+import re
+import sys
+
 
 class lineEdge:
     def __init__(self, pointList):
@@ -11,18 +14,37 @@ class lineEdge:
         self.a = (pointList[3]-pointList[2])/(pointList[1]-pointList[0])
         self.b = (pointList[2]-self.a*pointList[0])
         
-dataSet = "st2"
+dataSet = "fullOutput"
 
-imgPath = "D:/container/AI_DCLV/readData/output/"+dataSet+"/img/"
+imgPath = "D:/container/AI_DCLV/readData/output/"+dataSet+"/image/"
 listImg = os.listdir(imgPath)
 
 counter = 0
 avgTime = 0
+f = open("output_demo.txt", "w")
+nhanf = open("nhan-backend (1).txt", "r")
+lines = nhanf.readlines()
+nhanData = []
 
-for name in listImg:
+for line in lines:
+    lt = re.findall('-?\d+\.?\d*',line)
+    tmp = []
+    for i in lt[2:]:
+        if i[0] == '-':
+            tmp.append(float(i[1:])*-1)
+        else:
+            tmp.append(float(i))
+
+    nhanData.append(tmp)
+
+
+for index in range(len(listImg)):
+    name = listImg[index]
     frame = cv2.imread(imgPath+name)
-    print(name)
+    frame = cv2.resize(frame,(512,512))
+    # print(name)
     label = cv2.imread("D:/container/AI_DCLV/readData/output/"+dataSet+"/label/"+name)
+    label = cv2.resize(label,(512,512))
 
     timeStart = time.time()
     label = cv2.cvtColor(label,cv2.COLOR_RGB2GRAY)
@@ -32,6 +54,8 @@ for name in listImg:
 
     leftLaneData = []
     rightLaneData = []
+
+    ratio = 0
         
     if lines is not None:
         for i in range(0, len(lines)):
@@ -46,14 +70,14 @@ for name in listImg:
             # t = (512-rho*b)/a
             
             if lines[i][0][1] < 1:
-                cv2.line(frame, pt1, pt2, (50,0,255), 1, cv2.LINE_AA)
+                # cv2.line(frame, pt1, pt2, (50,0,255), 1, cv2.LINE_AA)
                 # leftLaneData.append([x0 + t*(-b),lines[i][0][1]])
                 leftLaneData.append(lines[i][0])
             elif lines[i][0][1] < 2:
-                cv2.line(frame, pt1, pt2, (0,100,0), 1, cv2.LINE_AA)
+                # cv2.line(frame, pt1, pt2, (0,100,0), 1, cv2.LINE_AA)
                 continue
             else:
-                cv2.line(frame, pt1, pt2, (255,0,50), 1, cv2.LINE_AA)
+                # cv2.line(frame, pt1, pt2, (255,0,50), 1, cv2.LINE_AA)
                 # rightLaneData.append([x0 + t*(-b),lines[i][0][1]])
                 rightLaneData.append(lines[i][0])
 
@@ -61,44 +85,76 @@ for name in listImg:
     processTime = time.time() - timeStart
     avgTime = avgTime*0.9 + processTime*0.1*1000
     
-    blankImage = np.zeros((512,512,3),dtype="uint8")
-    frame = cv2.hconcat([blankImage,frame,blankImage])
+    blankImage = np.zeros((512,256,3),dtype="uint8")
+    label = cv2.cvtColor(label,cv2.COLOR_GRAY2RGB)
+    frame = cv2.hconcat([blankImage,frame,label])
 
     if len(leftLaneData) != 0 and len(rightLaneData) != 0:
 
         leftLaneData = np.array(leftLaneData)
-        leftLaneData = [np.mean(leftLaneData[:,0]),np.mean(leftLaneData[:,1])]
+        leftLaneData = [np.mean(leftLaneData[:,0]),np.mean(leftLaneData[:,1]),np.std(leftLaneData[:,0]),np.std(leftLaneData[:,1])]
 
         rightLaneData = np.array(rightLaneData)
-        rightLaneData = [np.mean(rightLaneData[:,0]),np.mean(rightLaneData[:,1])]
+        rightLaneData = [np.mean(rightLaneData[:,0]),np.mean(rightLaneData[:,1]),np.std(rightLaneData[:,0]),np.std(rightLaneData[:,1])]
         # print(leftLaneData)
 
-
-
-        for eachLane in [leftLaneData,rightLaneData]:
-            # print([leftLaneData,rightLaneData]," --- ",eachLane)
-            rho = eachLane[0]
-            theta = eachLane[1]
-            a = math.cos(theta)
-            b = math.sin(theta)
-            x0 = a * rho
-            y0 = b * rho
-            pt1 = (int(x0 + 1000*(-b)+512), int(y0 + 1000*(a)))
-            pt2 = (int(x0 - 1000*(-b)+512), int(y0 - 1000*(a)))
-            
-            if theta < 1:
-                cv2.line(frame, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
-            elif theta < 2:
-                cv2.line(frame, pt1, pt2, (0,255,0), 3, cv2.LINE_AA)
-            else:
-                cv2.line(frame, pt1, pt2, (255,0,0), 3, cv2.LINE_AA)
+        if max(leftLaneData[2],rightLaneData[2]) < 20 and max((leftLaneData[3],rightLaneData[3])) <  0.05:
+            for eachLane in [leftLaneData,rightLaneData]:
+                # print([leftLaneData,rightLaneData]," --- ",eachLane)
+                header = "right Lane: "
+                y1 = 60
+                if eachLane == leftLaneData:
+                    header = "left Lane: "
+                    y1 = 90
+                frame = cv2.putText(frame, header+str(eachLane[2])[:6] + " / "+ str(eachLane[3])[:6], (5,y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,255), 2, cv2.LINE_AA)
+                rho = eachLane[0]
+                theta = eachLane[1]
+                a = math.cos(theta)
+                b = math.sin(theta)
+                x0 = a * rho
+                y0 = b * rho
+                pt1 = (int(x0 + 1000*(-b)+256), int(y0 + 1000*(a)))
+                pt2 = (int(x0 - 1000*(-b)+256), int(y0 - 1000*(a)))
+                x = (512 - y0)/a
+                x = x0 -b*x
+                if ratio == 0:
+                    ratio = x
+                else:
+                    ratio = (256-ratio)/(x-ratio)
+                    # print(ratio)
+                if theta < 1:
+                    cv2.line(frame, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
+                elif theta < 2:
+                    cv2.line(frame, pt1, pt2, (0,255,0), 3, cv2.LINE_AA)
+                else:
+                    cv2.line(frame, pt1, pt2, (255,0,0), 3, cv2.LINE_AA)
 
     frame = cv2.putText(frame, "t: "+str(avgTime)[:6]+" ms", (5,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 2, cv2.LINE_AA)
+    frame = cv2.putText(frame, "ratio: "+str(ratio)[:6]+" ", (5,120), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 2, cv2.LINE_AA)
 
-    cv2.imshow("frame",frame)
-    cv2.imshow("label",label)
+    if len(nhanData[index]) == 0:
+        frame = cv2.putText(frame, "No signal", (5,150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,100,200), 2, cv2.LINE_AA)
+    else:
+        pt1 = (int(-nhanData[index][1]/nhanData[index][0])*4 + 256 + int(nhanData[index][4]*4),int(nhanData[index][5]*4))
+        pt2 = (int((128-nhanData[index][1])/nhanData[index][0])*4 + 256 + int(nhanData[index][4]*4),512 + int(nhanData[index][5]*4))
+        cv2.line(frame, pt1, pt2, (50,150,20), 2, cv2.LINE_AA)
 
-    if cv2.waitKey(25) == 27:
+        pt1 = (int(-nhanData[index][3]/nhanData[index][2])*4 + 256 + int(nhanData[index][4]*4),int(nhanData[index][5]*4))
+        pt2 = (int((128-nhanData[index][3])/nhanData[index][2])*4 + 256 + int(nhanData[index][4]*4),512 + int(nhanData[index][5]*4))
+        cv2.line(frame, pt1, pt2, (150,150,20), 2, cv2.LINE_AA)
+        frame = cv2.putText(frame, "signal: " + str(nhanData[index][4]*4) + " " + str(nhanData[index][5]*4), (5,150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,100,200), 2, cv2.LINE_AA)
+
+
+    # cv2.imshow("frame",frame)
+
+    cv2.imwrite("outputDemo/"+name,frame)
+    print(name)
+    if ratio <= 0:
+        ratio = -1
+    f.writelines(name+" : "+str(ratio) + " \n")
+
+    if cv2.waitKey(1) == 27:
         break
     # cv2.waitKey(0)
     # break
+f.close()
