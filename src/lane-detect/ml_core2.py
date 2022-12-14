@@ -86,7 +86,7 @@ def algorithm(preprocessImage, centerPoint):
     # plt.savefig(statisticRightRoad + "statRight" +str(time.time()) + ".jpg", bbox_inches='tight')
     # plt.clf()    
 
-    if (len(arrayLeftX) <= 10 or len(arrayRightX) <= 0):
+    if (len(arrayLeftX) <= 10 or len(arrayRightX) <=10):
         return -1, None, None, None, None
     
     rmOutLinerConditionLeft  = removingOutliners(arrayLeftX) 

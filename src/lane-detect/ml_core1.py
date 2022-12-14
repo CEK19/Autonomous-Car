@@ -97,6 +97,7 @@ for index in range(len(listImg)):
         rightLaneData = np.array(rightLaneData)
         rightLaneData = [np.mean(rightLaneData[:,0]),np.mean(rightLaneData[:,1]),np.std(rightLaneData[:,0]),np.std(rightLaneData[:,1])]
         # print(leftLaneData)
+        # DONE HEREEEEEE
 
         if max(leftLaneData[2],rightLaneData[2]) < 20 and max((leftLaneData[3],rightLaneData[3])) <  0.05:
             for eachLane in [leftLaneData,rightLaneData]:
@@ -122,10 +123,14 @@ for index in range(len(listImg)):
                 else:
                     ratio = (256-ratio)/(x-ratio)
                     # print(ratio)
+                    
+                # ĐƯỜNG TRÁI
                 if theta < 1:
                     cv2.line(frame, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
+                # ĐƯỜNG NGANG
                 elif theta < 2:
                     cv2.line(frame, pt1, pt2, (0,255,0), 3, cv2.LINE_AA)
+                # ĐƯỜNG PHẢI
                 else:
                     cv2.line(frame, pt1, pt2, (255,0,0), 3, cv2.LINE_AA)
 
