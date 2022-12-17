@@ -77,14 +77,25 @@ def preprocessingImageToClassifier(image=None, imageSize=32):
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	# RESIZE
 	image = cv2.resize(image, (imageSize, imageSize))
-	cv2.imshow("resize", image)
 	# LOCAL HISTOGRAM EQUALIZATION
 	clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
 	image = clahe.apply(image)
 	image = image.astype(np.float32)/255.0
+	cv2.imshow("classifyImg", image)
 	image = image.reshape(1, imageSize, imageSize, 1)
 	return image
 
+def preprocessingImageToStore(image=None, imageSize=32):
+	# GRAYSCALE
+	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	# RESIZE
+	image = cv2.resize(image, (imageSize, imageSize))
+	# LOCAL HISTOGRAM EQUALIZATION
+	clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
+	image = clahe.apply(image)
+	# image = image.astype(np.float32)/255.0
+	cv2.imshow("store img", image)
+	return image
 
 def predict(sign):
 	img = preprocessingImageToClassifier(sign, imageSize=32)
@@ -158,7 +169,7 @@ def callbackFunction(fileName, expectedResult=None, index=None):
 			bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
 			farest_h = distanceBetweenTwoPoint(topmost, bottommost)
 			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
-			if (w <= 20 or h <= 20):
+			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
 			elif w/h >= 1.2 or h/w >= 1.2:
 				continue
@@ -193,7 +204,7 @@ def callbackFunction(fileName, expectedResult=None, index=None):
 			bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
 			farest_h = distanceBetweenTwoPoint(topmost, bottommost)
 			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
-			if (w <= 20 or h <= 20):
+			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
 			# elif isConvext:
 			# 	continue
@@ -281,7 +292,7 @@ def callbackFunctionVid(imgMatrix):
 			bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
 			farest_h = distanceBetweenTwoPoint(topmost, bottommost)
 			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
-			if (w <= 20 or h <= 20):
+			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
 			elif w/h >= 1.2 or h/w >= 1.2:
 				continue
@@ -309,7 +320,7 @@ def callbackFunctionVid(imgMatrix):
 			bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
 			farest_h = distanceBetweenTwoPoint(topmost, bottommost)
 			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
-			if (w <= 20 or h <= 20):
+			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
 			elif w/h >= 1.2 or h/w >= 1.2:
 				continue
@@ -360,8 +371,8 @@ def callbackFunctionVid(imgMatrix):
 			cv2.putText(img, "nothing !!", org=(0,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=1, color=(0, 255, 0))
 			cv2.imshow('final', imgMatrix)
 
-	except:
-		print("err")
+	except Exception as e:
+		print(str(e))
 
 
 ###########################
@@ -369,7 +380,7 @@ def callbackFunctionVid(imgMatrix):
 ###########################
 
 ENABLE_WRITE_FILE = True
-MODE = Mode.CAMERA
+MODE = Mode.STORE_DATA
 # modelPath = "C:\\Users\\Admin\Documents\\coding\\masterAI\\traffic sign detection\\models"
 modelPath = "./models"
 videoPath = "/Users/lap15864-local/Desktop/tempVid.mov"
@@ -457,7 +468,7 @@ if MODE == Mode.CAMERA:
 
 
 if MODE == Mode.STORE_DATA:
-	cam = cv2.VideoCapture(1)
+	cam = cv2.VideoCapture(0)
 	model = models.load_model(modelPath + "/" + "model-110.h5")
 	isStoreMode = True
 
@@ -472,8 +483,7 @@ if MODE == Mode.STORE_DATA:
 		if isStoreMode and type(sign) != type(None):
 			path = "./TU_dataset/turnRight/"
 			index = Utils.getNumOfDataset(path)
-			img = preprocessingImageToClassifier(sign, imageSize=32)
-			cv2.imwrite(path + str(index + 1) + ".png", img)
+			cv2.imwrite(path + str(index + 1) + ".png", sign)
 
 	cam.release()
 	cv2.destroyAllWindows()

@@ -56,7 +56,7 @@ class TrafficLight:
 			x, y, w, h = cv2.boundingRect(contour)
 			if area < STANDARD_PROPERTY.minArea or area > STANDARD_PROPERTY.maxArea:
 				continue
-			elif w/h >= 1.2 or h/w >= 1.2:
+			elif w/h >= 1.15 or h/w >= 1.15:
 				continue
 			# pass all standard property
 			self.setNewValue(color, contour, area, x, y, w, h)
@@ -167,7 +167,7 @@ def canyEdge(img: cv2.Mat):
 ############
 # orgImg = readImg("C:/Users/Admin/Documents/Tu/coding/Autonomous-Car/src/trafficLightDetection/assets/green1.jpg")
 # orgImg = cv2.imread("C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\green2.jpg")
-orgImg = cv2.imread("./assets/red1.jpg")
+orgImg = cv2.imread("./assets/yellow2.jpeg")
 cv2.imshow("org", orgImg)
 trafficLight = TrafficLight()
 trafficLight.singleLightDetect(orgImg, "green")
@@ -175,6 +175,7 @@ trafficLight.singleLightDetect(orgImg, "red")
 trafficLight.singleLightDetect(orgImg, "yellow")
 print(trafficLight.red.size)
 print(trafficLight.green.size)
+print(trafficLight.yellow.size)
 trafficLight.classify(orgImg)
 
 
