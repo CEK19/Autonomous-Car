@@ -346,7 +346,7 @@ def callbackFunctionVid(imgMatrix):
 ###########################
 
 ENABLE_WRITE_FILE = False
-MODE = Mode.PIC
+MODE = Mode.CAMERA
 # modelPath = "C:\\Users\\Admin\Documents\\coding\\masterAI\\traffic sign detection\\models"
 modelPath = "./models"
 videoPath = "/Users/lap15864-local/Desktop/tempVid.mov"
