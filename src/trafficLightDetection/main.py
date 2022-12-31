@@ -5,10 +5,10 @@ import numpy as np
 from const import *
 
 
-def boundary_Green_Box(img, obj, color):
+def boundaryBox(img, obj, color):
 	img = cv2.rectangle(img, (obj.x-5, obj.y-5), (obj.x+obj.w+4, obj.y+obj.h+4), color, 10)
 	sign = img[(obj.y-5):(obj.y+obj.h+4), (obj.x-5):(obj.x+obj.w+4)]
-	return img, sign
+	return sign
 
 
 class Light:
@@ -54,18 +54,18 @@ class TrafficLight:
 		for contour in contours:
 			area = cv2.contourArea(contour)
 			x, y, w, h = cv2.boundingRect(contour)
-			if area < STANDARD_PROPERTY.minArea or area > STANDARD_PROPERTY.maxArea:
+			if area < Setting.STANDARD_PROPERTY.minArea or area > Setting.STANDARD_PROPERTY.maxArea:
 				continue
-			elif w/h >= 1.15 or h/w >= 1.15:
+			elif w/h >= Setting.STANDARD_PROPERTY.widthHeightRatio or h/w >= Setting.STANDARD_PROPERTY.widthHeightRatio:
 				continue
 			# pass all standard property
 			self.setNewValue(color, contour, area, x, y, w, h)
 
 	def singleLightDetect(self, img: cv2.Mat, color: str):
 		hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-		sensitivity = COLOR_THRESHOLD[color]["sensitivity"]
-		lowerColor = COLOR_THRESHOLD[color]["lower"]
-		upperColor = COLOR_THRESHOLD[color]["upper"]
+		sensitivity = Setting.COLOR_THRESHOLD[color]["sensitivity"]
+		lowerColor = Setting.COLOR_THRESHOLD[color]["lower"]
+		upperColor = Setting.COLOR_THRESHOLD[color]["upper"]
 		maskColor = []
 		if len(sensitivity) == 0:
 			maskColor = cv2.inRange(hsvImg, lowerColor, upperColor)
@@ -87,14 +87,14 @@ class TrafficLight:
 		if (redSize >= greenSize and redSize >= yellowSize and redSize != 0):
 			print("red");
 			self.color = TRAFFIC_LIGHT.red
-			img, sign = boundary_Green_Box(img, self.red, COLOR.red)
+			sign = boundaryBox(img, self.red, COLOR.red)
 			cv2.putText(img, "Traffic light detected: red", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.red)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
 		elif (greenSize >= redSize and greenSize >= yellowSize and greenSize != 0):
 			print("green")
 			self.color = TRAFFIC_LIGHT.green
-			img, sign = boundary_Green_Box(img, self.green, COLOR.green)
+			sign = boundaryBox(img, self.green, COLOR.green)
 			cv2.putText(img, "Traffic light detected: green", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.green)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
@@ -102,7 +102,7 @@ class TrafficLight:
 			print("yellow")
 			self.color = TRAFFIC_LIGHT.yellow
 			cv2.putText(img, "Traffic light detected: yellow", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.yellow)
-			img, sign = boundary_Green_Box(img, self.yellow, COLOR.yellow)
+			sign = boundaryBox(img, self.yellow, COLOR.yellow)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
 		else:
@@ -167,16 +167,37 @@ def canyEdge(img: cv2.Mat):
 ############
 # orgImg = readImg("C:/Users/Admin/Documents/Tu/coding/Autonomous-Car/src/trafficLightDetection/assets/green1.jpg")
 # orgImg = cv2.imread("C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\green2.jpg")
-orgImg = cv2.imread("./assets/yellow2.jpeg")
-cv2.imshow("org", orgImg)
-trafficLight = TrafficLight()
-trafficLight.singleLightDetect(orgImg, "green")
-trafficLight.singleLightDetect(orgImg, "red")
-trafficLight.singleLightDetect(orgImg, "yellow")
-print(trafficLight.red.size)
-print(trafficLight.green.size)
-print(trafficLight.yellow.size)
-trafficLight.classify(orgImg)
+
+if Setting.MODE == Mode.PIC:
+	orgImg = cv2.imread("./assets/yellow2.jpeg")
+	cv2.imshow("org", orgImg)
+	trafficLight = TrafficLight()
+	trafficLight.singleLightDetect(orgImg, "green")
+	trafficLight.singleLightDetect(orgImg, "red")
+	trafficLight.singleLightDetect(orgImg, "yellow")
+	print(trafficLight.red.size)
+	print(trafficLight.green.size)
+	print(trafficLight.yellow.size)
+	trafficLight.classify(orgImg)
+ 
+elif Setting.MODE == Mode.CAMERA:
+	cam = cv2.VideoCapture(0)
+	while True:
+		ret, frame = cam.read()
+		key = cv2.waitKey(1)
+		if key == ord('q'):
+			break
+
+		trafficLight = TrafficLight()
+		trafficLight.singleLightDetect(frame, "green")
+		trafficLight.singleLightDetect(frame, "red")
+		trafficLight.singleLightDetect(frame, "yellow")
+		print(trafficLight.red.size)
+		print(trafficLight.green.size)
+		print(trafficLight.yellow.size)
+		trafficLight.classify(frame)
+		
+	
 
 
 
