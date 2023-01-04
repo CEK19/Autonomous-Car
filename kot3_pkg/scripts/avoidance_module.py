@@ -1,13 +1,29 @@
 import rospy
 from std_msgs.msg import String
 from constant import *
+import json
+import numpy as  np
 
 class AvoidanceModule:
     def __init__(self) -> None:
         self.lane_signal_subscriber = rospy.Subscriber(TOPIC_NAME_LANE_DETECTION, String, self.callback)
         self.lidar_signal_subscriber = rospy.Subscriber()
         self.control_action_subscriber = rospy.Subscriber()
-        self.prebuiltQTable = []
+        self.avoidance_publisher = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
+        self.prebuiltQTable = self.loadQTableFromFile()
+
+    def loadQTableFromFile(self):
+        """
+        Input: File
+        Ouput: data from file
+        """
+        file = open(ASSETS.Q_TABLE_DATA, "r")
+        RLInFile = file.read()
+        if not RLInFile:
+            raise Exception(EXCEPTION.NO_Q_TABLE)
+        else:
+            return json.loads(RLInFile)
+
 
     def updateEnvironmentSignal(self):
         """
@@ -34,14 +50,15 @@ class AvoidanceModule:
         Input: ABCDE
         Ouput: action
         """
-        pass
+        return np.argmax(self.prebuiltQTable[action])
 
     def sendActionToTopic(self, action):
         """
         Input: action
         Ouput: None
         """
-        pass
+        message = json.dumps({"action": action})
+        self.avoidance_publisher.publish(message)
 
     def callback(self, data):
         updatedSignal = self.updateEnvironmentSignal()
