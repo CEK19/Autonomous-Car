@@ -71,18 +71,34 @@ class AvoidanceModule:
         if self.isEnoughDataToMakeDecision():
             self.solve()
 
-    def convertSignalToState(self, updatedSignal):
+    def convertAllSignalToState(self):
         """
         Input: ratio_left, lidar, alpha
         Ouput: ABCDE
             A (0-1): Vật thể vùng 1
             B (0-1): Vật thể vùng 2
             C (0-1): Vật thể vùng 3
-            D(0-9): Hướng di chuyển của robot, vì robot chỉ quay một góc 18 độ mỗi lần, nên trong phạm vi góc -90 đến 90, ta có 10 giá trị góc mà robot có thể tồn tại.
-            E(0-9): Đại diện cho vị trí robot so với chiều ngang của vùng xanh lá. Ta chia vùng xanh lá ra thành 10 vùng theo chiều dọc và đánh số từ 0 đến 9 từ trái qua phải
+            D(0-9): Đại diện cho vị trí robot so với chiều ngang của vùng xanh lá. Ta chia vùng xanh lá ra thành 10 vùng theo chiều dọc và đánh số từ 0 đến 9 từ trái qua phải
             Tổng cộng, ta sẽ có tất cả 800 state và 4 action
+            E(0-9): Hướng di chuyển của robot, vì robot chỉ quay một góc 18 độ mỗi lần, nên trong phạm vi góc -90 đến 90, ta có 10 giá trị góc mà robot có thể tồn tại.
         """
-        pass
+        hashFromLidar = ""
+        hashFromLaneDetection = ""
+        hashFromAngle = ""
+
+        
+
+        leftSideDistance = np.clip(self.ratioLeft, a_min=0, a_max=9)
+        hashFromLaneDetection = str(leftSideDistance)
+
+        if self.alpha <= -90:
+            hashFromAngle = MODULE_AVOIDANCE.LIST_LEVEL_ANGLES[0]
+        elif self.alpha >= 90:
+            hashFromAngle = MODULE_AVOIDANCE.LIST_LEVEL_ANGLES[9]
+        else:
+            hashFromAngle = MODULE_AVOIDANCE.LIST_LEVEL_ANGLES[int((self.alpha + 90)/18)]
+        
+        return hashFromLidar + hashFromLaneDetection + hashFromAngle
 
     def decideActionBaseOnCurrentState(self, action):  # Done
         """
@@ -100,8 +116,7 @@ class AvoidanceModule:
         self.avoidance_publisher.publish(message)
 
     def solve(self, data):
-        updatedSignal = self.updateEnvironmentSignal()
-        state = self.convertSignalToState(updatedSignal)
+        state = self.convertSignalToState()
         action = self.decideActionBaseOnCurrentState(state)
         self.sendActionToTopic(action)
         rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
