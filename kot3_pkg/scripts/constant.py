@@ -5,7 +5,8 @@ TOPIC_NAME_LANE_DETECTION = 'lane_detection_topic'
 TOPIC_NAME_AVOIDANCE = 'avoidance_topic'
 TOPIC_NAME_LIDAR = '/scan'
 TOPIC_NAME_ACTION_DECISION = 'action_decision'
-TOPIC_NAME__TRAFFIC_LIGHTS ='traffict_lights_topic'
+TOPIC_NAME__TRAFFIC_LIGHTS ='traffic_lights_topic'
+TOPIC_NAME_TRAFFIC_SIGNS = 'traffic_signs_topic'
 
 
 NODE_NAME_AVOIDANCE = 'avoidance_node_name'

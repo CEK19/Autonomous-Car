@@ -38,6 +38,11 @@ class AvoidanceModule:
     def isEnoughDataToMakeDecision(self):
         return self.isUpdatedLaneSignal and self.isUpdatedLaneSignal and self.isUpdatedActionSignal
 
+    def clearData(self):
+        self.isUpdatedRawLidarSignal = False
+        self.isUpdatedLaneSignal = False
+        self.isUpdatedActionSignal = False
+
     def loadQTableFromFile(self):
         """
         Input: File
