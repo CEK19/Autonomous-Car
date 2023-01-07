@@ -5,9 +5,11 @@ TOPIC_NAME_LANE_DETECTION = 'lane_detection_topic'
 TOPIC_NAME_AVOIDANCE = 'avoidance_topic'
 TOPIC_NAME_LIDAR = '/scan'
 TOPIC_NAME_ACTION_DECISION = 'action_decision'
+TOPIC_NAME__TRAFFIC_LIGHTS ='traffict_lights_topic'
 
 
 NODE_NAME_AVOIDANCE = 'avoidance_node_name'
+NODE_NAME_DECISION_MAKING = 'decision_making_node_name'
 
 class ASSETS:
     Q_TABLE_DATA = "./assets/QTable.txt"
