@@ -57,7 +57,7 @@ class CombineDecisionModule:
 if __name__ == '__main__':
     try:
         rospy.init_node(NODE_NAME_DECISION_MAKING, anonymous=True)
-        avoidance = CombineDecisionModule()
+        decisionMaking = CombineDecisionModule()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass

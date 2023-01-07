@@ -20,3 +20,21 @@ class EXCEPTION:
 
 class MODULE_AVOIDANCE:
     LIST_LEVEL_ANGLES = np.array(range(10), dtype="str")
+
+    TURN_LEFT = "TURN_LEFT"
+    TURN_RIGHT = "TURN_RIGHT"
+    GO_AHEAD = "GO_AHEAD"
+    GO_BACKWARD = "GO_BACKWARD"
+
+class MODULE_TRAFFIC_LIGTHS:
+    RED = "RED"
+    GREEN = "GREEN"
+    YELLOW = "YELLOW"
+    
+class MODULE_TRAFFIC_SIGNAL:
+    AHEAD = "AHEAD"
+    FORBID = "FORBID"
+    STOP = "STOP"
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
+    NONE = "NONE"
