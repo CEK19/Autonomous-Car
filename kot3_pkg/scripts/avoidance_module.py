@@ -1,16 +1,24 @@
+#! /usr/bin/env python
+
 import rospy
 from std_msgs.msg import String
+from sensor_msgs.msg import LaserScan
 from constant import *
 import json
 import numpy as  np
 
 class AvoidanceModule:
     def __init__(self) -> None:
-        self.lane_signal_subscriber = rospy.Subscriber(TOPIC_NAME_LANE_DETECTION, String, self.callback)
-        self.lidar_signal_subscriber = rospy.Subscriber()
-        self.control_action_subscriber = rospy.Subscriber()
+        self.lane_signal_subscriber = rospy.Subscriber(TOPIC_NAME_LANE_DETECTION, String, self.updateEnvironmentLaneSignal)
+        self.lidar_signal_subscriber = rospy.Subscriber(TOPIC_NAME_LIDAR, LaserScan, self.updateEnvironmentLidarSignal)
+        self.control_action_subscriber = rospy.Subscriber(TOPIC_NAME_ACTION_DECISION, String, self.updateEnvironmentControlActionSignal)
         self.avoidance_publisher = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
         self.prebuiltQTable = self.loadQTableFromFile()
+
+        # Data collection
+        self.rawDataSignal = [] # Data from lidar
+        self.ratioLeft =  0.5 # Data from lane detection module
+        self.alpha = 0 # Alpha 
 
     def loadQTableFromFile(self):
         """
@@ -25,12 +33,17 @@ class AvoidanceModule:
             return json.loads(RLInFile)
 
 
-    def updateEnvironmentSignal(self):
-        """
-        Input: Signal from all subscribers
-        Ouput: ratio_left, lidar, alpha
-        """
-        pass
+    def updateEnvironmentLidarSignal(self, data):
+        self.rawDataSignal = data.data
+        print("from lidar module", data)
+
+    def updateEnvironmentLaneSignal(self, data):
+        self.ratioLeft = data.data
+        print("from lane module", data)
+
+    def updateEnvironmentControlActionSignal(self, data):
+        self.alpha = data.data
+        print("from lane control signal", data)
 
     def convertSignalToState(self, updatedSignal):
         """
@@ -43,9 +56,9 @@ class AvoidanceModule:
             E(0-9): Đại diện cho vị trí robot so với chiều ngang của vùng xanh lá. Ta chia vùng xanh lá ra thành 10 vùng theo chiều dọc và đánh số từ 0 đến 9 từ trái qua phải
             Tổng cộng, ta sẽ có tất cả 800 state và 4 action
         """
-        pass
+        
 
-    def decideActionBaseOnCurrentState(self, action):
+    def decideActionBaseOnCurrentState(self, action): # Done
         """
         Input: ABCDE
         Ouput: action
