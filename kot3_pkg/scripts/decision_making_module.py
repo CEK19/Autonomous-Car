@@ -21,6 +21,9 @@ class CombineDecisionModule:
             TOPIC_NAME_AVOIDANCE, String, self.updateActionFromAvoidanceModuleSignal
         )
 
+        # Publisher
+        self.control_velocity_publisher = rospy.Publisher(TOPIC_NAME_VELOCITY, String, queue_size=1)
+
         # Data update
         self.traffictLightSignal = dict()
         self.trafficSignsSignal = dict()
@@ -28,31 +31,48 @@ class CombineDecisionModule:
 
         # check update param
         self.isUpdatedTraffictLight = False
-        self.isUpdatedTrafficSight = False
+        self.isUpdatedTrafficSign = False
         self.isUpdatedActionFromAvoidanceModules = False
 
     def isEnoughDataToMakeDecision(self):
-        return self.isUpdatedTraffictLight and self.isUpdatedTrafficSight and self.isUpdatedActionFromAvoidanceModules
+        return self.isUpdatedTraffictLight and self.isUpdatedTrafficSign and self.isUpdatedActionFromAvoidanceModules
 
     def clearData(self):
         self.isUpdatedTraffictLight = False
-        self.isUpdatedTrafficSight = False
+        self.isUpdatedTrafficSign = False
+        self.isUpdatedActionFromAvoidanceModules = False
+
+    def clearData(self):
+        self.isUpdatedTraffictLight = False
+        self.isUpdatedTrafficSign = False
         self.isUpdatedActionFromAvoidanceModules = False
 
     def updateTrafficLightSignal(self, data):
-        self.isUpdatedTraffictLight = data.data
-        self.isUpdatedRawLidarSignal = True
+        # Do preprocessing data here ...
+        self.traffictLightSignal = data.data
+        self.isUpdatedTraffictLight = True
         if self.isEnoughDataToMakeDecision():
             self.makeActionToRobot()
 
     def updateTrafficSignsSignal(self, data):
-        pass
+        # Do preprocessing data here ...
+        self.trafficSignsSignal = data.data
+        self.isUpdatedTrafficSign = True
+        if self.isEnoughDataToMakeDecision():
+            self.makeActionToRobot()
 
     def updateActionFromAvoidanceModuleSignal(self, data):
-        pass
+        # Do preprocessing data here ...
+        self.avoidanceActionSignal = data.data
+        self,isUpdatedActionFromAvoidanceModules = True
+        if self.isEnoughDataToMakeDecision():
+            self.makeActionToRobot()
 
-    def makeActionToRobot():
-        pass
+    def makeActionToRobot(self):
+        # Do bla bla bla
+        #...
+        self.control_velocity_publisher.publish("some data here")
+        
 
 if __name__ == '__main__':
     try:

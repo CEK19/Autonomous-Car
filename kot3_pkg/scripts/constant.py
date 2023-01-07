@@ -3,7 +3,8 @@ import numpy as np
 
 TOPIC_NAME_LANE_DETECTION = 'lane_detection_topic'
 TOPIC_NAME_AVOIDANCE = 'avoidance_topic'
-TOPIC_NAME_LIDAR = '/scan'
+TOPIC_NAME_LIDAR = '/scan' # Check it
+TOPIC_NAME_VELOCITY = '/cmd' # Check it
 TOPIC_NAME_ACTION_DECISION = 'action_decision'
 TOPIC_NAME__TRAFFIC_LIGHTS ='traffic_lights_topic'
 TOPIC_NAME_TRAFFIC_SIGNS = 'traffic_signs_topic'

@@ -124,6 +124,7 @@ class AvoidanceModule:
         state = self.convertSignalToState()
         action = self.decideActionBaseOnCurrentState(state)
         self.sendActionToTopic(action)
+        self.clearData()
         rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
 
 
