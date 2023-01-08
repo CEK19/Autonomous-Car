@@ -4,6 +4,7 @@ import rospy
 from std_msgs.msg import String
 from constant import *
 import numpy as np
+import json
 
 
 class CombineDecisionModule:
@@ -23,6 +24,7 @@ class CombineDecisionModule:
 
         # Publisher
         self.control_velocity_publisher = rospy.Publisher(TOPIC_NAME_VELOCITY, String, queue_size=1)
+        self.modify_alpha_lane_detect_publisher = rospy.Publisher(TOPIC_NAME_ACTION_DECISION, String, queue_size=1)
 
         # Data update
         self.traffictLightSignal = dict()
@@ -42,29 +44,24 @@ class CombineDecisionModule:
         self.isUpdatedTrafficSign = False
         self.isUpdatedActionFromAvoidanceModules = False
 
-    def clearData(self):
-        self.isUpdatedTraffictLight = False
-        self.isUpdatedTrafficSign = False
-        self.isUpdatedActionFromAvoidanceModules = False
-
     def updateTrafficLightSignal(self, data):
         # Do preprocessing data here ...
-        self.traffictLightSignal = data.data
+        self.traffictLightSignal = json.loads(data.data)
         self.isUpdatedTraffictLight = True
         if self.isEnoughDataToMakeDecision():
             self.makeActionToRobot()
 
     def updateTrafficSignsSignal(self, data):
         # Do preprocessing data here ...
-        self.trafficSignsSignal = data.data
+        self.trafficSignsSignal = json.loads(data.data)
         self.isUpdatedTrafficSign = True
         if self.isEnoughDataToMakeDecision():
             self.makeActionToRobot()
 
     def updateActionFromAvoidanceModuleSignal(self, data):
         # Do preprocessing data here ...
-        self.avoidanceActionSignal = data.data
-        self,isUpdatedActionFromAvoidanceModules = True
+        self.avoidanceActionSignal = json.loads(data.data)
+        self.isUpdatedActionFromAvoidanceModules = True
         if self.isEnoughDataToMakeDecision():
             self.makeActionToRobot()
 
@@ -72,7 +69,8 @@ class CombineDecisionModule:
         # Do bla bla bla
         #...
         self.control_velocity_publisher.publish("some data here")
-        
+        self.modify_alpha_lane_detect_publisher.publish("some data here")
+        self.clearData()
 
 if __name__ == '__main__':
     try:
