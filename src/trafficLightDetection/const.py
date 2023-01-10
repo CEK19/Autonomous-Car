@@ -46,6 +46,23 @@ class COLOR_THRESHOLD:
 			"lower": np.array([80, 50, 115]),
 			"upper": np.array([90, 255, 255])
 		}
+	},
+	demo = {
+		"yellow": {	# done
+			"sensitivity": np.array([]),
+			"lower": np.array([10, 15, 225]),	# H,S,V
+			"upper": np.array([60, 255, 255])
+		},
+		"red": {
+			"sensitivity": np.array([0, 0, 0]),
+			"lower": np.array([0, 228, 124]),
+			"upper": np.array([179, 255, 255])
+		},
+		"green": {	# done
+			"sensitivity": np.array([]),
+			"lower": np.array([48, 119, 125]),
+			"upper": np.array([93, 255, 255])
+		}
 	}
 
 
@@ -55,6 +72,11 @@ class STANDARD_PROPERTY:
 		maxArea = 1000
 		widthHeightRatio = 1.15
 	class camera:
+		minArea = 100
+		maxArea = 1000
+		widthHeightRatio = 1.15
+
+	class demo:
 		minArea = 100
 		maxArea = 1000
 		widthHeightRatio = 1.15
@@ -68,8 +90,8 @@ class COLOR:
 	
 	
 class Setting:
-	PICTURE_PATH = "./assets/ignore/red.png"
-	PATH = "./assets/ignore/org.mp4"
-	MODE = Mode.VIDEO
+	PICTURE_PATH = "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red2.jpg"	# PICTURE_PATH = "./assets/ignore/red.png"
+	PATH = "./assets/ignore/org.mp4"	# PATH = "./assets/ignore/org.mp4"
+	MODE = Mode.PIC
 	COLOR_THRESHOLD = COLOR_THRESHOLD.camera
-	STANDARD_PROPERTY = STANDARD_PROPERTY.camera
+	STANDARD_PROPERTY = STANDARD_PROPERTY.demo

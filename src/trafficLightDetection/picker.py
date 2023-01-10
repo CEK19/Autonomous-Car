@@ -1,7 +1,7 @@
 import cv2
 import sys
 import numpy as np
-
+from const import *
 
 def nothing(x):
     pass
@@ -28,7 +28,7 @@ cv2.setTrackbarPos('VMax', 'image', 255)
 hMin = sMin = vMin = hMax = sMax = vMax = 0
 phMin = psMin = pvMin = phMax = psMax = pvMax = 0
 
-img = cv2.imread('./assets/ignore/red.png')
+img = cv2.imread(Setting.PICTURE_PATH)
 output = img
 waitTime = 33
 
