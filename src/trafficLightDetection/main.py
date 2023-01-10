@@ -64,7 +64,6 @@ class TrafficLight:
 
 	def singleLightDetect(self, img: cv2.Mat, color: str):
 		hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-		print(Setting.COLOR_THRESHOLD[color])
 		sensitivity = Setting.COLOR_THRESHOLD[color]["sensitivity"]
 		lowerColor = Setting.COLOR_THRESHOLD[color]["lower"]
 		upperColor = Setting.COLOR_THRESHOLD[color]["upper"]
@@ -172,7 +171,9 @@ def canyEdge(img: cv2.Mat):
 # orgImg = readImg("C:/Users/Admin/Documents/Tu/coding/Autonomous-Car/src/trafficLightDetection/assets/green1.jpg")
 # orgImg = cv2.imread("C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\red1.jpg")
 
-print(Setting.COLOR_THRESHOLD)
+# print()
+# print(Setting.COLOR_THRESHOLD[0])
+# print()
 
 if Setting.MODE == Mode.PIC:
 	orgImg = cv2.imread(Setting.PICTURE_PATH)
