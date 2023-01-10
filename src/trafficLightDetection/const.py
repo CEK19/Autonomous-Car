@@ -90,8 +90,8 @@ class COLOR:
 	
 	
 class Setting:
-	PICTURE_PATH = "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\yellow2.jpg"	# "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red2.jpg"
-	VIDEO_PATH = "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\ignore\\redVid2.mp4"	# PATH = "./assets/ignore/org.mp4"
+	PICTURE_PATH = "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red6.jpg"	# "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red2.jpg"
+	VIDEO_PATH = "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\ignore\\greenVid.mp4"	# PATH = "./assets/ignore/org.mp4"
 	MODE = Mode.VIDEO
 	COLOR_THRESHOLD = COLOR_THRESHOLD.demo
 	STANDARD_PROPERTY = STANDARD_PROPERTY.demo

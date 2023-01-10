@@ -245,13 +245,14 @@ elif Setting.MODE == Mode.VIDEO:
 				print(currentframe)
 			else:
 				print("end")
-				status = 'end'
-				break
+				# status = 'end'
+				# break
 		print("vid release")
 		vid.release()
-		cv2.waitKey(0)
 		if status == 'quit' or status == 'end':
 			print("break")
 			break
+
+	# cv2.waitKey(0)
 	print("out")
 
