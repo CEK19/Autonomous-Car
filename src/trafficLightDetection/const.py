@@ -50,18 +50,18 @@ class COLOR_THRESHOLD:
 	demo = {
 		"yellow": {	# done
 			"sensitivity": np.array([]),
-			"lower": np.array([10, 15, 225]),	# H,S,V
-			"upper": np.array([60, 255, 255])
+			"lower": np.array([15, 20, 230]),	# H,S,V
+			"upper": np.array([30, 255, 255])
 		},
 		"red": {	# demo
-			"sensitivity": np.array([0, 0, 0]),
-			"lower": np.array([0, 228, 124]),
+			"sensitivity": np.array([]),		# [170, 0, 0]
+			"lower": np.array([170, 180, 110]),	# [0, 210, 110]	[0, 228, 124]
 			"upper": np.array([179, 255, 255])
 		},
 		"green": {	# done
 			"sensitivity": np.array([]),
 			"lower": np.array([48, 119, 125]),
-			"upper": np.array([93, 255, 255])
+			"upper": np.array([93, 255, 215])
 		}
 	}
 
@@ -77,8 +77,8 @@ class STANDARD_PROPERTY:
 		widthHeightRatio = 1.15
 
 	class demo:
-		minArea = 100
-		maxArea = 1000
+		minArea = 800
+		maxArea = 4000
 		widthHeightRatio = 1.15
 	
 # BGR
@@ -90,8 +90,8 @@ class COLOR:
 	
 	
 class Setting:
-	PICTURE_PATH = "./assets/demo/red2.jpg"	# "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red2.jpg"
-	PATH = "./assets/ignore/org.mp4"	# PATH = "./assets/ignore/org.mp4"
-	MODE = Mode.PIC
+	PICTURE_PATH = "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\yellow2.jpg"	# "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red2.jpg"
+	VIDEO_PATH = "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\ignore\\redVid2.mp4"	# PATH = "./assets/ignore/org.mp4"
+	MODE = Mode.VIDEO
 	COLOR_THRESHOLD = COLOR_THRESHOLD.demo
 	STANDARD_PROPERTY = STANDARD_PROPERTY.demo
