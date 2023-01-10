@@ -77,9 +77,9 @@ class STANDARD_PROPERTY:
 		widthHeightRatio = 1.15
 
 	class demo:
-		minArea = 800
-		maxArea = 4000
-		widthHeightRatio = 1.15
+		minArea = 100
+		maxArea = 10000
+		widthHeightRatio = 140
 	
 # BGR
 class COLOR:
@@ -91,7 +91,7 @@ class COLOR:
 	
 class Setting:
 	PICTURE_PATH = "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red6.jpg"	# "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red2.jpg"
-	VIDEO_PATH = "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\ignore\\greenVid.mp4"	# PATH = "./assets/ignore/org.mp4"
+	VIDEO_PATH = "./assets/ignore/vidRed1.mp4"	# PATH = "./assets/ignore/org.mp4"
 	MODE = Mode.VIDEO
 	COLOR_THRESHOLD = COLOR_THRESHOLD.demo
 	STANDARD_PROPERTY = STANDARD_PROPERTY.demo

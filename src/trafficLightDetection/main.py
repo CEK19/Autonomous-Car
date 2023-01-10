@@ -25,6 +25,7 @@ class Light:
 		return
 
 	def setNewValue(self, contour, size, x, y, w, h):
+		print(self.color, ": ", size)
 		if size > self.size:
 			self.contour = contour
 			self.size = size
@@ -57,10 +58,11 @@ class TrafficLight:
 			area = cv2.contourArea(contour)
 			x, y, w, h = cv2.boundingRect(contour)
 			if area < Setting.STANDARD_PROPERTY.minArea or area > Setting.STANDARD_PROPERTY.maxArea:
-				print(area)
+				if area > Setting.STANDARD_PROPERTY.maxArea:
+					print("######################################", area)
 				continue
 			elif w/h >= Setting.STANDARD_PROPERTY.widthHeightRatio or h/w >= Setting.STANDARD_PROPERTY.widthHeightRatio:
-				print(w/h, h/w)
+				print("===================================>", w/h, h/w)
 				continue
 			# pass all standard property
 			self.setNewValue(color, contour, area, x, y, w, h)
@@ -112,6 +114,7 @@ class TrafficLight:
 			sign = boundaryBox(img, self.yellow, COLOR.yellow)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
+			
 		else:
 			self.color = None
 			cv2.putText(img, "Traffic light detected: nothing", (10, 25),
@@ -185,9 +188,9 @@ if Setting.MODE == Mode.PIC:
 	trafficLight.singleLightDetect(orgImg, "green")
 	trafficLight.singleLightDetect(orgImg, "red")
 	trafficLight.singleLightDetect(orgImg, "yellow")
-	print(trafficLight.red.size)
-	print(trafficLight.green.size)
-	print(trafficLight.yellow.size)
+	# print(trafficLight.red.size)
+	# print(trafficLight.green.size)
+	# print(trafficLight.yellow.size)
 	trafficLight.classify(orgImg)
 	cv2.waitKey(0)
 
@@ -203,22 +206,22 @@ elif Setting.MODE == Mode.CAMERA:
 		trafficLight.singleLightDetect(frame, "green")
 		trafficLight.singleLightDetect(frame, "red")
 		trafficLight.singleLightDetect(frame, "yellow")
-		print(trafficLight.red.size)
-		print(trafficLight.green.size)
-		print(trafficLight.yellow.size)
+		# print(trafficLight.red.size)
+		# print(trafficLight.green.size)
+		# print(trafficLight.yellow.size)
 		trafficLight.classify(frame)
 	cv2.destroyAllWindows()
 
 elif Setting.MODE == Mode.VIDEO:
-	print("come here")
 	status = ''
 	while True:
-		print("while")
 		vid = cv2.VideoCapture(Setting.VIDEO_PATH)
 		currentframe = 0
 
 		while True:
+			print()
 			print("vid read")
+			print("--------------------")
 			ret, frame = vid.read()
 
 			key = cv2.waitKey(1)
@@ -236,13 +239,15 @@ elif Setting.MODE == Mode.VIDEO:
 				trafficLight.singleLightDetect(frame, "green")
 				trafficLight.singleLightDetect(frame, "red")
 				trafficLight.singleLightDetect(frame, "yellow")
-				print(trafficLight.red.size)
-				print(trafficLight.green.size)
-				print(trafficLight.yellow.size)
+				# print(trafficLight.red.size)
+				# print(trafficLight.green.size)
+				# print(trafficLight.yellow.size)
 				trafficLight.classify(frame)
+				print("--------------")
+				print("done")
+				print()
 
 				currentframe += 1
-				print(currentframe)
 			else:
 				print("end")
 				# status = 'end'
