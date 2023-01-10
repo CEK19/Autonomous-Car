@@ -4,6 +4,7 @@ class Mode:
 	FILE = 'file'
 	PIC = 'pic'
 	CAMERA = 'camera'
+	VIDEO = 'video'
 
 class TRAFFIC_LIGHT:
 	red = "red"
@@ -63,10 +64,12 @@ class COLOR:
 	green = (0, 255, 0)
 	red = (0, 0, 255)
 	yellow = (0, 255, 255)
+	white = (255, 255, 255)
 	
 	
 class Setting:
-	PICTURE_PATH = "./assets/yellow2.jpeg"
-	MODE = Mode.CAMERA
+	PICTURE_PATH = "./assets/ignore/red.png"
+	PATH = "./assets/ignore/org.mp4"
+	MODE = Mode.VIDEO
 	COLOR_THRESHOLD = COLOR_THRESHOLD.camera
 	STANDARD_PROPERTY = STANDARD_PROPERTY.camera

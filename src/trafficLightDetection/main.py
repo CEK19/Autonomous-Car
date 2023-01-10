@@ -1,5 +1,6 @@
 # 18/09/2022
 
+import os
 import cv2
 import numpy as np
 from const import *
@@ -107,6 +108,8 @@ class TrafficLight:
 			cv2.imshow('sign', sign)
 		else:
 			self.color = None
+			cv2.putText(img, "Traffic light detected: nothing", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.white)
+			cv2.imshow("final", img)
 
 
 def readImg(fileName: str):
@@ -179,6 +182,7 @@ if Setting.MODE == Mode.PIC:
 	print(trafficLight.green.size)
 	print(trafficLight.yellow.size)
 	trafficLight.classify(orgImg)
+	cv2.waitKey(0)
  
 elif Setting.MODE == Mode.CAMERA:
 	cam = cv2.VideoCapture(0)
@@ -196,9 +200,48 @@ elif Setting.MODE == Mode.CAMERA:
 		print(trafficLight.green.size)
 		print(trafficLight.yellow.size)
 		trafficLight.classify(frame)
+	cv2.destroyAllWindows()
 		
-	
+elif Setting.MODE == Mode.VIDEO:
+	status = ''
+	while True:
+		vid = cv2.VideoCapture(Setting.PATH)
+		currentframe = 0
 
+		while True:
+			ret, frame = vid.read()
 
+			key = cv2.waitKey(1)
+			if key == ord('q'):
+				status = 'quit'
+				break
+			elif key == ord('p'):
+				cv2.waitKey(-1)
+			elif key == ord('r'):
+				status = 'replay'
+				break
 
-cv2.waitKey(0)
+			if ret:
+				trafficLight = TrafficLight()
+				trafficLight.singleLightDetect(frame, "green")
+				trafficLight.singleLightDetect(frame, "red")
+				trafficLight.singleLightDetect(frame, "yellow")
+				print(trafficLight.red.size)
+				print(trafficLight.green.size)
+				print(trafficLight.yellow.size)
+				trafficLight.classify(frame)
+				
+				currentframe += 1
+				print(currentframe)
+			else:
+				print("end")
+				status = 'end'
+				break
+		print("vid release")
+		vid.release()
+		if status == 'quit' or status == 'end':
+			print("break")
+			break
+	print("out")
+	cv2.destroyAllWindows()
+

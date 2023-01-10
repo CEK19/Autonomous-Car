@@ -11,7 +11,7 @@ class Sign:
     MIN_AREA = 100
     MAX_AREA = 50000
     MIN_WIDTH_HEIGHT = 30
-    MIN_ACCURACY = 0.25
+    MIN_ACCURACY = 0.2
     
 
 # class Text:
