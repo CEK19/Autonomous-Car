@@ -18,14 +18,14 @@ def distanceBetweenTwoPoint(PointA, PointB):
 
 
 def returnRedness(img):
-	# yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
-	# y, u, v = cv2.split(yuv)
-	# cv2.imshow("y", y)
-	# return v
-	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	blur = cv2.GaussianBlur(gray, (5, 5), 0)
-	cv2.imshow("blur", blur)
-	return blur
+	yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+	y, u, v = cv2.split(yuv)
+	cv2.imshow("y", y)
+	return v
+	# gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+	# blur = cv2.GaussianBlur(gray, (5, 5), 0)
+	# cv2.imshow("blur", blur)
+	# return blur
 
 # T=145 - long range
 # T=150 - short range
@@ -62,14 +62,16 @@ def findBiggestContour(contours):
 	return contours[c.index(max(c))]
 
 
-def boundary_Green_Box(img, contours):
+def boundaryGreenBox(img, contours):
 	x, y, w, h = cv2.boundingRect(contours)
 	extra = Sign.EXTRA_SAFETY
-	# img = cv2.rectangle(img, (x-5, y-5), (x+w+4, y+h+4), (0, 255, 0), 10)
-	# sign = img[(y-5):(y+h+4), (x-5):(x+w+4)]
 	img = cv2.rectangle(img, (x-extra, y-extra), (x+w+extra, y+h+extra), (0, 255, 0), 5)
+
+def cropSign(img, contour):
+	x, y, w, h = cv2.boundingRect(contour)
+	extra = Sign.EXTRA_SAFETY
 	sign = img[(y-extra):(y+h+extra), (x-extra):(x+w+extra)]
-	return img, sign
+	return sign
 
 
 def preprocessingImageToClassifier(image=None, imageSize=32):
@@ -77,14 +79,25 @@ def preprocessingImageToClassifier(image=None, imageSize=32):
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	# RESIZE
 	image = cv2.resize(image, (imageSize, imageSize))
-	cv2.imshow("resize", image)
 	# LOCAL HISTOGRAM EQUALIZATION
 	clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
 	image = clahe.apply(image)
 	image = image.astype(np.float32)/255.0
+	cv2.imshow("classifyImg", image)
 	image = image.reshape(1, imageSize, imageSize, 1)
 	return image
 
+def preprocessingImageToStore(image=None, imageSize=32):
+	# GRAYSCALE
+	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	# RESIZE
+	image = cv2.resize(image, (imageSize, imageSize))
+	# LOCAL HISTOGRAM EQUALIZATION
+	clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
+	image = clahe.apply(image)
+	# image = image.astype(np.float32)/255.0
+	cv2.imshow("store img", image)
+	return image
 
 def predict(sign):
 	img = preprocessingImageToClassifier(sign, imageSize=32)
@@ -158,7 +171,7 @@ def callbackFunction(fileName, expectedResult=None, index=None):
 			bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
 			farest_h = distanceBetweenTwoPoint(topmost, bottommost)
 			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
-			if (w <= 20 or h <= 20):
+			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
 			elif w/h >= 1.2 or h/w >= 1.2:
 				continue
@@ -193,7 +206,7 @@ def callbackFunction(fileName, expectedResult=None, index=None):
 			bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
 			farest_h = distanceBetweenTwoPoint(topmost, bottommost)
 			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
-			if (w <= 20 or h <= 20):
+			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
 			# elif isConvext:
 			# 	continue
@@ -214,8 +227,8 @@ def callbackFunction(fileName, expectedResult=None, index=None):
 		#### FINAL SIGN ####
 		if final_sign:  # non-empty
 			big = findBiggestContour(final_sign)
-			img, sign = boundary_Green_Box(imgMatrix, big)
-			cv2.imshow('final', img)
+			sign = cropSign(imgMatrix, big)
+			boundaryGreenBox(imgMatrix, big)
 			startTime = time.time()
 			prediction, t = predict(sign)
 			endTime = time.time()
@@ -223,9 +236,9 @@ def callbackFunction(fileName, expectedResult=None, index=None):
 			accuracy = np.amax(prediction)
 			text = "Now,I see: " + labelToText[np.argmax(prediction)] + " with " + str(accuracy) + "%"
 			timeText = "Total time: " + str(endTime - startTime) + ", predict time: " + str(t)
-			cv2.putText(img, text, org=(10,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
-			cv2.putText(img, timeText, org=(10,50), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
-			cv2.imshow('final', img)
+			cv2.putText(imgMatrix, text, org=(10,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
+			cv2.putText(imgMatrix, timeText, org=(10,50), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
+			cv2.imshow('final', imgMatrix)
 			print("Now,I see:" + labelToText[np.argmax(prediction)] + " in ", endTime - startTime, "s")
 			print(accuracy)
 
@@ -281,7 +294,7 @@ def callbackFunctionVid(imgMatrix):
 			bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
 			farest_h = distanceBetweenTwoPoint(topmost, bottommost)
 			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
-			if (w <= 20 or h <= 20):
+			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
 			elif w/h >= 1.2 or h/w >= 1.2:
 				continue
@@ -309,7 +322,7 @@ def callbackFunctionVid(imgMatrix):
 			bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
 			farest_h = distanceBetweenTwoPoint(topmost, bottommost)
 			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
-			if (w <= 20 or h <= 20):
+			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
 			elif w/h >= 1.2 or h/w >= 1.2:
 				continue
@@ -327,24 +340,24 @@ def callbackFunctionVid(imgMatrix):
 		#### FINAL SIGN ####
 		if final_sign:  # non-empty
 			big = findBiggestContour(final_sign)
-			img, sign = boundary_Green_Box(imgMatrix, big)
-			print("3")
+			sign = cropSign(imgMatrix, big)
+			# img, sign = boundary_Green_Box(imgMatrix, big)
 			startTime = time.time()
 			prediction, t = predict(sign)
 			endTime = time.time()
 
 			accuracy = np.amax(prediction)
-			if (accuracy < 0.3):
-				cv2.putText(img, "Now,I see: nothing !!", org=(10,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=1, color=(0, 255, 0))
+			if (accuracy < Sign.MIN_ACCURACY):
+				cv2.putText(imgMatrix, "Now,I see: nothing !!", org=(10,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=1, color=(0, 255, 0))
 				cv2.imshow('final', imgMatrix)
 				return
-			print("4")
+			boundaryGreenBox(imgMatrix, big)
 			text = "Now,I see: " + labelToText[np.argmax(prediction)] + " with " + str(accuracy) + "%"
 			timeText = "Total time: " + str(endTime - startTime) + ", predict time: " + str(t)
 			print(text)
-			cv2.putText(img, text, org=(10,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
-			cv2.putText(img, timeText, org=(10,50), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
-			cv2.imshow('final', img)
+			cv2.putText(imgMatrix, text, org=(10,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
+			cv2.putText(imgMatrix, timeText, org=(10,50), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2, color=(0, 255, 0))
+			cv2.imshow('final', imgMatrix)
 			return sign
 			# x, y, w, h = cv2.boundingRect(big)
 			# print("width= ", w, " - height= ", h)
@@ -357,22 +370,23 @@ def callbackFunctionVid(imgMatrix):
 			# print("farest_h= ", distanceBetweenTwoPoint(topmost, bottommost))
 
 		else:
-			cv2.putText(img, "nothing !!", org=(0,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=1, color=(0, 255, 0))
+			cv2.putText(imgMatrix, "Now,I see: nothing !!", org=(10,25), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=1, color=(0, 255, 0))
 			cv2.imshow('final', imgMatrix)
 
-	except:
-		print("err")
+	except Exception as e:
+		print(str(e))
 
 
 ###########################
 ### MAIN FUNCTION	###
 ###########################
 
-ENABLE_WRITE_FILE = True
-MODE = Mode.CAMERA
+ENABLE_WRITE_FILE = Setting.ENABLE_WRITE_FILE
+MODE = Setting.MODE
 # modelPath = "C:\\Users\\Admin\Documents\\coding\\masterAI\\traffic sign detection\\models"
-modelPath = "./models"
-videoPath = "/Users/lap15864-local/Desktop/tempVid.mov"
+modelPath = Setting.MODEL_PATH
+videoPath = Setting.VIDEO_PATH # "/Users/lap15864-local/Desktop/tempVid.mov"
+model = models.load_model(modelPath + "/" + Setting.MODEL_NAME)
 
 ###########################
 
@@ -440,7 +454,7 @@ if MODE == Mode.PIC:
 
 # camera mode
 if MODE == Mode.CAMERA:
-	cam = cv2.VideoCapture(1)
+	cam = cv2.VideoCapture(0)
 	model = models.load_model(modelPath + "/" + "model-110.h5")
 
 	while True:
@@ -457,8 +471,7 @@ if MODE == Mode.CAMERA:
 
 
 if MODE == Mode.STORE_DATA:
-	cam = cv2.VideoCapture(1)
-	model = models.load_model(modelPath + "/" + "model-110.h5")
+	cam = cv2.VideoCapture(0)
 	isStoreMode = True
 
 	while True:
@@ -472,8 +485,7 @@ if MODE == Mode.STORE_DATA:
 		if isStoreMode and type(sign) != type(None):
 			path = "./TU_dataset/turnRight/"
 			index = Utils.getNumOfDataset(path)
-			img = preprocessingImageToClassifier(sign, imageSize=32)
-			cv2.imwrite(path + str(index + 1) + ".png", img)
+			cv2.imwrite(path + str(index + 1) + ".png", sign)
 
 	cam.release()
 	cv2.destroyAllWindows()
@@ -481,20 +493,34 @@ if MODE == Mode.STORE_DATA:
 
 
 if MODE == Mode.VIDEO:
-	vid = cv2.VideoCapture(videoPath)
-	# frame
-	currentframe = 0
+	status = ''
+	while True:
+		vid = cv2.VideoCapture(videoPath)
+		# frame
+		currentframe = 0
 
-	while(True):
-		ret, frame = vid.read()
-		if cv2.waitKey(1) & 0xFF == ord('q'):
+		while(True):
+			ret, frame = vid.read()
+
+			key = cv2.waitKey(1)
+			if key == ord('q'):
+				status = 'quit'
+				break
+			elif key == ord('p'):
+				cv2.waitKey(-1)
+			elif key == ord('r'):
+				status = 'replay'
+				break
+			
+			if ret:
+				# cv2.imshow("name", frame)
+				callbackFunctionVid(frame)
+				currentframe += 1
+			else:
+				status = 'end'
+				break
+		vid.release()
+		if status == 'quit' or status == 'end':
 			break
-		
-		if ret:
-			cv2.imshow("name", frame)
-			currentframe += 1
-		else:
-			break
-	vid.release()
 	cv2.destroyAllWindows()
 	pass

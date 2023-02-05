@@ -7,3 +7,5 @@ rl-learning-backup.txt
 progress-backup.txt
 
 __pycache__
+TU_dataset
+ignore

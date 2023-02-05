@@ -1,14 +1,16 @@
 # 18/09/2022
 
+import os
 import cv2
 import numpy as np
 from const import *
 
 
-def boundary_Green_Box(img, obj, color):
-	img = cv2.rectangle(img, (obj.x-5, obj.y-5), (obj.x+obj.w+4, obj.y+obj.h+4), color, 10)
+def boundaryBox(img, obj, color):
+	img = cv2.rectangle(img, (obj.x-5, obj.y-5),
+	                    (obj.x+obj.w+4, obj.y+obj.h+4), color, 10)
 	sign = img[(obj.y-5):(obj.y+obj.h+4), (obj.x-5):(obj.x+obj.w+4)]
-	return img, sign
+	return sign
 
 
 class Light:
@@ -23,6 +25,7 @@ class Light:
 		return
 
 	def setNewValue(self, contour, size, x, y, w, h):
+		print(self.color, ": ", size)
 		if size > self.size:
 			self.contour = contour
 			self.size = size
@@ -54,18 +57,21 @@ class TrafficLight:
 		for contour in contours:
 			area = cv2.contourArea(contour)
 			x, y, w, h = cv2.boundingRect(contour)
-			if area < STANDARD_PROPERTY.minArea or area > STANDARD_PROPERTY.maxArea:
+			if area < Setting.STANDARD_PROPERTY.minArea or area > Setting.STANDARD_PROPERTY.maxArea:
+				if area > Setting.STANDARD_PROPERTY.maxArea:
+					print("######################################", area)
 				continue
-			elif w/h >= 1.2 or h/w >= 1.2:
+			elif w/h >= Setting.STANDARD_PROPERTY.widthHeightRatio or h/w >= Setting.STANDARD_PROPERTY.widthHeightRatio:
+				print("===================================>", w/h, h/w)
 				continue
 			# pass all standard property
 			self.setNewValue(color, contour, area, x, y, w, h)
 
 	def singleLightDetect(self, img: cv2.Mat, color: str):
 		hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-		sensitivity = COLOR_THRESHOLD[color]["sensitivity"]
-		lowerColor = COLOR_THRESHOLD[color]["lower"]
-		upperColor = COLOR_THRESHOLD[color]["upper"]
+		sensitivity = Setting.COLOR_THRESHOLD[color]["sensitivity"]
+		lowerColor = Setting.COLOR_THRESHOLD[color]["lower"]
+		upperColor = Setting.COLOR_THRESHOLD[color]["upper"]
 		maskColor = []
 		if len(sensitivity) == 0:
 			maskColor = cv2.inRange(hsvImg, lowerColor, upperColor)
@@ -87,26 +93,33 @@ class TrafficLight:
 		if (redSize >= greenSize and redSize >= yellowSize and redSize != 0):
 			print("red");
 			self.color = TRAFFIC_LIGHT.red
-			img, sign = boundary_Green_Box(img, self.red, COLOR.red)
-			cv2.putText(img, "Traffic light detected: red", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.red)
+			sign = boundaryBox(img, self.red, COLOR.red)
+			cv2.putText(img, "Traffic light detected: red", (10, 25),
+			            cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.red)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
 		elif (greenSize >= redSize and greenSize >= yellowSize and greenSize != 0):
 			print("green")
 			self.color = TRAFFIC_LIGHT.green
-			img, sign = boundary_Green_Box(img, self.green, COLOR.green)
-			cv2.putText(img, "Traffic light detected: green", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.green)
+			sign = boundaryBox(img, self.green, COLOR.green)
+			cv2.putText(img, "Traffic light detected: green", (10, 25),
+			            cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.green)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
 		elif (yellowSize >= redSize and yellowSize >= greenSize and yellowSize != 0):
 			print("yellow")
 			self.color = TRAFFIC_LIGHT.yellow
-			cv2.putText(img, "Traffic light detected: yellow", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.yellow)
-			img, sign = boundary_Green_Box(img, self.yellow, COLOR.yellow)
+			cv2.putText(img, "Traffic light detected: yellow", (10, 25),
+			            cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.yellow)
+			sign = boundaryBox(img, self.yellow, COLOR.yellow)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
+			
 		else:
 			self.color = None
+			cv2.putText(img, "Traffic light detected: nothing", (10, 25),
+			            cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=COLOR.white)
+			cv2.imshow("final", img)
 
 
 def readImg(fileName: str):
@@ -161,22 +174,90 @@ def canyEdge(img: cv2.Mat):
 	cv2.imshow("cnt", copy)
 
 
-
 ############
 #   MAIN   #
 ############
 # orgImg = readImg("C:/Users/Admin/Documents/Tu/coding/Autonomous-Car/src/trafficLightDetection/assets/green1.jpg")
-# orgImg = cv2.imread("C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\green2.jpg")
-orgImg = cv2.imread("./assets/red1.jpg")
-cv2.imshow("org", orgImg)
-trafficLight = TrafficLight()
-trafficLight.singleLightDetect(orgImg, "green")
-trafficLight.singleLightDetect(orgImg, "red")
-trafficLight.singleLightDetect(orgImg, "yellow")
-print(trafficLight.red.size)
-print(trafficLight.green.size)
-trafficLight.classify(orgImg)
+# orgImg = cv2.imread("C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\red1.jpg")
+print("start")
 
+if Setting.MODE == Mode.PIC:
+	orgImg = cv2.imread(Setting.PICTURE_PATH)
+	cv2.imshow("org", orgImg)
+	trafficLight = TrafficLight()
+	trafficLight.singleLightDetect(orgImg, "green")
+	trafficLight.singleLightDetect(orgImg, "red")
+	trafficLight.singleLightDetect(orgImg, "yellow")
+	# print(trafficLight.red.size)
+	# print(trafficLight.green.size)
+	# print(trafficLight.yellow.size)
+	trafficLight.classify(orgImg)
+	cv2.waitKey(0)
 
+elif Setting.MODE == Mode.CAMERA:
+	cam = cv2.VideoCapture(0)
+	while True:
+		ret, frame = cam.read()
+		key = cv2.waitKey(1)
+		if key == ord('q'):
+			break
 
-cv2.waitKey(0)
+		trafficLight = TrafficLight()
+		trafficLight.singleLightDetect(frame, "green")
+		trafficLight.singleLightDetect(frame, "red")
+		trafficLight.singleLightDetect(frame, "yellow")
+		# print(trafficLight.red.size)
+		# print(trafficLight.green.size)
+		# print(trafficLight.yellow.size)
+		trafficLight.classify(frame)
+	cv2.destroyAllWindows()
+
+elif Setting.MODE == Mode.VIDEO:
+	status = ''
+	while True:
+		vid = cv2.VideoCapture(Setting.VIDEO_PATH)
+		currentframe = 0
+
+		while True:
+			print()
+			print("vid read")
+			print("--------------------")
+			ret, frame = vid.read()
+
+			key = cv2.waitKey(1)
+			if key == ord('q'):
+				status = 'quit'
+				break
+			elif key == ord('p'):
+				cv2.waitKey(-1)
+			elif key == ord('r'):
+				status = 'replay'
+				break
+
+			if ret:
+				trafficLight = TrafficLight()
+				trafficLight.singleLightDetect(frame, "green")
+				trafficLight.singleLightDetect(frame, "red")
+				trafficLight.singleLightDetect(frame, "yellow")
+				# print(trafficLight.red.size)
+				# print(trafficLight.green.size)
+				# print(trafficLight.yellow.size)
+				trafficLight.classify(frame)
+				print("--------------")
+				print("done")
+				print()
+
+				currentframe += 1
+			else:
+				print("end")
+				# status = 'end'
+				# break
+		print("vid release")
+		vid.release()
+		if status == 'quit' or status == 'end':
+			print("break")
+			break
+
+	# cv2.waitKey(0)
+	print("out")
+

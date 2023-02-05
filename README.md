@@ -37,3 +37,8 @@ catkin_make
 **Contribute Project Rule:**
 
 -**Commit message:** *"#ISSUE_NUMBER date: detail changing of this commit"* => **Example:** *"#4 20-08-2022: changing folder structure for understandable purpose"*
+
+**Authors**:
+- Nguyen Trong Nhan - 1914446
+- Nguyen Duy Thinh - 1915313
+- Le Hoang Minh Tu - 1915812
