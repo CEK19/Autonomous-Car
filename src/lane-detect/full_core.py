@@ -17,7 +17,6 @@ import random
 from keras.models import *
 import time
 import math
-
 dimImage = 128
 videoPath = "D:/container/AI_DCLV/readData/video/angle7.MOV"
 outputPath = "D:/container/AI_DCLV/Report/"
