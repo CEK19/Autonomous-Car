@@ -29,11 +29,11 @@ class Utils:
         delta = b**2 - 4*a*c
         # print("delta: ", delta)
         if delta < 0:
-            return Equation.NO_SOLUTION, 0, 0
+            return EQUATION.NO_SOLUTION, 0, 0
         if delta == 0:
-            return Equation.ONE_SOLUTION, -b/(2*a), -b/(2*a)
+            return EQUATION.ONE_SOLUTION, -b/(2*a), -b/(2*a)
         else:
-            return Equation.TWO_SOLUTION, (-b + math.sqrt(delta))/(2*a), (-b - math.sqrt(delta))/(2*a)
+            return EQUATION.TWO_SOLUTION, (-b + math.sqrt(delta))/(2*a), (-b - math.sqrt(delta))/(2*a)
     
     @staticmethod
     def getDistanceFromObstacle(xCenter, yCenter, xTarget, yTarget, xObstacle, yObstacle):
@@ -52,15 +52,15 @@ class Utils:
         # Pt đường thẳng cắt hình tròn (a^2 + 1)x^2 - 2*(xObstacle - a*b + a*yObstacle)x + (b - yObstacle)**2 + xObstacle**2 - RADIUS_LIDAR**2 = 0
         a_temp = a**2 + 1
         b_temp = -2*xObstacle + 2*a*(b - yObstacle)
-        c_temp = (b - yObstacle)**2 + xObstacle**2 - PlayerParam.RADIUS_OBJECT**2
+        c_temp = (b - yObstacle)**2 + xObstacle**2 - (PLAYER_SETTING.RADIUS_OBJECT)**2
         # print("a_temp = {}, b_temp = {}, c_temp = {}".format(a_temp, b_temp, c_temp))
         numberOfSolution, x1, x2 = Utils.findSolOfEquation(a_temp, b_temp, c_temp)
         
         
-        if numberOfSolution == Equation.NO_SOLUTION:
+        if numberOfSolution == EQUATION.NO_SOLUTION:
             # print('NO_SOLUTION')
-            return PlayerParam.INFINITY
-        elif numberOfSolution == Equation.ONE_SOLUTION:
+            return PLAYER_SETTING.INFINITY
+        elif numberOfSolution == EQUATION.ONE_SOLUTION:
             d = Utils.distanceBetweenTwoPoints(xCenter, yCenter, x1, a*x1 + b)
             # print('ONE_SOLUTION')
             # print("---> ", x1, a*x1 + b)
