@@ -61,7 +61,7 @@ class Utils:
 
         if numberOfSolution == EQUATION.NO_SOLUTION:
             # print('NO_SOLUTION')
-            return PLAYER_SETTING.INFINITY
+            return INT_INFINITY
         elif numberOfSolution == EQUATION.ONE_SOLUTION:
             d = Utils.distanceBetweenTwoPoints(xCenter, yCenter, x1, a*x1 + b)
             # print('ONE_SOLUTION')

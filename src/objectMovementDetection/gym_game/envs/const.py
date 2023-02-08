@@ -1,3 +1,4 @@
+import math
 class GAME_SETTING:
     SCREEN_WIDTH = 500
     SCREEN_HEIGHT = 500
@@ -5,6 +6,7 @@ class GAME_SETTING:
 
 class PLAYER_SETTING:
     RADIUS_OBJECT = 10
+    RADIUS_LIDAR = 140 # From the border of the circle
     
     INITIAL_X = GAME_SETTING.SCREEN_WIDTH//2
     INITIAL_Y = GAME_SETTING.SCREEN_HEIGHT - 20
@@ -15,13 +17,28 @@ class PLAYER_SETTING:
     
     ACCELERATION_FORWARD = 5
     ACCELERATION_ROTATE = 0.05
+    
+    CASTED_RAYS = 90
+    FOV = math.pi
+    HALF_FOV = FOV/2
+    STEP_ANGLE = FOV / CASTED_RAYS
+    
+class OBSTACLE_SETTING:
+    MAX_INSTANCES = 10
+    RADIUS_OBJECT = 10
+    PROBABILITIES_ACTION = [0.1,
+                            0.1,
+                            0.1,
+                            0.4,
+                            0.2,
+                            0.1]
 
 class COLOR:
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
-    CRYAN = (0, 255, 255)
+    CYAN = (0, 255, 255)
     PINK = (255, 0, 255)
 
 
@@ -39,7 +56,15 @@ class EQUATION:
     ONE_SOLUTION = 1
     TWO_SOLUTION = 2    
 
-ACTION_SPACE = 5
+ACTION_SPACE = 6
+ACTIONS_LIST = [
+    ACTIONS.TURN_RIGHT_ACCELERATION,
+    ACTIONS.TURN_LEFT_ACCELERATION,
+    ACTIONS.STOP,
+    ACTIONS.FORWARD_ACCELERATION,
+    ACTIONS.BACKWARD_ACCELERATION,
+    ACTIONS.DO_NOTHING,
+]
 MAX_EPISODE = 10000
 INT_INFINITY = 99999
 
