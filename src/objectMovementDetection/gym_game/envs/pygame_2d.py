@@ -130,7 +130,8 @@ class Robot(Car):
                     math.sin(startAngle) * PLAYER_SETTING.RADIUS_LIDAR
                 target_y = self.yPos + \
                     math.cos(startAngle) * PLAYER_SETTING.RADIUS_LIDAR
-                for obstacle in obstacles:
+                
+                for obstacle in inRangeLidarObject:
                     # TODO: DOUBLE CHECK WITH THỊNH
                     theda = math.sqrt((obstacle.xPos - self.xPos)
                                       ** 2+(obstacle.yPos - self.yPos)**2)
@@ -161,13 +162,15 @@ class Robot(Car):
                     startAngle += PLAYER_SETTING.STEP_ANGLE
                     continue
 
+                distance = INT_INFINITY
+
                 for obstacle in inRangeLidarObject:
                     scalar = (self.xPos-obstacle.xPos)*math.sin(startAngle) + \
                         (obstacle.yPos-self.yPos)*math.cos(startAngle)
                     if scalar > 0:
                         distance = min(distance, Utils.getDistanceFromObstacle(
                             self.xPos, self.yPos, target_x, target_y, obstacle.xPos, obstacle.yPos))
-                
+
                 if distance <= PLAYER_SETTING.RADIUS_LIDAR:
                     target_x = self.xPos - math.sin(startAngle) * distance
                     target_y = self.yPos + math.cos(startAngle) * distance
