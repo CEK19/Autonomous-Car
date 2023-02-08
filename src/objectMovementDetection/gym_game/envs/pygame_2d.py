@@ -101,7 +101,7 @@ class Robot(Car):
                 inRangeLidarObject.append(obstacle)
 
         startAngle = self.currAngle - PLAYER_SETTING.HALF_FOV
-
+        
         if (len(inRangeLidarObject) == 0):
             for ray in range(PLAYER_SETTING.CASTED_RAYS):
                 target_x = self.xPos - \
