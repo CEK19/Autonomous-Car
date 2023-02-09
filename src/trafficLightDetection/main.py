@@ -235,19 +235,23 @@ elif Setting.MODE == Mode.VIDEO:
 				break
 
 			if ret:
-				trafficLight = TrafficLight()
-				trafficLight.singleLightDetect(frame, "green")
-				trafficLight.singleLightDetect(frame, "red")
-				trafficLight.singleLightDetect(frame, "yellow")
-				# print(trafficLight.red.size)
-				# print(trafficLight.green.size)
-				# print(trafficLight.yellow.size)
-				trafficLight.classify(frame)
-				print("--------------")
-				print("done")
-				print()
+				try:
+					trafficLight = TrafficLight()
+					trafficLight.singleLightDetect(frame, "green")
+					trafficLight.singleLightDetect(frame, "red")
+					trafficLight.singleLightDetect(frame, "yellow")
+					# print(trafficLight.red.size)
+					# print(trafficLight.green.size)
+					# print(trafficLight.yellow.size)
+					trafficLight.classify(frame)
+					print("--------------")
+					print("done")
+					print()
 
-				currentframe += 1
+					currentframe += 1
+				except:
+					pass
+				
 			else:
 				print("end")
 				# status = 'end'
