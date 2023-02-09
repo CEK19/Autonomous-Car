@@ -1,6 +1,7 @@
 from stable_baselines3 import PPO
 import os
 import time
+import random
 from dynamic_obstacle_avoidance import DynamicObstacleAvoidance
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'

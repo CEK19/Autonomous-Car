@@ -7,8 +7,9 @@ from const import *
 
 class DynamicObstacleAvoidance(gym.Env):
     def __init__(self) -> None:
+        super(DynamicObstacleAvoidance, self).__init__()
         self.pygame = PyGame2D()
-        self.action_space = spaces.Discrete(ACTION_SPACE)
+        self.action_space = spaces.Discrete(ACTION_SPACE, )
 
         ratioLeft = (0, 1)
         alpha = (0, 2*math.pi)

@@ -343,11 +343,13 @@ class PyGame2D():
         alpha = self.robot.currAngle
         fwVelo = self.robot.currentForwardVelocity
         rVelo = self.robot.currRotationVelocity
-        lidars = self.robot.lidarSignals
-        return np.array([ratioLeft, alpha, fwVelo, rVelo].extend(lidars))
+        lidars = self.robot.lidarSignals        
+        
+        infoStateVector = np.array([ratioLeft, alpha, fwVelo, rVelo])
+        lidarStateVector = np.array(lidars)        
+        return np.concatenate((infoStateVector, lidarStateVector))
 
     def view(self):
-        # TODO: UPDATE IT
         # draw game
         self.screen.fill(COLOR.BLACK)
         self.screen.blit(self.screen, (0, 0))
