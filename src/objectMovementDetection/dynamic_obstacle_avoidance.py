@@ -16,14 +16,14 @@ class DynamicObstacleAvoidance(gym.Env):
         rVelo = (PLAYER_SETTING.MIN_ROTATION_VELO,
                  PLAYER_SETTING.MAX_ROTATION_VELO)
 
-        lowerBoundLidar = np.full((PLAYER_SETTING.CASTED_RAYS), 0)
-        upperBoundLidar = np.full((PLAYER_SETTING.CASTED_RAYS), INT_INFINITY)
+        lowerBoundLidar = np.full((PLAYER_SETTING.CASTED_RAYS,), 0, dtype=float)
+        upperBoundLidar = np.full((PLAYER_SETTING.CASTED_RAYS,), INT_INFINITY, dtype=float)
 
-        lowerBound = np.array([ratioLeft[0], alpha[0], fwVelo[0], rVelo[0]])
-        lowerBound = np.concatenate(lowerBound, lowerBoundLidar)
+        lowerBound = np.array([ratioLeft[0], alpha[0], fwVelo[0], rVelo[0]], dtype=float)
+        lowerBound = np.concatenate((lowerBound, lowerBoundLidar))
 
-        upperBound = np.array([ratioLeft[1], alpha[1], fwVelo[1], rVelo[1]])
-        upperBound = np.concatenate(upperBound, upperBoundLidar)
+        upperBound = np.array([ratioLeft[1], alpha[1], fwVelo[1], rVelo[1]], dtype=float)
+        upperBound = np.concatenate((upperBound, upperBoundLidar))
 
         self.observation_space = spaces.Box(
             low=lowerBound,
@@ -44,4 +44,5 @@ class DynamicObstacleAvoidance(gym.Env):
         return obs, reward, done, {}
 
     def render(self, mode="human", close=False):
-        self.pygame.view()
+        # self.pygame.view()
+        pass

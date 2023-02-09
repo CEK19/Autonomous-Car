@@ -364,8 +364,8 @@ class PyGame2D():
         self.clock.tick(GAME_SETTING.FPS)
 
 
-game = PyGame2D()
-while True:
-    Utils.inputUser(game)
-    game.view()
-    pass
+# game = PyGame2D()
+# while True:
+#     Utils.inputUser(game)
+#     game.view()
+#     pass
