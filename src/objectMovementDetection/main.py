@@ -1,7 +1,4 @@
-lidarVisualize = [{"source": {"x": 10, "y": 11},
-                                "target": {"x": 12, "y": 13},
-                                "color": (0, 0 , 0)
-                                }]*10
+import numpy as np
 
-lidarVisualize[0]["source"] = "yeee"
-print(lidarVisualize)
+lowerBoundLidar = np.full((10, ), 0, dtype=int )
+print(lowerBoundLidar)
