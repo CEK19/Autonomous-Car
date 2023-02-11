@@ -1,3 +1,6 @@
+LIBRARY TO INSTALL
+- TO BE CONTINUE
+
 **main.py:** File to train **(RL_TRAIN)**, manually play **(MANUAL)**, file to deploy **(RL_DEPLOY)** <br>
 
 **const.py:** Contains constant variables<br>
