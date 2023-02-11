@@ -262,7 +262,9 @@ class PyGame2D():
         self.mode = 0
 
     def _initObstacle(self):
-        numOfObstacles = random.randrange(OBSTACLE_SETTING.MAX_INSTANCES)
+        #TODO: UPDATE IT
+        # numOfObstacles = random.randrange(OBSTACLE_SETTING.MAX_INSTANCES)
+        numOfObstacles = OBSTACLE_SETTING.MAX_INSTANCES
         obstacles = []
         for _ in range(numOfObstacles):
             obstacleInstance = Obstacles(

@@ -30,7 +30,7 @@ class PLAYER_SETTING:
 
 
 class OBSTACLE_SETTING:
-    MAX_INSTANCES = 10
+    MAX_INSTANCES = 5
     RADIUS_OBJECT = 10
     PROBABILITIES_ACTION = [0.1,
                             0.1,
