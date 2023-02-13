@@ -9,4 +9,4 @@ progress-backup.txt
 __pycache__
 TU_dataset
 ignore
-src\objectMovementDetection\data
+src/objectMovementDetection/data/
