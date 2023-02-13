@@ -19,9 +19,15 @@ env.reset()
 
 model = RecurrentPPO("MlpLstmPolicy", env, verbose=1, tensorboard_log=log_dir)
 
-TIMESTEPS = 10000
-for i in range(1, 100):
-    model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO")
-    model.save(f"{models_dir}/{TIMESTEPS*i}")
+TIMESTEPS = 1000000
+# for i in range(1, 100):
+#     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO")
+#     model.save(f"{models_dir}/{TIMESTEPS*i}")
+
+# env.close()
+
+
+model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO")
+model.save(f"{models_dir}")
 
 env.close()

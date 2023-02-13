@@ -89,8 +89,8 @@ class Robot(Car):
                 self.xPos, self.yPos, collision.xPos, collision.yPos)
             # https://stackoverflow.com/questions/22135712/pygame-collision-detection-with-two-circles
             if distanceBetweenCenter <= PLAYER_SETTING.RADIUS_OBJECT + OBSTACLE_SETTING.RADIUS_OBJECT:
-                self.is_alive = True
-                break
+                self.is_alive = False
+                return
 
         if self.xPos <= 0 or self.xPos >= GAME_SETTING.SCREEN_WIDTH or self.yPos < 0 or self.yPos >= GAME_SETTING.SCREEN_HEIGHT:
             self.is_alive = False
@@ -262,7 +262,7 @@ class PyGame2D():
         self.mode = 0
 
     def _initObstacle(self):
-        #TODO: UPDATE IT
+        # TODO: UPDATE IT
         # numOfObstacles = random.randrange(OBSTACLE_SETTING.MAX_INSTANCES)
         numOfObstacles = OBSTACLE_SETTING.MAX_INSTANCES
         obstacles = []
@@ -294,10 +294,10 @@ class PyGame2D():
     def evaluate(self):
         reward = 0
         if not self.robot.is_alive:
-            reward += -10000
+            reward += -1000
 
-        if (GAME_SETTING.SCREEN_WIDTH - self.robot.yPos) >= 1:
-            reward += -100000000
+        if (GAME_SETTING.SCREEN_HEIGHT - self.robot.yPos) >= 1:
+            reward += -10000
 
         frontLidars = self.robot.lidarSignals[75:105]
         eachFrontPenalty = 0.01
@@ -311,18 +311,21 @@ class PyGame2D():
         for frontLidar in frontLidars:
             if frontLidar == INT_INFINITY:
                 reward += 1
+                break
             reward += -abs(PLAYER_SETTING.RADIUS_LIDAR -
                            frontLidar)*eachFrontPenalty
 
         for leftLidar in leftLidars:
             if leftLidar == INT_INFINITY:
                 reward += 1
+                break
             reward += -abs(PLAYER_SETTING.RADIUS_LIDAR -
                            leftLidar)*eachLeftPenalty
 
         for rightLidar in rightLidars:
             if rightLidar == INT_INFINITY:
                 reward += 1
+                break
             reward += -abs(PLAYER_SETTING.RADIUS_LIDAR -
                            rightLidar)*eachRightPenalty
 
@@ -336,7 +339,7 @@ class PyGame2D():
         return reward
 
     def is_done(self):
-        if (self.robot.is_alive or self.robot.is_goal):
+        if ((not self.robot.is_alive) or self.robot.is_goal):
             return True
         return False
 
@@ -345,16 +348,17 @@ class PyGame2D():
         alpha = self.robot.currAngle
         fwVelo = self.robot.currentForwardVelocity
         rVelo = self.robot.currRotationVelocity
-        lidars = self.robot.lidarSignals        
-        
+        lidars = self.robot.lidarSignals
+
         infoStateVector = np.array([ratioLeft, alpha, fwVelo, rVelo])
-        lidarStateVector = np.array(lidars)        
+        lidarStateVector = np.array(lidars)
         return np.concatenate((infoStateVector, lidarStateVector))
 
     def view(self):
         # draw game
         self.screen.fill(COLOR.BLACK)
         self.screen.blit(self.screen, (0, 0))
+        self.clock.tick(GAME_SETTING.FPS)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -364,8 +368,7 @@ class PyGame2D():
         self.robot.draw(screen=self.screen)
         for obstacle in self.obstacles:
             obstacle.draw(screen=self.screen)
-        pygame.display.flip()
-        self.clock.tick(GAME_SETTING.FPS)
+        pygame.display.flip()        
 
 
 # game = PyGame2D()
