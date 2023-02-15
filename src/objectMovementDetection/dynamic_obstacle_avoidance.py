@@ -42,7 +42,6 @@ class DynamicObstacleAvoidance(gym.Env):
         obs = self.pygame.observe()
         reward = self.pygame.evaluate()
         done = self.pygame.is_done()
-        print("action", action)
         return obs, reward, done, {}
 
     def render(self, mode="human", close=False):
