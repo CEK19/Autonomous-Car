@@ -1,20 +1,35 @@
-from const import *
-import numpy as np
+import pygame
+import pymunk
 
-ratioLeft = (0, 1)
-alpha = (0, 2*math.pi)
-fwVelo = (0, PLAYER_SETTING.MAX_FORWARD_VELO)
-rVelo = (PLAYER_SETTING.MIN_ROTATION_VELO,
-            PLAYER_SETTING.MAX_ROTATION_VELO)
+pygame.init()
+display = pygame.display.set_mode((800, 800))
 
-lowerBoundLidar = np.full((PLAYER_SETTING.CASTED_RAYS,), 0, dtype=float)
-upperBoundLidar = np.full((PLAYER_SETTING.CASTED_RAYS,), INT_INFINITY, dtype=float)
+clock = pygame.time.Clock()
+FPS = 60
+space = pymunk.Space()
 
-lowerBound = np.array([ratioLeft[0], alpha[0], fwVelo[0], rVelo[0]], dtype=float)
-lowerBound = np.concatenate((lowerBound, lowerBoundLidar))
 
-upperBound = np.array([ratioLeft[1], alpha[1], fwVelo[1], rVelo[1]], dtype=float)
-upperBound = np.concatenate((upperBound, upperBoundLidar))
 
-print(lowerBound)
-print(upperBound)
+body = pymunk.Body()
+body.position = 200, 200
+shape = pymunk.Circle(body, 10)
+shape.density = 1
+space.add(body, shape)
+
+def game():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            
+        display.fill((255, 255, 255))
+        x, y = body.position
+        pygame.draw.circle(display, (255, 0, 0), (x, y), 4)
+        
+        
+        pygame.display.update()
+        clock.tick(FPS)
+        space.step(1/FPS)
+            
+game()
+pygame.quit()
