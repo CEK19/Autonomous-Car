@@ -64,6 +64,23 @@ class COLOR_THRESHOLD:
 			"upper": np.array([93, 255, 215])
 		}
 	}
+	newDemo = {
+		"yellow": {	# done
+			"sensitivity": np.array([]),
+			"lower": np.array([15, 20, 230]),	# H,S,V
+			"upper": np.array([30, 255, 255])
+		},
+		"red": {	# demo
+			"sensitivity": np.array([170, 0, 0]),		# [170, 0, 0]
+			"lower": np.array([0, 100, 110]),	# [0, 210, 110]	[0, 228, 124]
+			"upper": np.array([7, 150, 255])
+		},
+		"green": {	# done
+			"sensitivity": np.array([]),
+			"lower": np.array([48, 119, 125]),
+			"upper": np.array([93, 255, 215])
+		}
+	}
 
 
 class STANDARD_PROPERTY:
@@ -78,8 +95,8 @@ class STANDARD_PROPERTY:
 
 	class demo:
 		minArea = 100
-		maxArea = 10000
-		widthHeightRatio = 140
+		maxArea = 30000
+		widthHeightRatio = 1.8
 	
 # BGR
 class COLOR:
@@ -90,10 +107,10 @@ class COLOR:
 	
 	
 class Setting:
-	PICTURE_PATH = "./assets/demo/red2.jpg"	# "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red2.jpg"
+	PICTURE_PATH = "./assets/ngocngec/yellow1.jpg"	# "C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red2.jpg"
 	VIDEO_PATH = "./assets/ignore/yellowVid.mp4"	# PATH = "./assets/ignore/org.mp4"
-	MODE = Mode.VIDEO
-	COLOR_THRESHOLD = COLOR_THRESHOLD.demo
+	MODE = Mode.PIC
+	COLOR_THRESHOLD = COLOR_THRESHOLD.newDemo
 	STANDARD_PROPERTY = STANDARD_PROPERTY.demo
 
 # "./assets/ignore/redVid.mp4"
