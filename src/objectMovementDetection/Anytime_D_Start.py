@@ -45,8 +45,10 @@ class ADStar:
         self.count_env_change = 0
         self.obs_add = set()
         self.obs_remove = set()
-        self.title = "Anytime D*: Small changes"  # Significant changes
+        self.title = "Anytime D*: Significant changes"  # Anytime D*: Significant changes || Anytime D*: Small changes
         self.fig = plt.figure()
+
+
 
     def run(self):
         self.Plot.plot_grid(self.title)
@@ -72,36 +74,91 @@ class ADStar:
         self.fig.canvas.mpl_connect('button_press_event', self.on_press)
         plt.show()
 
+
+
     def on_press(self, event):
         x, y = event.xdata, event.ydata
         if x < 0 or x > self.x - 1 or y < 0 or y > self.y - 1:
             print("Please choose right area!")
-        else:
-            self.count_env_change += 1
-            x, y = int(x), int(y)
-            print("Change position: s =", x, ",", "y =", y)
+            return
+        
+        self.count_env_change += 1
+        x, y = int(x), int(y)
+        print("Change position: s =", x, ",", "y =", y)
 
-            # for small changes
-            if self.title == "Anytime D*: Small changes":
-                if (x, y) not in self.obs:
-                    self.obs.add((x, y))
+        # for small changes
+        if self.title == "Anytime D*: Small changes":
+            if (x, y) not in self.obs:
+                self.obs.add((x, y))
+                self.g[(x, y)] = float("inf")
+                self.rhs[(x, y)] = float("inf")
+            else:
+                self.obs.remove((x, y))
+                self.UpdateState((x, y))
+
+            self.Plot.update_obs(self.obs)
+
+            for sn in self.get_neighbor((x, y)):
+                self.UpdateState(sn)
+
+            plt.cla()
+            self.Plot.plot_grid(self.title)
+
+            while True:
+                if len(self.INCONS) == 0:
+                    break
+                self.OPEN.update(self.INCONS)
+                for s in self.OPEN:
+                    self.OPEN[s] = self.Key(s)
+                self.CLOSED = set()
+                self.ComputeOrImprovePath()
+                self.plot_visited()
+                self.plot_path(self.extract_path())
+                # plt.plot(self.title)
+                self.visited = set()
+
+                if self.eps <= 1.0:
+                    break
+
+        # for significant changes
+        else:
+            if (x, y) not in self.obs:
+                self.obs.add((x, y))
+                self.obs_add.add((x, y))
+                plt.plot(x, y, 'sk')
+                if (x, y) in self.obs_remove:
+                    self.obs_remove.remove((x, y))
+            else:
+                self.obs.remove((x, y))
+                self.obs_remove.add((x, y))
+                plt.plot(x, y, marker='s', color='white')
+                if (x, y) in self.obs_add:
+                    self.obs_add.remove((x, y))
+
+            self.Plot.update_obs(self.obs)
+
+            if self.count_env_change >= 15:
+                self.count_env_change = 0
+                self.eps += 2.0
+                for s in self.obs_add:
                     self.g[(x, y)] = float("inf")
                     self.rhs[(x, y)] = float("inf")
-                else:
-                    self.obs.remove((x, y))
-                    self.UpdateState((x, y))
 
-                self.Plot.update_obs(self.obs)
+                    for sn in self.get_neighbor(s):
+                        self.UpdateState(sn)
 
-                for sn in self.get_neighbor((x, y)):
-                    self.UpdateState(sn)
+                for s in self.obs_remove:
+                    for sn in self.get_neighbor(s):
+                        self.UpdateState(sn)
+                    self.UpdateState(s)
 
                 plt.cla()
                 self.Plot.plot_grid(self.title)
 
                 while True:
-                    if len(self.INCONS) == 0:
+                    if self.eps <= 1.0:
                         break
+                    self.eps -= 0.5
                     self.OPEN.update(self.INCONS)
                     for s in self.OPEN:
                         self.OPEN[s] = self.Key(s)
@@ -109,62 +166,13 @@ class ADStar:
                     self.ComputeOrImprovePath()
                     self.plot_visited()
                     self.plot_path(self.extract_path())
-                    # plt.plot(self.title)
+                    plt.title(self.title)
                     self.visited = set()
+                    plt.pause(0.5)
 
-                    if self.eps <= 1.0:
-                        break
+        self.fig.canvas.draw_idle()
 
-            else:
-                if (x, y) not in self.obs:
-                    self.obs.add((x, y))
-                    self.obs_add.add((x, y))
-                    plt.plot(x, y, 'sk')
-                    if (x, y) in self.obs_remove:
-                        self.obs_remove.remove((x, y))
-                else:
-                    self.obs.remove((x, y))
-                    self.obs_remove.add((x, y))
-                    plt.plot(x, y, marker='s', color='white')
-                    if (x, y) in self.obs_add:
-                        self.obs_add.remove((x, y))
 
-                self.Plot.update_obs(self.obs)
-
-                if self.count_env_change >= 15:
-                    self.count_env_change = 0
-                    self.eps += 2.0
-                    for s in self.obs_add:
-                        self.g[(x, y)] = float("inf")
-                        self.rhs[(x, y)] = float("inf")
-
-                        for sn in self.get_neighbor(s):
-                            self.UpdateState(sn)
-
-                    for s in self.obs_remove:
-                        for sn in self.get_neighbor(s):
-                            self.UpdateState(sn)
-                        self.UpdateState(s)
-
-                    plt.cla()
-                    self.Plot.plot_grid(self.title)
-
-                    while True:
-                        if self.eps <= 1.0:
-                            break
-                        self.eps -= 0.5
-                        self.OPEN.update(self.INCONS)
-                        for s in self.OPEN:
-                            self.OPEN[s] = self.Key(s)
-                        self.CLOSED = set()
-                        self.ComputeOrImprovePath()
-                        self.plot_visited()
-                        self.plot_path(self.extract_path())
-                        plt.title(self.title)
-                        self.visited = set()
-                        plt.pause(0.5)
-
-            self.fig.canvas.draw_idle()
 
     def ComputeOrImprovePath(self):
         while True:
@@ -187,6 +195,8 @@ class ADStar:
                     self.UpdateState(sn)
                 self.UpdateState(s)
 
+
+
     def UpdateState(self, s):
         if s != self.s_goal:
             self.rhs[s] = float("inf")
@@ -201,11 +211,15 @@ class ADStar:
             else:
                 self.INCONS[s] = 0
 
+
+
     def Key(self, s):
         if self.g[s] > self.rhs[s]:
             return [self.rhs[s] + self.eps * self.h(self.s_start, s), self.rhs[s]]
         else:
             return [self.g[s] + self.h(self.s_start, s), self.g[s]]
+
+
 
     def TopKey(self):
         """
@@ -215,6 +229,8 @@ class ADStar:
         s = min(self.OPEN, key=self.OPEN.get)
         return s, self.OPEN[s]
 
+
+
     def h(self, s_start, s_goal):
         heuristic_type = self.heuristic_type  # heuristic type
 
@@ -222,6 +238,8 @@ class ADStar:
             return abs(s_goal[0] - s_start[0]) + abs(s_goal[1] - s_start[1])
         else:
             return math.hypot(s_goal[0] - s_start[0], s_goal[1] - s_start[1])
+
+
 
     def cost(self, s_start, s_goal):
         """
@@ -236,6 +254,8 @@ class ADStar:
             return float("inf")
 
         return math.hypot(s_goal[0] - s_start[0], s_goal[1] - s_start[1])
+
+
 
     def is_collision(self, s_start, s_end):
         if s_start in self.obs or s_end in self.obs:
@@ -254,6 +274,8 @@ class ADStar:
 
         return False
 
+
+
     def get_neighbor(self, s):
         nei_list = set()
         for u in self.u_set:
@@ -262,6 +284,8 @@ class ADStar:
                 nei_list.add(s_next)
 
         return nei_list
+
+
 
     def extract_path(self):
         """
@@ -284,12 +308,16 @@ class ADStar:
 
         return list(path)
 
+
+
     def plot_path(self, path):
         px = [x[0] for x in path]
         py = [x[1] for x in path]
         plt.plot(px, py, linewidth=2)
         plt.plot(self.s_start[0], self.s_start[1], "bs")
         plt.plot(self.s_goal[0], self.s_goal[1], "gs")
+
+
 
     def plot_visited(self):
         self.count += 1
