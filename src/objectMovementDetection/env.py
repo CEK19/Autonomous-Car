@@ -25,13 +25,17 @@ class Env:
         y = self.y_range
         obs = set()
 
+        # bottom wall
         for i in range(x):
             obs.add((i, 0))
+        # top wall
         for i in range(x):
             obs.add((i, y - 1))
 
+        # left wall
         for i in range(y):
             obs.add((0, i))
+        # right wall
         for i in range(y):
             obs.add((x - 1, i))
 
@@ -44,5 +48,7 @@ class Env:
             obs.add((30, i))
         for i in range(16):
             obs.add((40, i))
+            
+        obs.add((4, 8))
 
         return obs

@@ -5,6 +5,8 @@ class GAME_SETTING:
     SCREEN_WIDTH = 1720
     SCREEN_HEIGHT = 720
     FPS = 60
+
+
 class PLAYER_SETTING:
     RADIUS_OBJECT = 10
     RADIUS_LIDAR = 342  # From the border of the circle
@@ -26,18 +28,23 @@ class PLAYER_SETTING:
 
     Y_GOAL_POSITION = 10
 
+
 class LANE_SETTING:
     WIDTH_OF_LANE_BORDER = 3
-    
+
     OUTSIDE_LEFT_PADDING = 150
-    OUTSIDE_RIGHT_PADDING = OUTSIDE_LEFT_PADDING    
+    OUTSIDE_RIGHT_PADDING = OUTSIDE_LEFT_PADDING
     OUTSIDE_TOP_PADDING = 150
     OUTSIDE_BOTTOM_PADDING = OUTSIDE_TOP_PADDING
-    
-    INSIDE_LEFT_PADDING = OUTSIDE_LEFT_PADDING + int(2*PLAYER_SETTING.RADIUS_OBJECT*3)
-    INSIDE_RIGHT_PADDING = INSIDE_LEFT_PADDING 
-    INSIDE_TOP_PADDING = OUTSIDE_TOP_PADDING + int(2*PLAYER_SETTING.RADIUS_OBJECT*3)
-    INSIDE_BOTTOM_PADDING = INSIDE_TOP_PADDING    
+
+    INSIDE_LEFT_PADDING = OUTSIDE_LEFT_PADDING + \
+        int(2*PLAYER_SETTING.RADIUS_OBJECT*3)
+    INSIDE_RIGHT_PADDING = INSIDE_LEFT_PADDING
+    INSIDE_TOP_PADDING = OUTSIDE_TOP_PADDING + \
+        int(2*PLAYER_SETTING.RADIUS_OBJECT*3)
+    INSIDE_BOTTOM_PADDING = INSIDE_TOP_PADDING
+
+
 class OBSTACLE_SETTING:
     MAX_INSTANCES = 5
     RADIUS_OBJECT = 10
@@ -85,3 +92,33 @@ ACTIONS_LIST = [
 ]
 MAX_EPISODE = 100000
 INT_INFINITY = 99999
+
+
+class D_STAR:
+    class ENV:
+        START_POINT = (3, 1)
+        GOAL_POINT = (10, 5)
+        EPSILON = 2.5
+        IS_PLOTTING = False
+        HAS_OBS = 1
+        NO_OBS = 0
+
+    MY_MAP = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
+
+    NEW_MAP = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
