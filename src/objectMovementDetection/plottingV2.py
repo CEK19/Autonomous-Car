@@ -3,7 +3,6 @@ Plot tools 2D
 @author: Minh The Tus
 """
 from const import *
-import envV2 as env
 import os
 import sys
 import matplotlib.pyplot as plt
@@ -77,10 +76,10 @@ class Plotting:
         plt.show()
 
 
-    def show(self):
+    def show(self, block=True):
         if not D_STAR.ENV.IS_PLOTTING:
             return
-        plt.show()
+        plt.show(block=block)
 
     def pause(self, time):
         if not D_STAR.ENV.IS_PLOTTING:

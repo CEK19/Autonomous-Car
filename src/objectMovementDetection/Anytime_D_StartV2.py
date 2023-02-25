@@ -7,22 +7,12 @@ import time
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-
-# sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
-#                 "/../../Search_based_Planning/")
-
 import plottingV2 as plotting
-import envV2 as env
 from const import *
 
 
 class ADStar:
     def __init__(self, start, goal, eps, heuristic_type, maps):
-        print("start: ", start)
-        print("goal: ", goal)
-        print("eps: ", eps)
-        self.start, self.goal = start, goal
-        self.heuristic_type = heuristic_type
 
         # self.Env.motions  # feasible input set
         self.envMotions = [(-1, 0), (-1, 1), (0, 1), (1, 1),
@@ -36,8 +26,15 @@ class ADStar:
         # self.Env.obs  # position of obstacles
         self.obs = self.obs_map(self.maps)
         print("obs: ", self.obs)
+        
+        print("start: ", start)
+        print("goal: ", goal)
+        print("eps: ", eps)
+        self.start = self.convertPointPGtoPLT(start)
+        self.goal = self.convertPointPGtoPLT(goal)
+        self.heuristic_type = heuristic_type
 
-        self.Plot = plotting.Plotting(start, goal, self.obs)
+        self.Plot = plotting.Plotting(self.start, self.goal, self.obs)
         self.g, self.rhs, self.OPEN = {}, {}, {}
 
         for i in range(1, self.envWidth - 1):
@@ -58,6 +55,16 @@ class ADStar:
         # Anytime D*: Significant changes || Anytime D*: Small changes
         self.title = "Anytime D*: Small changes"
         self.fig = self.Plot.createFig()
+        
+    
+    '''
+    In PyGame (PG): Oxy is at the top-left corner
+    In Matplotlib (PLT): Oxy is at the bottom-left corner
+    '''
+    def convertPointPGtoPLT(self, point):
+        return (point[0], self.envHeight - point[1] - 1)
+    def convertPointPLTtoPG(self, point):
+        return (point[0], self.envHeight - point[1] - 1)
 
 
     def obs_map(self, maps):
@@ -83,9 +90,9 @@ class ADStar:
         self.visited = set()
 
         while True:
-            if self.eps <= 1.0:
+            if self.eps <= D_STAR.ENV.EPS_MIN:
                 break
-            self.eps -= 0.5
+            self.eps -= D_STAR.ENV.EPS_MINUS_PER_RUN
             self.OPEN.update(self.INCONS)
             for s in self.OPEN:
                 self.OPEN[s] = self.Key(s)
@@ -96,10 +103,10 @@ class ADStar:
             self.visited = set()
             self.Plot.pause(0.5)
 
-        self.Plot.pause(3)
+        # self.Plot.pause(3)
         # self.fig.canvas.mpl_connect('button_press_event', self.on_press)
         # self.fig.canvas.mpl_connect('button_press_event', self.onChange(D_STAR.NEW_MAP))
-        self.Plot.show()
+        self.Plot.show(block=False)
 
 
     def onChange(self, newMapInput):
@@ -123,7 +130,7 @@ class ADStar:
         self.Plot.update_obs(self.obs)
         
         # self.eps += 2.0
-        self.eps += 0.5
+        self.eps += D_STAR.ENV.EPS_PLUS_PER_ENV_CHANGE
         
         for obs in self.obs_add:
             # self.g[(x, y)] = float("inf")
@@ -140,9 +147,9 @@ class ADStar:
         self.Plot.plot_grid(self.title)
                     
         while True:
-            if self.eps <= 1.0:
+            if self.eps <= D_STAR.ENV.EPS_MIN:
                 break
-            self.eps -= 0.5
+            self.eps -= D_STAR.ENV.EPS_MINUS_PER_RUN
             self.OPEN.update(self.INCONS)
             for s in self.OPEN:
                 self.OPEN[s] = self.Key(s)
@@ -200,7 +207,7 @@ class ADStar:
             self.Plot.setTitle(self.title)
             self.visited = set()
 
-            if self.eps <= 1.0:
+            if self.eps <= D_STAR.ENV.EPS_MIN:
                 break
 
         self.Plot.draw_idle(self.fig)
@@ -348,6 +355,11 @@ class ADStar:
                 break
 
         return list(path)
+    
+    
+    def getPath(self):
+        path = self.extract_path()
+        return [self.convertPointPLTtoPG(point) for point in path]
 
 
     def plot_path(self, path):
@@ -380,16 +392,20 @@ class ADStar:
 
 
 def main():
+    # Read data from const file
     start = D_STAR.ENV.START_POINT
     goal = D_STAR.ENV.GOAL_POINT
     eps = D_STAR.ENV.EPSILON
-    # start = (2, 2)
-    # goal = (6, 4)
 
     dstar = ADStar(start, goal, eps, "euclidean", D_STAR.MY_MAP)
     dstar.run()
+    print("getPath: ", dstar.getPath())
     time.sleep(2)
+    
+    # new value of map
     dstar.onChange(D_STAR.NEW_MAP)
+    print("getPath: ", dstar.getPath())
+    plt.show()
 
 
 if __name__ == '__main__':
