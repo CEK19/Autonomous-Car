@@ -45,11 +45,15 @@ class ADStar:
         self.count_env_change = 0
         self.obs_add = set()
         self.obs_remove = set()
-        self.title = "Anytime D*: Small changes"  # Significant changes
+        # self.title = "Anytime D*: Small changes"  # Significant changes
+        self.title = "Significant changes"  # Significant changes
         self.fig = plt.figure()
 
     def run(self):
+        # Generate inital obstacles
         self.Plot.plot_grid(self.title)
+        
+        # Generate initial optimized Path
         self.ComputeOrImprovePath()
         self.plot_visited()
         self.plot_path(self.extract_path())
@@ -131,7 +135,7 @@ class ADStar:
 
                 self.Plot.update_obs(self.obs)
 
-                if self.count_env_change >= 15:
+                if self.count_env_change >= 1:
                     self.count_env_change = 0
                     self.eps += 2.0
                     for s in self.obs_add:
@@ -168,7 +172,9 @@ class ADStar:
 
     def ComputeOrImprovePath(self):
         while True:
+            # Get             
             s, v = self.TopKey()
+            # print("s, v: ", s, v)
             if v >= self.Key(self.s_start) and \
                     self.rhs[self.s_start] == self.g[self.s_start]:
                 break
