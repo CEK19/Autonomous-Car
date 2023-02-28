@@ -349,6 +349,8 @@ class ADStar:
             for neighbor in self.get_neighbor(curPoint):
                 if not self.is_collision(curPoint, neighbor):
                     g_list[neighbor] = self.g[neighbor]
+            if not g_list:
+                return list()
             curPoint = min(g_list, key=g_list.get)
             path.append(curPoint)
             if curPoint == self.goal:
@@ -400,7 +402,7 @@ def main():
     dstar = ADStar(start, goal, eps, "euclidean", D_STAR.MY_MAP)
     dstar.run()
     print("getPath: ", dstar.getPath())
-    time.sleep(2)
+    # time.sleep(2)
     
     # new value of map
     dstar.onChange(D_STAR.NEW_MAP)

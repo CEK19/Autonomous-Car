@@ -6,6 +6,7 @@ from utils import *
 import random
 import numpy as np
 from datetime import datetime
+import Anytime_D_StartV2 as atdstar
 
 
 ObstacleTest = pygame.Rect(300, 600, 500, 1000)
@@ -14,68 +15,17 @@ ObstacleTest = pygame.Rect(300, 600, 500, 1000)
 class Lane():
     def __init__(self) -> None:
         #  (left, top, width, height)
-        self.outSideMostLeft = pygame.Rect(LANE_SETTING.OUTSIDE_LEFT_PADDING,
-                                           LANE_SETTING.OUTSIDE_TOP_PADDING, LANE_SETTING.WIDTH_OF_LANE_BORDER,
-                                           GAME_SETTING.SCREEN_HEIGHT -
-                                           (LANE_SETTING.OUTSIDE_TOP_PADDING + LANE_SETTING.OUTSIDE_BOTTOM_PADDING))
-        self.outSideMostTop = pygame.Rect(LANE_SETTING.OUTSIDE_LEFT_PADDING,
-                                          LANE_SETTING.OUTSIDE_TOP_PADDING,
-                                          GAME_SETTING.SCREEN_WIDTH -
-                                          (LANE_SETTING.OUTSIDE_LEFT_PADDING +
-                                           LANE_SETTING.OUTSIDE_RIGHT_PADDING),
-                                          LANE_SETTING.WIDTH_OF_LANE_BORDER)
-        self.outSideMostRight = pygame.Rect(GAME_SETTING.SCREEN_WIDTH - LANE_SETTING.OUTSIDE_RIGHT_PADDING,
-                                            LANE_SETTING.OUTSIDE_TOP_PADDING,
-                                            LANE_SETTING.WIDTH_OF_LANE_BORDER,
-                                            GAME_SETTING.SCREEN_HEIGHT -
-                                            (LANE_SETTING.OUTSIDE_TOP_PADDING + LANE_SETTING.OUTSIDE_BOTTOM_PADDING))
-        self.outSideMostBottom = pygame.Rect(LANE_SETTING.OUTSIDE_LEFT_PADDING,
-                                             GAME_SETTING.SCREEN_HEIGHT - LANE_SETTING.OUTSIDE_BOTTOM_PADDING,
-                                             GAME_SETTING.SCREEN_WIDTH -
-                                             (LANE_SETTING.OUTSIDE_LEFT_PADDING +
-                                              LANE_SETTING.OUTSIDE_RIGHT_PADDING),
-                                             LANE_SETTING.WIDTH_OF_LANE_BORDER)
-
-        self.inSideMostLeft = pygame.Rect(LANE_SETTING.INSIDE_LEFT_PADDING,
-                                          LANE_SETTING.INSIDE_TOP_PADDING, LANE_SETTING.WIDTH_OF_LANE_BORDER,
-                                          GAME_SETTING.SCREEN_HEIGHT -
-                                          (LANE_SETTING.INSIDE_TOP_PADDING + LANE_SETTING.INSIDE_BOTTOM_PADDING))
-        self.inSideMostTop = pygame.Rect(LANE_SETTING.INSIDE_LEFT_PADDING,
-                                         LANE_SETTING.INSIDE_TOP_PADDING,
-                                         GAME_SETTING.SCREEN_WIDTH -
-                                         (LANE_SETTING.INSIDE_LEFT_PADDING +
-                                          LANE_SETTING.INSIDE_RIGHT_PADDING),
-                                         LANE_SETTING.WIDTH_OF_LANE_BORDER)
-        self.inSideMostRight = pygame.Rect(GAME_SETTING.SCREEN_WIDTH - LANE_SETTING.INSIDE_RIGHT_PADDING,
-                                           LANE_SETTING.INSIDE_TOP_PADDING,
-                                           LANE_SETTING.WIDTH_OF_LANE_BORDER,
-                                           GAME_SETTING.SCREEN_HEIGHT -
-                                           (LANE_SETTING.INSIDE_TOP_PADDING + LANE_SETTING.INSIDE_BOTTOM_PADDING))
-        self.inSideMostBottom = pygame.Rect(LANE_SETTING.INSIDE_LEFT_PADDING,
-                                            GAME_SETTING.SCREEN_HEIGHT - LANE_SETTING.INSIDE_BOTTOM_PADDING,
-                                            GAME_SETTING.SCREEN_WIDTH -
-                                            (LANE_SETTING.INSIDE_LEFT_PADDING +
-                                             LANE_SETTING.INSIDE_RIGHT_PADDING),
-                                            LANE_SETTING.WIDTH_OF_LANE_BORDER)
+        self.leftLane = pygame.Rect((LANE_SETTING.LEFT_PADDING, LANE_SETTING.TOP_PADDING), (
+            LANE_SETTING.WIDTH_OF_LANE_BORDER, GAME_SETTING.SCREEN_HEIGHT))
+        self.rightLane = pygame.Rect((GAME_SETTING.SCREEN_WIDTH - LANE_SETTING.RIGHT_PADDING,
+                                      LANE_SETTING.TOP_PADDING), (LANE_SETTING.WIDTH_OF_LANE_BORDER, GAME_SETTING.SCREEN_HEIGHT))
 
     def draw(self, screen):
-        pygame.draw.rect(screen, COLOR.WHITE, self.outSideMostLeft)
-        pygame.draw.rect(screen, COLOR.WHITE, self.outSideMostTop)
-        pygame.draw.rect(screen, COLOR.WHITE, self.outSideMostRight)
-        pygame.draw.rect(screen, COLOR.WHITE, self.outSideMostBottom)
-
-        pygame.draw.rect(screen, COLOR.WHITE, self.inSideMostLeft)
-        pygame.draw.rect(screen, COLOR.WHITE, self.inSideMostTop)
-        pygame.draw.rect(screen, COLOR.WHITE, self.inSideMostRight)
-        pygame.draw.rect(screen, COLOR.WHITE, self.inSideMostBottom)
+        pygame.draw.rect(screen, COLOR.WHITE, self.leftLane)
+        pygame.draw.rect(screen, COLOR.WHITE, self.rightLane)
 
     def isCollideWithThing(self, thing):
-        return \
-            self.outSideMostLeft.colliderect(thing) or self.outSideMostTop.colliderect(thing) or \
-            self.outSideMostRight.colliderect(thing) or self.outSideMostBottom.colliderect(thing) or \
-            self.inSideMostLeft.colliderect(thing) or self.inSideMostTop.colliderect(thing) or \
-            self.inSideMostRight.colliderect(
-                thing) or self.inSideMostBottom.colliderect(thing)
+        return self.leftLane.colliderect(thing) or self.rightLane.colliderect(thing)
 
 
 class Car():
@@ -319,7 +269,7 @@ class Obstacles(Car):
     def draw(self, screen):
         # draw player on 2D board
         pygame.draw.circle(
-            screen, COLOR.RED, (self.xPos, self.yPos), self.radiusObject
+            screen, COLOR.PINK, (self.xPos, self.yPos), self.radiusObject
         )
 
         # draw player direction
@@ -369,68 +319,10 @@ class PyGame2D():
         self.robot.scanLidar(obstacles=self.obstacles)
         self.robot.checkAchieveGoal()
 
-    def evaluate(self):
-        reward = 0
-        if not self.robot.is_alive:
-            reward += -1000
-
-        if (GAME_SETTING.SCREEN_HEIGHT - self.robot.yPos) >= 1:
-            reward += -10000
-
-        frontLidars = self.robot.lidarSignals[75:105]
-        eachFrontPenalty = 0.01
-
-        leftLidars = self.robot.lidarSignals[0:75]
-        eachLeftPenalty = 0.005
-
-        rightLidars = self.robot.lidarSignals[105:180]
-        eachRightPenalty = 0.005
-
-        for frontLidar in frontLidars:
-            if frontLidar == INT_INFINITY:
-                reward += 1
-                break
-            reward += -abs(PLAYER_SETTING.RADIUS_LIDAR -
-                           frontLidar)*eachFrontPenalty
-
-        for leftLidar in leftLidars:
-            if leftLidar == INT_INFINITY:
-                reward += 1
-                break
-            reward += -abs(PLAYER_SETTING.RADIUS_LIDAR -
-                           leftLidar)*eachLeftPenalty
-
-        for rightLidar in rightLidars:
-            if rightLidar == INT_INFINITY:
-                reward += 1
-                break
-            reward += -abs(PLAYER_SETTING.RADIUS_LIDAR -
-                           rightLidar)*eachRightPenalty
-
-        ratioLeft = (self.robot.xPos)/(GAME_SETTING.SCREEN_WIDTH)
-
-        if (ratioLeft <= 0.65 and ratioLeft >= 0.45):
-            reward += ratioLeft*0.1
-        else:
-            reward += -ratioLeft*0.15
-
-        return reward
-
     def is_done(self):
         if ((not self.robot.is_alive) or self.robot.is_goal):
             return True
         return False
-
-    def observe(self):
-        ratioLeft = (self.robot.xPos)/(GAME_SETTING.SCREEN_WIDTH)
-        alpha = self.robot.currAngle
-        fwVelo = self.robot.currentForwardVelocity
-        rVelo = self.robot.currRotationVelocity
-        lidars = self.robot.lidarSignals
-
-        infoStateVector = np.array([ratioLeft, alpha, fwVelo, rVelo])
-        lidarStateVector = np.array(lidars)
-        return np.concatenate((infoStateVector, lidarStateVector))
 
     def view(self):
         # draw game
@@ -448,9 +340,61 @@ class PyGame2D():
             obstacle.draw(screen=self.screen)
         pygame.display.flip()
 
+    @staticmethod
+    def controller(mode=GAME_SETTING.MODE_MANUALLY, game=None):
+        if game == None:
+            return
+        if mode == GAME_SETTING.MODE_MANUALLY:
+            while True:
+                Utils.inputUser(game)
+                game.view()
+        elif mode == GAME_SETTING.MODE_AUTO:
+            robotX, robotY = game.robot.xPos, game.robot.yPos
+            startPoint = (robotX, robotY)
+            goalPoint = (GAME_SETTING.SCREEN_WIDTH//2, 10)
+            eps = D_STAR.ENV.EPSILON
+            dstar = atdstar.ADStar(startPoint, goalPoint, eps, "euclidean", [[D_STAR.ENV.NO_OBS for _ in range(
+                GAME_SETTING.SCREEN_WIDTH)] for _ in range(GAME_SETTING.SCREEN_HEIGHT)])
+            dstar.run()
+            while True:
+                Utils.inputUser(game)
+                game.view()
+                # Get the current (x,y) coordinate of robot
+                robotX, robotY = game.robot.xPos, game.robot.yPos
+
+                # Get the list signals lidar [(x, y), (x, y), (x, y), ...]
+                listCoordinateLidarSignals = []
+                lidarsSignal = game.robot.lidarSignals
+                lidarsVisualization = game.robot.lidarVisualize
+                for idx, distance in enumerate(lidarsSignal):
+                    if distance <= INT_INFINITY:
+                        targetX = lidarsVisualization[idx]["target"]["x"]
+                        targetY = lidarsVisualization[idx]["target"]["y"]
+                        if targetX > 0 and targetY > 0 and targetX < GAME_SETTING.SCREEN_WIDTH and targetY < GAME_SETTING.SCREEN_HEIGHT:
+                            listCoordinateLidarSignals.append(
+                                (targetX, targetY))
+
+                print(lidarsVisualization)
+                # Build the binary map with 0 is nothing, 1 is obstacle
+                obstacleMap = [[D_STAR.ENV.NO_OBS for _ in range(
+                    GAME_SETTING.SCREEN_WIDTH)] for _ in range(GAME_SETTING.SCREEN_HEIGHT)]
+                for coor in listCoordinateLidarSignals:
+                    targetX, targetY = int(coor[0]), int(coor[1])
+                    print(len(obstacleMap))
+                    print(len(obstacleMap[0]))
+                    obstacleMap[targetY][targetX] = D_STAR.ENV.HAS_OBS
+
+                # Convert to the transformation map
+                # TODO: Do it
+
+                # Put the transformation map into D* algorithm to get the path
+                dstar.onChange(obstacleMap)
+                pathToGoal = dstar.getPath()
+                print(pathToGoal)
+                # Visualization (optional)
+                # Decide the action suitable to the map
+                # pathPlanning = atdstar.ADStar()
+
 
 game = PyGame2D()
-while True:
-    Utils.inputUser(game)
-    game.view()
-    pass
+game.controller(mode=GAME_SETTING.MODE_AUTO, game=game)

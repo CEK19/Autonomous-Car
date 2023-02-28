@@ -2,9 +2,12 @@ import math
 
 
 class GAME_SETTING:
-    SCREEN_WIDTH = 1720
+    SCREEN_WIDTH = 200
     SCREEN_HEIGHT = 720
     FPS = 60
+    
+    MODE_MANUALLY = "MODE_MANUALLY"
+    MODE_AUTO = "MODE_AUTO"
 
 
 class PLAYER_SETTING:
@@ -32,22 +35,14 @@ class PLAYER_SETTING:
 class LANE_SETTING:
     WIDTH_OF_LANE_BORDER = 3
 
-    OUTSIDE_LEFT_PADDING = 150
-    OUTSIDE_RIGHT_PADDING = OUTSIDE_LEFT_PADDING
-    OUTSIDE_TOP_PADDING = 150
-    OUTSIDE_BOTTOM_PADDING = OUTSIDE_TOP_PADDING
-
-    INSIDE_LEFT_PADDING = OUTSIDE_LEFT_PADDING + \
-        int(2*PLAYER_SETTING.RADIUS_OBJECT*3)
-    INSIDE_RIGHT_PADDING = INSIDE_LEFT_PADDING
-    INSIDE_TOP_PADDING = OUTSIDE_TOP_PADDING + \
-        int(2*PLAYER_SETTING.RADIUS_OBJECT*3)
-    INSIDE_BOTTOM_PADDING = INSIDE_TOP_PADDING
+    LEFT_PADDING = 0
+    RIGHT_PADDING = LEFT_PADDING
+    TOP_PADDING = 0    
 
 
 class OBSTACLE_SETTING:
     MAX_INSTANCES = 5
-    RADIUS_OBJECT = 10
+    RADIUS_OBJECT = 30
     PROBABILITIES_ACTION = [0.1,
                             0.1,
                             0.1,
@@ -115,6 +110,16 @@ class D_STAR:
         [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ]
+    
+    # MY_MAP = [
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    # ]    
 
     NEW_MAP = [
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
