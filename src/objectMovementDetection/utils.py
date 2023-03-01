@@ -5,6 +5,11 @@ from const import *
 
 class Utils:
     @staticmethod
+    def print(text = "", text1 = "", text2 = "", text3 = ""):
+        if D_STAR.ENV.IS_PRINT:
+            print(text, text1, text2, text3)
+    
+    @staticmethod
     def blit_rotate_center(win, image, top_left, angle):
         rotated_image = pygame.transform.rotate(image, angle)
         new_rect = rotated_image.get_rect(

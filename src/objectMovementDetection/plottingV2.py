@@ -76,38 +76,44 @@ class Plotting:
         plt.show()
 
 
-    def show(self, block=True):
+    @staticmethod
+    def show(block=True):
         if not D_STAR.ENV.IS_PLOTTING:
             return
         plt.show(block=block)
 
-    def pause(self, time):
-        if not D_STAR.ENV.IS_PLOTTING:
+    @staticmethod
+    def pause(time):
+        if not D_STAR.ENV.IS_PLOTTING or not D_STAR.ENV.IS_PAUSE:
             return
         plt.pause(time)
-        
-    def clearAll(self):
+    
+    @staticmethod
+    def clearAll():
         if not D_STAR.ENV.IS_PLOTTING:
             return
         plt.cla()
     
-    def setTitle(self, title):
+    @staticmethod
+    def setTitle(title):
         if not D_STAR.ENV.IS_PLOTTING:
             return
         plt.title(title)
     
-    def createFig(self):
+    @staticmethod
+    def createFig():
         if not D_STAR.ENV.IS_PLOTTING:
             return
         return plt.figure()
     
-    def draw_idle(self, fig):
+    @staticmethod
+    def draw_idle(fig):
         if not D_STAR.ENV.IS_PLOTTING:
             return
         fig.canvas.draw_idle()
     
-
-    def plot_point(self, x, y, option):
+    @staticmethod
+    def plot_point(x, y, option):
         if not D_STAR.ENV.IS_PLOTTING:
             return
         if option == 'addObs':

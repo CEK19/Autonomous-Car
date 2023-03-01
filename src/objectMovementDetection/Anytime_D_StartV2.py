@@ -7,8 +7,10 @@ import time
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import plottingV2 as plotting
+from plottingV2 import *
 from const import *
+from utils import *
+from temp import *
 
 
 class ADStar:
@@ -20,21 +22,21 @@ class ADStar:
         self.maps = self.get_map(maps)
         self.envWidth = len(self.maps[0])    # self.Env.width
         self.envHeight = len(self.maps)      # self.Env.height
-        print("width: ", self.envWidth)
-        print("height: ", self.envHeight)
+        Utils.print("width: ", self.envWidth)
+        Utils.print("height: ", self.envHeight)
 
         # self.Env.obs  # position of obstacles
         self.obs = self.obs_map(self.maps)
-        print("obs: ", self.obs)
+        Utils.print("obs: ", len(self.obs))
         
-        print("start: ", start)
-        print("goal: ", goal)
-        print("eps: ", eps)
+        Utils.print("start: ", start)
+        Utils.print("goal: ", goal)
+        Utils.print("eps: ", eps)
         self.start = self.convertPointPGtoPLT(start)
         self.goal = self.convertPointPGtoPLT(goal)
         self.heuristic_type = heuristic_type
 
-        self.Plot = plotting.Plotting(self.start, self.goal, self.obs)
+        self.Plot = Plotting(self.start, self.goal, self.obs)
         self.g, self.rhs, self.OPEN = {}, {}, {}
 
         for i in range(1, self.envWidth - 1):
@@ -54,7 +56,7 @@ class ADStar:
         self.obs_remove = set()
         # Anytime D*: Significant changes || Anytime D*: Small changes
         self.title = "Anytime D*: Small changes"
-        self.fig = self.Plot.createFig()
+        self.fig = Plotting.createFig()
         
     
     '''
@@ -72,19 +74,12 @@ class ADStar:
     def get_map(self, maps):
         width = len(maps[0]) + 2
         height = len(maps) + 2
-        print("width: ", width)
-        print("height: ", height)
         newMaps = [[0 for x in range(width)] for y in range(height)] 
         for rowIndex in range(height):
             for colIndex in range(width):
                 if (colIndex == 0 or colIndex == width - 1) or (rowIndex == 0 or rowIndex == height - 1):
                    newMaps[rowIndex][colIndex] = 1
                 else:
-                    print()
-                    print(colIndex, rowIndex)
-                    print(newMaps[rowIndex][colIndex])
-                    print(maps[rowIndex - 1][colIndex - 1])
-                    print()
                     newMaps[rowIndex][colIndex] = maps[rowIndex - 1][colIndex - 1]
         return np.flip(newMaps, axis=0)
 
@@ -123,37 +118,40 @@ class ADStar:
             self.plot_visited()
             self.plot_path(self.extract_path())
             self.visited = set()
-            self.Plot.pause(0.5)
+            Plotting.pause(0.5)
 
-        # self.Plot.pause(3)
         # self.fig.canvas.mpl_connect('button_press_event', self.on_press)
         # self.fig.canvas.mpl_connect('button_press_event', self.onChange(D_STAR.NEW_MAP))
-        self.Plot.show(block=False)
+        Plotting.show(block=False)
 
 
     def onChange(self, newMapInput):
         
         newMap = self.get_map(newMapInput)
         
+        tim1 = time.time()
         for rowIndex in range(self.envHeight):
             for colIndex in range(self.envWidth):
                 if newMap[rowIndex][colIndex] == D_STAR.ENV.HAS_OBS and (colIndex, rowIndex) not in self.obs:
                     self.obs.add((colIndex, rowIndex))
                     self.obs_add.add((colIndex, rowIndex))
-                    self.Plot.plot_point(colIndex, rowIndex, 'addObs')
+                    Plotting.plot_point(colIndex, rowIndex, 'addObs')
                 elif newMap[rowIndex][colIndex] == D_STAR.ENV.NO_OBS and (colIndex, rowIndex) in self.obs:
                     self.obs.remove((colIndex, rowIndex))
                     self.obs_remove.add((colIndex, rowIndex))
-                    self.Plot.plot_point(colIndex, rowIndex, 'removeObs')
+                    Plotting.plot_point(colIndex, rowIndex, 'removeObs')
+        tim2 = time.time()
+        Utils.print("Time to update obs: ", tim2 - tim1)
         
-        print()
-        print("obs_add: ", self.obs_add)
-        print("obs_remove: ", self.obs_remove)
+        Utils.print()
         self.Plot.update_obs(self.obs)
         
         # self.eps += 2.0
         self.eps += D_STAR.ENV.EPS_PLUS_PER_ENV_CHANGE
         
+        tim3 = time.time()
+        Utils.print("len add: ", len(self.obs_add))
+        Utils.print("len remove: ", len(self.obs_remove))
         for obs in self.obs_add:
             # self.g[(x, y)] = float("inf")
             # self.rhs[(x, y)] = float("inf")
@@ -164,10 +162,13 @@ class ADStar:
             for neighbor in self.get_neighbor(obs):
                 self.UpdateState(neighbor)
             self.UpdateState(obs)
+        tim4 = time.time()
+        Utils.print("Time to update state: ", tim4 - tim3)
         
-        self.Plot.clearAll();
+        Plotting.clearAll();
         self.Plot.plot_grid(self.title)
-                    
+        
+        tim5 = time.time() 
         while True:
             if self.eps <= D_STAR.ENV.EPS_MIN:
                 break
@@ -179,25 +180,24 @@ class ADStar:
             self.ComputeOrImprovePath()
             self.plot_visited()
             self.plot_path(self.extract_path())
-            self.Plot.setTitle(self.title)
+            Plotting.setTitle(self.title)
             self.visited = set()
-            self.Plot.pause(0.5)
+            Plotting.pause(0.5)
+        tim6 = time.time()
+        Utils.print("main loop", tim6 - tim5)
         
-        self.Plot.draw_idle(self.fig)
+        Plotting.draw_idle(self.fig)
 
 
     def on_press(self, event):
         x, y = event.xdata, event.ydata
         if x < 0 or x > self.envWidth - 1 or y < 0 or y > self.envHeight - 1:
-            print("Please choose right area!")
+            Utils.print("Please choose right area!")
             return
 
         self.count_env_change += 1
         x, y = int(x), int(y)
-        print("Change position: x =", x, ",", "y =", y)
-        
-        # # for small changes
-        # if self.title == "Anytime D*: Small changes":
+        Utils.print("Change position: x =", x, ",y =", y)
 
         if (x, y) not in self.obs:
             self.obs.add((x, y))
@@ -212,12 +212,12 @@ class ADStar:
         for sn in self.get_neighbor((x, y)):
             self.UpdateState(sn)
 
-        self.Plot.clearAll()
+        Plotting.clearAll()
         self.Plot.plot_grid(self.title)
 
         while True:
             if len(self.INCONS) == 0:
-                print("INCONS is empty!")
+                Utils.print("INCONS is empty!")
                 break
             self.OPEN.update(self.INCONS)
             for s in self.OPEN:
@@ -226,17 +226,22 @@ class ADStar:
             self.ComputeOrImprovePath()
             self.plot_visited()
             self.plot_path(self.extract_path())
-            self.Plot.setTitle(self.title)
+            Plotting.setTitle(self.title)
             self.visited = set()
 
             if self.eps <= D_STAR.ENV.EPS_MIN:
                 break
 
-        self.Plot.draw_idle(self.fig)
+        Plotting.draw_idle(self.fig)
 
     def ComputeOrImprovePath(self):
+        Utils.print("compute or improve path")
+        tt = 0
+        count = 0
+        hola = 0
         while True:
             s, v = self.TopKey()
+            tt += 1
             
             if s == None and v == None:
                 break
@@ -249,19 +254,22 @@ class ADStar:
             self.visited.add(s)
 
             if self.g[s] > self.rhs[s]:
+                count += 1
                 self.g[s] = self.rhs[s]
                 self.CLOSED.add(s)
                 for sn in self.get_neighbor(s):
                     self.UpdateState(sn)
             else:
+                hola += 1
                 self.g[s] = float("inf")
                 for sn in self.get_neighbor(s):
                     self.UpdateState(sn)
                 self.UpdateState(s)
         
-        print()
-        print("path: ", self.extract_path())
-        print()
+        Utils.print("tt: ", tt)
+        Utils.print("count: ", count)
+        Utils.print("hola: ", hola)
+        Utils.print()
 
 
     def UpdateState(self, curPoint):
@@ -280,13 +288,6 @@ class ADStar:
 
 
     def Key(self, curPoint):
-        # print()
-        # print("curPoint: ", curPoint)
-        # print("self.g: ", self.g)
-        # print("self.g[curPoint]: ", self.g[curPoint])
-        # print("self.rhs: ", self.rhs)
-        # print("self.rhs[curPoint]: ", self.rhs[curPoint])
-        # print()
         if self.g[curPoint] > self.rhs[curPoint]:
             return [self.rhs[curPoint] + self.eps * self.distance(self.start, curPoint), self.rhs[curPoint]]
         else:
@@ -297,7 +298,6 @@ class ADStar:
         """
         :return: return the min key and its value.
         """
-
         if (len(self.OPEN) == 0):
             return None, None
         s = min(self.OPEN, key=self.OPEN.get)
@@ -324,7 +324,6 @@ class ADStar:
         :return:  Cost for this motion
         :note: Cost function could be more complicate!
         """
-
         if self.is_collision(start, goal):
             return float("inf")
 
@@ -379,6 +378,8 @@ class ADStar:
             for neighbor in self.get_neighbor(curPoint):
                 if not self.is_collision(curPoint, neighbor):
                     g_list[neighbor] = self.g[neighbor]
+            if not g_list:
+                return list()
             curPoint = min(g_list, key=g_list.get)
             path.append(curPoint)
             if curPoint == self.goal:
@@ -423,21 +424,60 @@ class ADStar:
 
 def main():
     # Read data from const file
-    start = D_STAR.ENV.START_POINT
-    goal = D_STAR.ENV.GOAL_POINT
+    start = Gen.genPoint()
+    goal = Gen.genPoint()
     eps = D_STAR.ENV.EPSILON
+    
+    t1 = time.time()
+    map1 = Gen.genMap()
+    t2 = time.time()
+    map2 = Gen.genMap()
+    Utils.print("gen map: ", t2 - t1)
 
-    dstar = ADStar(start, goal, eps, "euclidean", D_STAR.MY_MAP)
+    startTime = time.time()
+    Utils.print("---init---")
+    dstar = ADStar(start, goal, eps, "euclidean", map1)
+    endTime1 = time.time()
+    
+    # print("getPath 1: ", dstar.getPath())
+    endTime2 = time.time()
+    
+    Utils.print("---run---")
     dstar.run()
-    print("getPath: ", dstar.getPath())
-    time.sleep(2)
+    endTime3 = time.time()
+    
+    # print("getPath 2: ", dstar.getPath())
+    endTime4 = time.time()
     
     # new value of map
-    dstar.onChange(D_STAR.NEW_BLOCK_MAP)
-    # dstar.onChange(D_STAR.NEW_MAP_1)
-    print("getPath: ", dstar.getPath())
+    # dstar.onChange(D_STAR.NEW_MAP)
+    Utils.print("---change---")
+    dstar.onChange(map2)
+    endTime5 = time.time()
+    
+    # print("getPath 3: ", dstar.getPath())
+    endTime6 = time.time()
+    
+    # dstar.onChange(D_STAR.NEW_BLOCK_MAP)
+    # endTime3 = time.time()
+    
+    # dstar.onChange(D_STAR.NEW_BLANK_MAP)
+    # endTime4 = time.time()
+    
+    
+    Utils.print()
+    Utils.print("init: ", endTime1 - startTime)
+    Utils.print("first getPath: ", endTime2 - endTime1)
+    Utils.print("first run: ", endTime3 - endTime2)
+    Utils.print("second getPath: ", endTime4 - endTime3)
+    Utils.print("change: ", endTime5 - endTime4)
+    Utils.print("third getPath: ", endTime6 - endTime5)
+    
+    Utils.print("-----------------------------")
+    Utils.print("total time: ", endTime6 - startTime)
     plt.show()
 
 
 if __name__ == '__main__':
     main()
+    # print()
