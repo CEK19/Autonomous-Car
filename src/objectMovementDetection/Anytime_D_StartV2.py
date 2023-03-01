@@ -17,7 +17,7 @@ class ADStar:
         # self.Env.motions  # feasible input set
         self.envMotions = [(-1, 0), (-1, 1), (0, 1), (1, 1),
                            (1, 0), (1, -1), (0, -1), (-1, -1)]
-        self.maps = np.flip(maps, axis=0)
+        self.maps = self.get_map(maps)
         self.envWidth = len(self.maps[0])    # self.Env.width
         self.envHeight = len(self.maps)      # self.Env.height
         print("width: ", self.envWidth)
@@ -62,9 +62,31 @@ class ADStar:
     In Matplotlib (PLT): Oxy is at the bottom-left corner
     '''
     def convertPointPGtoPLT(self, point):
-        return (point[0], self.envHeight - point[1] - 1)
+        newPoint = (point[0] + 1, point[1] + 1)
+        return (newPoint[0], self.envHeight - newPoint[1] - 1)
     def convertPointPLTtoPG(self, point):
-        return (point[0], self.envHeight - point[1] - 1)
+        newPoint = (point[0], self.envHeight - point[1] - 1)
+        return (newPoint[0] - 1, newPoint[1] - 1)
+    
+    
+    def get_map(self, maps):
+        width = len(maps[0]) + 2
+        height = len(maps) + 2
+        print("width: ", width)
+        print("height: ", height)
+        newMaps = [[0 for x in range(width)] for y in range(height)] 
+        for rowIndex in range(height):
+            for colIndex in range(width):
+                if (colIndex == 0 or colIndex == width - 1) or (rowIndex == 0 or rowIndex == height - 1):
+                   newMaps[rowIndex][colIndex] = 1
+                else:
+                    print()
+                    print(colIndex, rowIndex)
+                    print(newMaps[rowIndex][colIndex])
+                    print(maps[rowIndex - 1][colIndex - 1])
+                    print()
+                    newMaps[rowIndex][colIndex] = maps[rowIndex - 1][colIndex - 1]
+        return np.flip(newMaps, axis=0)
 
 
     def obs_map(self, maps):
@@ -111,7 +133,7 @@ class ADStar:
 
     def onChange(self, newMapInput):
         
-        newMap = np.flip(newMapInput, axis=0)
+        newMap = self.get_map(newMapInput)
         
         for rowIndex in range(self.envHeight):
             for colIndex in range(self.envWidth):
@@ -215,6 +237,10 @@ class ADStar:
     def ComputeOrImprovePath(self):
         while True:
             s, v = self.TopKey()
+            
+            if s == None and v == None:
+                break
+            
             if v >= self.Key(self.start) and \
                     self.rhs[self.start] == self.g[self.start]:
                 break
@@ -272,6 +298,8 @@ class ADStar:
         :return: return the min key and its value.
         """
 
+        if (len(self.OPEN) == 0):
+            return None, None
         s = min(self.OPEN, key=self.OPEN.get)
         return s, self.OPEN[s]
 
@@ -329,6 +357,8 @@ class ADStar:
         '''
         for direction in self.envMotions:
             point = tuple([curPoint[i] + direction[i] for i in range(2)])
+            if point[0] < 0 or point[1] < 0 or point[0] >= self.envWidth or point[1] >= self.envHeight:
+                continue
             if point not in self.obs:
                 nei_list.add(point)
 
@@ -405,7 +435,8 @@ def main():
     # time.sleep(2)
     
     # new value of map
-    dstar.onChange(D_STAR.NEW_MAP)
+    dstar.onChange(D_STAR.NEW_BLOCK_MAP)
+    # dstar.onChange(D_STAR.NEW_MAP_1)
     print("getPath: ", dstar.getPath())
     plt.show()
 
