@@ -45,7 +45,8 @@ class ADStar:
         self.count_env_change = 0
         self.obs_add = set()
         self.obs_remove = set()
-        self.title = "Anytime D*: Significant changes"  # Anytime D*: Significant changes || Anytime D*: Small changes
+        # Anytime D*: Significant changes || Anytime D*: Small changes
+        self.title = "Anytime D*: Small changes"
         self.fig = plt.figure()
 
 
