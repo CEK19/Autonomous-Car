@@ -3,7 +3,7 @@ import math
 
 class GAME_SETTING:
     SCREEN_WIDTH = 200
-    SCREEN_HEIGHT = 720
+    SCREEN_HEIGHT = 400
     FPS = 60
     
     MODE_MANUALLY = "MODE_MANUALLY"
@@ -97,7 +97,9 @@ class D_STAR:
         EPS_MIN = 1.0
         EPS_MINUS_PER_RUN = 0.5
         EPS_PLUS_PER_ENV_CHANGE = 0.5
-        IS_PLOTTING = True
+        IS_PAUSE = False
+        IS_PRINT = True
+        IS_PLOTTING = False
         HAS_OBS = 1
         NO_OBS = 0
 
