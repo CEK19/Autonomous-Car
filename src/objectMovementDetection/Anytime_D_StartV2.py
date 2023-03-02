@@ -422,57 +422,81 @@ class ADStar:
 
 
 
+class DStarService:
+    def __init__(self, start, goal, map):
+        self.start = start
+        self.goal = goal
+        self.heuristicType = "euclidean"
+        self.eps = D_STAR.ENV.EPSILON
+        self.dStar = ADStar(start, goal, self.eps, self.heuristicType, map)
+        self.dStar.run()
+    
+    def getPath(self):
+        return self.dStar.getPath()
+    
+    def onChange(self, newMap):
+        '''
+        + change map without start or end point
+        '''
+        self.dStar = ADStar(self.start, self.goal, self.eps, self.heuristicType, newMap)
+        self.dStar.run()
+    
+    def onReset(self, start, goal, newMap):
+        '''
+        + change both start, end points and map
+        '''
+        self.dStar = ADStar(start, goal, self.eps, self.heuristicType, newMap)
+        self.dStar.run()
+
+
 def main():
     # Read data from const file
     start = Gen.genPoint()
     goal = Gen.genPoint()
-    eps = D_STAR.ENV.EPSILON
+    
+    start1 = Gen.genPoint()
+    goal1 = Gen.genPoint()
     
     t1 = time.time()
     map1 = Gen.genMap()
     t2 = time.time()
     map2 = Gen.genMap()
+    map3 = Gen.genMap()
     Utils.print("gen map: ", t2 - t1)
 
     startTime = time.time()
     Utils.print("---init---")
-    dstar = ADStar(start, goal, eps, "euclidean", map1)
+    dstar = DStarService(start, goal, map1)
     endTime1 = time.time()
     
-    # print("getPath 1: ", dstar.getPath())
+    dstar.getPath()
     endTime2 = time.time()
     
-    Utils.print("---run---")
-    dstar.run()
-    endTime3 = time.time()
-    
-    # print("getPath 2: ", dstar.getPath())
-    endTime4 = time.time()
     
     # new value of map
-    # dstar.onChange(D_STAR.NEW_MAP)
     Utils.print("---change---")
     dstar.onChange(map2)
+    endTime3 = time.time()
+    
+    dstar.getPath()
+    endTime4 = time.time()
+    
+    
+    dstar.onReset(start1, goal1, map3)
     endTime5 = time.time()
     
-    # print("getPath 3: ", dstar.getPath())
+    dstar.getPath()
     endTime6 = time.time()
-    
-    # dstar.onChange(D_STAR.NEW_BLOCK_MAP)
-    # endTime3 = time.time()
-    
-    # dstar.onChange(D_STAR.NEW_BLANK_MAP)
-    # endTime4 = time.time()
+
     
     
     Utils.print()
     Utils.print("init: ", endTime1 - startTime)
     Utils.print("first getPath: ", endTime2 - endTime1)
-    Utils.print("first run: ", endTime3 - endTime2)
+    Utils.print("change: ", endTime3 - endTime2)
     Utils.print("second getPath: ", endTime4 - endTime3)
-    Utils.print("change: ", endTime5 - endTime4)
+    Utils.print("change both map and start end points: ", endTime5 - endTime4)
     Utils.print("third getPath: ", endTime6 - endTime5)
-    
     Utils.print("-----------------------------")
     Utils.print("total time: ", endTime6 - startTime)
     plt.show()

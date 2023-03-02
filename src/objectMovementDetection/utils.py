@@ -10,6 +10,11 @@ class Utils:
             print(text, text1, text2, text3)
     
     @staticmethod
+    def printForce(text = "", text1 = "", text2 = "", text3 = ""):
+        print(text, text1, text2, text3)
+
+    
+    @staticmethod
     def blit_rotate_center(win, image, top_left, angle):
         rotated_image = pygame.transform.rotate(image, angle)
         new_rect = rotated_image.get_rect(
