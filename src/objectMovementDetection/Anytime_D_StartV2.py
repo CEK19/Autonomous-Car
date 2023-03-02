@@ -426,6 +426,8 @@ class DStarService:
     def __init__(self, start, goal, map):
         self.start = start
         self.goal = goal
+        print(start)
+        print(goal)
         self.heuristicType = "euclidean"
         self.eps = D_STAR.ENV.EPSILON
         self.dStar = ADStar(start, goal, self.eps, self.heuristicType, map)
@@ -502,6 +504,6 @@ def main():
     # plt.show()
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+    # main()
     # print()

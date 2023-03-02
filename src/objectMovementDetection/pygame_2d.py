@@ -7,9 +7,8 @@ import random
 import numpy as np
 from datetime import datetime
 import Anytime_D_StartV2 as atdstar
-
-
-ObstacleTest = pygame.Rect(300, 600, 500, 1000)
+import cv2
+from temp import *
 
 
 class Lane():
@@ -348,14 +347,8 @@ class PyGame2D():
             while True:
                 Utils.inputUser(game)
                 game.view()
-        elif mode == GAME_SETTING.MODE_AUTO:
-            robotX, robotY = game.robot.xPos, game.robot.yPos
-            startPoint = (robotX, robotY)
-            goalPoint = (GAME_SETTING.SCREEN_WIDTH//2, 10)
-            eps = D_STAR.ENV.EPSILON
-            dstar = atdstar.ADStar(startPoint, goalPoint, eps, "euclidean", [[D_STAR.ENV.NO_OBS for _ in range(
-                GAME_SETTING.SCREEN_WIDTH)] for _ in range(GAME_SETTING.SCREEN_HEIGHT)])
-            dstar.run()
+        elif mode == GAME_SETTING.MODE_AUTO:        
+            dstar = atdstar.DStarService(start=(0, 0), goal=(1,1), map=Gen.genMap())    
             while True:
                 Utils.inputUser(game)
                 game.view()
@@ -374,26 +367,36 @@ class PyGame2D():
                             listCoordinateLidarSignals.append(
                                 (targetX, targetY))
 
-                print(lidarsVisualization)
                 # Build the binary map with 0 is nothing, 1 is obstacle
                 obstacleMap = [[D_STAR.ENV.NO_OBS for _ in range(
                     GAME_SETTING.SCREEN_WIDTH)] for _ in range(GAME_SETTING.SCREEN_HEIGHT)]
+                obstacleMap = np.asarray(obstacleMap)
+                
                 for coor in listCoordinateLidarSignals:
                     targetX, targetY = int(coor[0]), int(coor[1])
-                    print(len(obstacleMap))
-                    print(len(obstacleMap[0]))
                     obstacleMap[targetY][targetX] = D_STAR.ENV.HAS_OBS
-
+                
                 # Convert to the transformation map
                 # TODO: Do it
 
                 # Put the transformation map into D* algorithm to get the path
-                dstar.onChange(obstacleMap)
-                pathToGoal = dstar.getPath()
-                print(pathToGoal)
+                startPoint = (int(robotX), int(robotY))
+                goalPoint = (GAME_SETTING.SCREEN_WIDTH//2, 5)                
+                dstar.onReset(startPoint, goalPoint, obstacleMap)
+                
+                pathToGoal = dstar.getPath()                
+                pathToGoal = map(np.array, pathToGoal)
+                pathToGoal = np.array(list(pathToGoal))                                
                 # Visualization (optional)
+                # Create OPENCV visualization
+                img = np.zeros((GAME_SETTING.SCREEN_HEIGHT, GAME_SETTING.SCREEN_WIDTH), dtype=np.uint8)
+                img[pathToGoal[:, 1], pathToGoal[:, 0]] = 255
+                
+                # img[transformIndexes] = 255
+                cv2.circle(img, startPoint, 10, 255, 2)
+                cv2.circle(img, goalPoint, 10, 255, 2)
+                cv2.imshow("asa", img)                
                 # Decide the action suitable to the map
-                # pathPlanning = atdstar.ADStar()
 
 
 game = PyGame2D()

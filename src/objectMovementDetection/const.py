@@ -4,7 +4,7 @@ import math
 class GAME_SETTING:
     SCREEN_WIDTH = 200
     SCREEN_HEIGHT = 400
-    FPS = 60
+    FPS = 10
     
     MODE_MANUALLY = "MODE_MANUALLY"
     MODE_AUTO = "MODE_AUTO"
@@ -41,7 +41,7 @@ class LANE_SETTING:
 
 
 class OBSTACLE_SETTING:
-    MAX_INSTANCES = 5
+    MAX_INSTANCES = 0
     RADIUS_OBJECT = 30
     PROBABILITIES_ACTION = [0.1,
                             0.1,
@@ -98,7 +98,7 @@ class D_STAR:
         EPS_MINUS_PER_RUN = 0.5
         EPS_PLUS_PER_ENV_CHANGE = 0.5
         IS_PAUSE = False
-        IS_PRINT = True
+        IS_PRINT = False
         IS_PLOTTING = False
         HAS_OBS = 1
         NO_OBS = 0
