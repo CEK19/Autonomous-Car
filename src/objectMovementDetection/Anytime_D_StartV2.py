@@ -373,7 +373,7 @@ class ADStar:
         path = [self.start]
         curPoint = self.start
 
-        for k in range(100):
+        for k in range(int(GAME_SETTING.SCREEN_HEIGHT + 20)):
             g_list = {}
             for neighbor in self.get_neighbor(curPoint):
                 if not self.is_collision(curPoint, neighbor):
@@ -384,6 +384,9 @@ class ADStar:
             path.append(curPoint)
             if curPoint == self.goal:
                 break
+        
+        if path[-1][0] is not self.goal[0] and path[-1][1] is not self.goal[1]:
+            return list()
 
         return list(path)
     
@@ -500,8 +503,30 @@ def main():
     Utils.print("-----------------------------")
     Utils.print("total time: ", endTime6 - startTime)
     plt.show()
+    
+def main1():
+    map1 = Gen.genEmptyMap()
+    start = (15, 16)
+    goal = (100, 387)
+    file = open('path.js', 'w')
+    
+    file.write("const start = " + str(start) + "\n")
+    file.write("const goal = " + str(goal) + "\n")
+    
+    tu1 = time.time()
+    dstar = DStarService(start, goal, map1)
+    tu2 = time.time()
+    path = dstar.getPath()
+    tu3 = time.time()
+    
+    file.write("const path = " + str(path))
+    
+    print("init: ", tu2 - tu1)
+    print("getPath: ", tu3 - tu2)
+    print("len path: ", len(path))
+    
 
 
 if __name__ == '__main__':
-    main()
+    main1()
     # print()
