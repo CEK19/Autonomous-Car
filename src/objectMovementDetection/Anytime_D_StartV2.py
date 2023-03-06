@@ -373,7 +373,7 @@ class ADStar:
         path = [self.start]
         curPoint = self.start
 
-        for k in range(100):
+        for k in range(int(GAME_SETTING.SCREEN_HEIGHT + 20)):
             g_list = {}
             for neighbor in self.get_neighbor(curPoint):
                 if not self.is_collision(curPoint, neighbor):
@@ -384,6 +384,9 @@ class ADStar:
             path.append(curPoint)
             if curPoint == self.goal:
                 break
+        
+        if path[-1][0] is not self.goal[0] and path[-1][1] is not self.goal[1]:
+            return list()
 
         return list(path)
     

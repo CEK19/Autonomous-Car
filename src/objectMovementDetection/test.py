@@ -1,3 +1,4 @@
-obstacleMap = [[0 for x in range(1)] for y in  range(5)]
-obstacleMap[0][0] = 999
-print(obstacleMap)
+import numpy as np
+
+x = np.array([[1, 2], [3, 4]])
+print(x - [1, 2])

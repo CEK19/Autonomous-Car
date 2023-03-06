@@ -365,32 +365,56 @@ class PyGame2D():
                         targetY = lidarsVisualization[idx]["target"]["y"]
                         if targetX > 0 and targetY > 0 and targetX < GAME_SETTING.SCREEN_WIDTH and targetY < GAME_SETTING.SCREEN_HEIGHT:
                             listCoordinateLidarSignals.append(
-                                (targetX, targetY))
+                                (int(targetX), int(targetY)))
 
                 # Build the binary map with 0 is nothing, 1 is obstacle
                 obstacleMap = [[D_STAR.ENV.NO_OBS for _ in range(
                     GAME_SETTING.SCREEN_WIDTH)] for _ in range(GAME_SETTING.SCREEN_HEIGHT)]
                 obstacleMap = np.asarray(obstacleMap)
                 
-                for coor in listCoordinateLidarSignals:
-                    targetX, targetY = int(coor[0]), int(coor[1])
-                    obstacleMap[targetY][targetX] = D_STAR.ENV.HAS_OBS
                 
+                widthImg = GAME_SETTING.SCREEN_WIDTH
+                heighImg = GAME_SETTING.SCREEN_HEIGHT
+                
+                addedFakeObstacle = np.empty((0, 2), int)
+                
+                for coor in listCoordinateLidarSignals:
+                    targetX, targetY = coor[0], coor[1]
+                    obstacleMap[targetY][targetX] = D_STAR.ENV.HAS_OBS
+                    for deltaY in range(-10, 10):
+                        for deltaX in range(-10, 10):                                
+                            m, n = targetX + deltaX, targetY + deltaY
+                            if m >= 0 and m < widthImg and n >= 0 and n < heighImg and targetX is not m and targetY is not n:
+                                addedFakeObstacle = np.append(addedFakeObstacle, [[m, n]], axis=0)
+                                obstacleMap[n][m] = D_STAR.ENV.HAS_OBS
                 # Convert to the transformation map
                 # TODO: Do it
 
                 # Put the transformation map into D* algorithm to get the path
                 startPoint = (int(robotX), int(robotY))
-                goalPoint = (GAME_SETTING.SCREEN_WIDTH//2, 5)                
-                dstar.onReset(startPoint, goalPoint, obstacleMap)
+                startPointTransform = ((int(robotX)), 0)                
+                goalPoint = (GAME_SETTING.SCREEN_WIDTH//2, 5)
+                goalPointTransform = (GAME_SETTING.SCREEN_WIDTH//2, 5)
+                obstacleMapTransform = obstacleMap[startPoint[1] : startPoint[1] + PLAYER_SETTING.RADIUS_LIDAR, :]
+                dstar.onReset(startPointTransform, goalPointTransform, obstacleMapTransform)
                 
                 pathToGoal = dstar.getPath()                
                 pathToGoal = map(np.array, pathToGoal)
-                pathToGoal = np.array(list(pathToGoal))                                
+                pathToGoal = np.array(list(pathToGoal))    
+                
+                # print(addedFakeObstacle)
+                coorObstacles = map(np.array, listCoordinateLidarSignals)  
+                coorObstacles = np.array(list(coorObstacles))
+                coorObstacles = np.append(coorObstacles, addedFakeObstacle, axis=0)
+
                 # Visualization (optional)
-                # Create OPENCV visualization
-                img = np.zeros((GAME_SETTING.SCREEN_HEIGHT, GAME_SETTING.SCREEN_WIDTH), dtype=np.uint8)
-                img[pathToGoal[:, 1], pathToGoal[:, 0]] = 255
+                # Create OPENCV visualizationT
+                img = np.zeros((heighImg, widthImg), dtype=np.uint8)
+                if (len(pathToGoal)):
+                    img[pathToGoal[:, 1], pathToGoal[:, 0]] = 255
+                if (len(coorObstacles)):
+                    img[coorObstacles[:, 1], coorObstacles[:, 0]] = 255
+                                                            
                 
                 # img[transformIndexes] = 255
                 cv2.circle(img, startPoint, 10, 255, 2)

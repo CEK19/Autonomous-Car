@@ -3,8 +3,8 @@ import math
 
 class GAME_SETTING:
     SCREEN_WIDTH = 200
-    SCREEN_HEIGHT = 400
-    FPS = 10
+    SCREEN_HEIGHT = 200
+    FPS = 24
     
     MODE_MANUALLY = "MODE_MANUALLY"
     MODE_AUTO = "MODE_AUTO"
@@ -12,7 +12,7 @@ class GAME_SETTING:
 
 class PLAYER_SETTING:
     RADIUS_OBJECT = 10
-    RADIUS_LIDAR = 342  # From the border of the circle
+    RADIUS_LIDAR = 100  # From the border of the circle
 
     INITIAL_X = GAME_SETTING.SCREEN_WIDTH//2
     INITIAL_Y = GAME_SETTING.SCREEN_HEIGHT - 20
@@ -41,8 +41,8 @@ class LANE_SETTING:
 
 
 class OBSTACLE_SETTING:
-    MAX_INSTANCES = 0
-    RADIUS_OBJECT = 30
+    MAX_INSTANCES = 6
+    RADIUS_OBJECT = 15
     PROBABILITIES_ACTION = [0.1,
                             0.1,
                             0.1,
@@ -93,7 +93,8 @@ class D_STAR:
     class ENV:
         START_POINT = (3, 5)
         GOAL_POINT = (10, 2)
-        EPSILON = 2.5
+        # EPSILON = 2.5
+        EPSILON = 1.5
         EPS_MIN = 1.0
         EPS_MINUS_PER_RUN = 0.5
         EPS_PLUS_PER_ENV_CHANGE = 0.5
