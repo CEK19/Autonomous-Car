@@ -1,17 +1,4 @@
-import re
-import matplotlib.pyplot as plt
+import numpy as np
 
-file = open("y.txt", "r+") 
-lines = file.readlines()
-print(lines)
-yPosList = []
-xPosList = []
-for idx, line in enumerate(lines):    
-    regex = re.findall(r"[-+]?\d*\.\d+|\d+", line)
-    
-    yPosList.append(float(line))
-    xPosList.append(idx)
-
-print(yPosList)
-plt.plot(xPosList, yPosList)
-plt.show()
+x = np.array([[1, 2], [3, 4]])
+print(x - [1, 2])

@@ -1,198 +1,175 @@
 import math
 
 
-class GameSettingParam:
-    CAPTION = "Reinforcement Learning"
-    WIDTH = 400
-    # HEIGHT = 1000
-    HEIGHT = 750
-    FPS = 700
-    DRAW = True
+class GAME_SETTING:
+    SCREEN_WIDTH = 200
+    SCREEN_HEIGHT = 200
+    FPS = 24
     
-    class EndGameReason:
-        NOT_END_GAME = ""
-        WIN = "win"
-        TOUCH_OBSTACLE = "touch_obstacle"
-        TOUCH_SIDE = "touch_side"
-        TOUCH_BOTTOM = "touch_bottom"
-        OVER_ROTAION = "over_rotation"
+    MODE_MANUALLY = "MODE_MANUALLY"
+    MODE_AUTO = "MODE_AUTO"
 
 
-class PlayerParam:
+class PLAYER_SETTING:
     RADIUS_OBJECT = 10
+    RADIUS_LIDAR = 100  # From the border of the circle
 
-    ACCELERATION_FORWARD = 10
+    INITIAL_X = GAME_SETTING.SCREEN_WIDTH//2
+    INITIAL_Y = GAME_SETTING.SCREEN_HEIGHT - 20
+
+    MAX_FORWARD_VELO = 60
+    MAX_ROTATION_VELO = 10
+    MIN_ROTATION_VELO = -MAX_ROTATION_VELO
+
+    ACCELERATION_FORWARD = 5
     ACCELERATION_ROTATE = 0.05
 
-    WIDTH = 16
-    HEIGHT = 30
-
-    INITIAL_X = GameSettingParam.WIDTH//2
-    INITIAL_Y = GameSettingParam.HEIGHT
-
-    MAX_VELOCITY = 60
-    MAX_ROTATION_VELOCITY = 20
-
+    CASTED_RAYS = 90
     FOV = math.pi
     HALF_FOV = FOV/2
-    CASTED_RAYS = 90
     STEP_ANGLE = FOV / CASTED_RAYS
-    RADIUS_LIDAR = 140
 
-    INC_ROTATION_VELO = "INC_ROTATION_VELO"
-    DESC_ROTATION_VELO = "DESC_ROTATION_VELO"
-    STOP = "STOP"
-    INC_FORWARD_VELO = "INC_FORWARD_VELO"
-    DESC_FORWARD_VELO = "DESC_FORWARD_VELO"
-
-    INFINITY = 9999
+    Y_GOAL_POSITION = 10
 
 
-class ObstacleParam:
-    NUMBER_OF_OBSTACLES = 30
-    OBSTACLE_ACCELERATION_FORWARD = 50
-    OBSTACLE_ACCELERATION_ROTATE = 0.5
-    MAX_VELOCITY = 70
-    INITIAL_OBSTACLE_X = GameSettingParam.WIDTH//2
-    INITIAL_OBSTACLE_Y = 0
+class LANE_SETTING:
+    WIDTH_OF_LANE_BORDER = 3
 
+    LEFT_PADDING = 0
+    RIGHT_PADDING = LEFT_PADDING
+    TOP_PADDING = 0    
+
+
+class OBSTACLE_SETTING:
+    MAX_INSTANCES = 6
+    RADIUS_OBJECT = 15
     PROBABILITIES_ACTION = [0.1,
                             0.1,
                             0.1,
                             0.4,
-                            0.3]
+                            0.2,
+                            0.1]
 
 
-class RLParam:
-
-    MIN_EPSILON = 0
-    MAX_EPSILON = 0.5
-
-    MIN_ALPHA = 0.3
-    MAX_ALPHA = 0.1
-
-    GAMMA = 0.5
-
-    AREA_RAY_CASTING_NUMBERS = 6
-
-    N_EPISODES = 3000
-    N_EPISODES_PER_SAVE_MODEL = 400
-    MAX_EPISODE_STEPS = 100000
-
-    ACTIONS = [PlayerParam.INC_ROTATION_VELO,
-               PlayerParam.DESC_ROTATION_VELO,
-               PlayerParam.STOP,
-               PlayerParam.INC_FORWARD_VELO,
-               PlayerParam.DESC_FORWARD_VELO]
-
-    DISTANCE_OF_RAY_CASTING = [
-        int(PlayerParam.RADIUS_LIDAR*1/3),
-        int(PlayerParam.RADIUS_LIDAR*2/3),
-        PlayerParam.RADIUS_LIDAR,
-        PlayerParam.INFINITY
-    ]
-    MAX_TIME_MS = 2*60
-
-    class LEVEL_OF_RAY_CASTING:
-        INFINITY = "3"  # NO TOUCH OBSTACLE
-        SAFETY_DISTANCE = "2"  # LIDAR TOUCH OBSTACLE, BUT SAFE
-        DANGEROUS_DISTANCE = "1"  # LIDAR TOUCH OBSTACLE, BUT IN DANGEROUS MODE
-        FAILED_DISTANCE = "0"  # LIDAR TOUCH OBSTACLE, AND OUCH
-
-    class LEVEL_OF_LANE:
-        # | x | 3x | 2x | 3x | x |
-        # split the middle area into 2 parts, each part will be x    
-        
-        LEFT = "4"
-        DISTANCE_LEFT = GameSettingParam.WIDTH * 4 / 10
-        
-        MOST_LEFT = "3"
-        DISTANCE_MOST_LEFT =  GameSettingParam.WIDTH*1/10
-        
-        MIDDLE = "2"
-        DISTANCE_MIDDLE = 0 # JUST LEAVE 0 FOR FUN
-        
-        
-        RIGHT = "1"
-        DISTANCE_RIGHT = GameSettingParam.WIDTH * 4 / 10
-        
-        MOST_RIGHT = "0"
-        DISTANCE_MOST_RIGHT =  GameSettingParam.WIDTH*1/10
-
-        LIST_LEVEL_OF_LANE = [LEFT, MOST_LEFT, MIDDLE, RIGHT, MOST_RIGHT]        
-
-    class LEVEL_OF_ANGLE:
-        FRONT = "0"
-        FRONT_ANGLE = math.pi
-        
-        
-        NORMAL_LEFT = "1"
-        NORMAL_LEFT_ANGLE = math.pi - math.pi/4
-         
-        NORMAL_RIGHT = "2"
-        NORMAL_RIGHT_ANGLE = math.pi + math.pi/4
-        
-        OVER_ROTATION_LEFT = "3"
-        OVER_ROTATION_LEFT_ANGLE = math.pi - math.pi/2
-        
-        OVER_ROTATION_RIGHT = "4"
-        OVER_ROTATION_RIGHT_ANGLE = math.pi + math.pi/2
-        
-        LIST_LEVEL_ANGLES = [FRONT, NORMAL_LEFT, NORMAL_RIGHT, OVER_ROTATION_LEFT, OVER_ROTATION_RIGHT]
-        
-    class SCORE:
-        # lidar detect obstacle
-        OBSTACLE_TOUCH = -1_000_000_000
-        FAILED_DISTANCE_TOUCH = -15000
-        DANGEROUS_ZONE_TOUCH = -5000
-        SAFETY_ZONE_TOUCH = -1000
-
-        # stay in middle of lane
-        STAY_AT_CENTER_OF_LANE = 1000
-        STAY_AT_LEFT_OR_RIGHT_OF_LANE = -100
-        STAY_AT_MOSTLEFT_OR_MOSTRIGHT_OF_LANE = -10000
-        
-        # angle of car
-        STAY_IN_FRONT = 1000
-        STAY_IN_NORMAL_ANGLE = -100
-        
-        # Actions
-        STOPS_TO_ENJOY = -10000
-        TURN_AROUND = -2000000
-        INCREASE_Y = -300000
-        INCREASE_SPEED_FORWARD = 10000
-        
-        FINISH_LINE = 10000000
-        TOUCH_BOTTOM = -2_000_000_000
-
-
-class CustomColor:
+class COLOR:
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
-    CRYAN = (0, 255, 255)
+    CYAN = (0, 255, 255)
     PINK = (255, 0, 255)
 
 
-class MODE_PLAY:
-    MANUAL = "MANUAL"
-    RL_TRAIN = "RL_TRAIN"
-    RL_DEPLOY = "RL_DEPLOY"
+# RELATED TO REINFORCEMENT LEARNING
+class ACTIONS:
+    TURN_RIGHT_ACCELERATION = 0
+    TURN_LEFT_ACCELERATION = 1
+    STOP = 2
+    FORWARD_ACCELERATION = 3
+    BACKWARD_ACCELERATION = 4
+    DO_NOTHING = 5  # DIFFERENT WITH STOP
 
 
-class GUI:
-    DISPLAY = "DISPLAY"
-    HIDDEN = "HIDDEN"
-
-
-class FILE:
-    PROGRESS = "progress.txt"
-    PROGRESS_BACKUP = "progress-backup.txt"
-    MODEL_SAVE = "rl-learning.txt"
-    MODEL_SAVE_BACKUP = "rl-learning-backup.txt"
-
-class Equation:
+class EQUATION:
     NO_SOLUTION = 0
     ONE_SOLUTION = 1
     TWO_SOLUTION = 2
+
+
+ACTION_SPACE = 6
+ACTIONS_LIST = [
+    ACTIONS.TURN_RIGHT_ACCELERATION,
+    ACTIONS.TURN_LEFT_ACCELERATION,
+    ACTIONS.STOP,
+    ACTIONS.FORWARD_ACCELERATION,
+    ACTIONS.BACKWARD_ACCELERATION,
+    ACTIONS.DO_NOTHING,
+]
+MAX_EPISODE = 100000
+INT_INFINITY = 99999
+
+
+class D_STAR:
+    class ENV:
+        START_POINT = (3, 5)
+        GOAL_POINT = (10, 2)
+        # EPSILON = 2.5
+        EPSILON = 1.5
+        EPS_MIN = 1.0
+        EPS_MINUS_PER_RUN = 0.5
+        EPS_PLUS_PER_ENV_CHANGE = 0.5
+        IS_PAUSE = False
+        IS_PRINT = False
+        IS_PLOTTING = False
+        HAS_OBS = 1
+        NO_OBS = 0
+
+    MY_MAP = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
+    
+    # MY_MAP = [
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    # ]    
+
+    NEW_MAP = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
+    
+    NEW_MAP_1 = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
+    
+    NEW_BLANK_MAP = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ]
+    
+    NEW_BLOCK_MAP = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
+    
+    MOVING_MAP = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1],
+        [1, 0, 0, 0, 0, 1, 0, 0, 2, 2, 2, 0, 1],
+        [1, 0, 0, 0, 1, 1, 0, 2, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 2, 2, 0, 1, 0, 0, 0, 1],
+        [1, 0, 0, 2, 2, 0, 0, 0, 1, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
