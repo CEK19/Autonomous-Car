@@ -8,3 +8,5 @@ print(k)
 t = json.loads(k)
 print(t['abbc'])
 
+from module import *
+test()
