@@ -2,16 +2,13 @@
 import numpy as np
 
 TOPIC_NAME_LANE_DETECTION = 'lane_detection_topic'
-TOPIC_NAME_AVOIDANCE = 'avoidance_topic'
 TOPIC_NAME_CAMERA = '/camera/rgb/image_raw'
-TOPIC_NAME_LIDAR = '/scan' # Check it
 TOPIC_NAME_VELOCITY = '/cmd' # Check it
 TOPIC_NAME_ACTION_DECISION = 'action_decision'
 TOPIC_NAME_TRAFFIC_LIGHTS ='traffic_lights_topic'
 TOPIC_NAME_TRAFFIC_SIGNS = 'traffic_signs_topic'
 
 
-NODE_NAME_AVOIDANCE = 'avoidance_node_name'
 NODE_NAME_TRAFFIC_SIGNS = 'traffic_signs_node_name'
 NODE_NAME_TRAFFIC_LIGHTS = 'traffic_lights_node_name'
 NODE_NAME_DECISION_MAKING = 'decision_making_node_name'
@@ -22,7 +19,7 @@ class ASSETS:
 class EXCEPTION:
     NO_Q_TABLE = "Dont have Q table file"
 
-class MODULE_AVOIDANCE:
+class MODULE_COMBINE_LIDAR_LANE:
     LIST_LEVEL_ANGLES = np.array(range(10), dtype="str")
 
     TURN_LEFT = "TURN_LEFT"
