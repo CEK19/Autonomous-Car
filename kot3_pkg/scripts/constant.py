@@ -75,4 +75,4 @@ class Text:
 
 class Setting:
     MODEL_NAME = "model-110.h5"
-    MODEL_PATH = "./models"
+    MODEL_PATH = "./assets"
