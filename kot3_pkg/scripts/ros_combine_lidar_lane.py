@@ -8,6 +8,9 @@ import json
 import numpy as np
 import cv2
 
+# Test here
+from constant import *
+
 TOPIC_NAME_AVOIDANCE = 'avoidance_topic'
 NODE_NAME_AVOIDANCE = 'avoidance_node_name'
 TOPIC_NAME_LIDAR = '/scan' # Check it
@@ -28,6 +31,7 @@ class CombineLidarLane:
         #     TOPIC_NAME_AVOIDANCE, String, queue_size=1)
 
     def updateLidarSignal(self, scan):
+        print("test", NODE_NAME_TRAFFIC_LIGHTS)
         # Front of robot index = 0, anti clockwise +1 index (left = 90 deg)
         ranges = scan.ranges
         # intensities = scan.intensities
@@ -54,6 +58,7 @@ class CombineLidarLane:
         coordinateYObstacleSimulationMap = HEIGH_SIMULATE_MAP - scaledLidarSignalBaseAngle.astype(np.int16) 
         coordinateXObstacleSimulationMap = WIDTH_SIMULATE_MAP//2 + ((scaledLidarSignalBaseAngle/(np.sin(angleList) + 0.0001))*(np.cos(angleList))).astype(np.int16)
         
+
         filteredIndex = np.where((coordinateYObstacleSimulationMap >= 0) & (coordinateYObstacleSimulationMap < HEIGH_SIMULATE_MAP) & (coordinateXObstacleSimulationMap >= 0) & (coordinateXObstacleSimulationMap < WIDTH_SIMULATE_MAP))
         
         # Make obstacle bigger
@@ -61,7 +66,7 @@ class CombineLidarLane:
         cv2.imshow("aaaa", simulateMap)
         if cv2.waitKey(1) == ord('q'):
             return
-        print(simulateMap)
+        # print(simulateMap)
         # Displayed on the pre-pathplanning image
 
     def sendActionToTopic(self, action):
