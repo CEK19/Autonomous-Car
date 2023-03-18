@@ -162,9 +162,9 @@ include_directories(
 # in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/gazeboSign.py
-  scripts/constant.py
   scripts/ros_combine_lidar_lane.py
   scripts/constant.py
+  scripts/temp.py
 #  scripts/talker.py
 # scripts/listener.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
