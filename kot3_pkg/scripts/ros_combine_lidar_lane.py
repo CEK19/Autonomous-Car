@@ -9,6 +9,7 @@ import numpy as np
 import cv2
 import heapq
 import time
+import math
 
 # Test here
 
@@ -21,6 +22,19 @@ HEIGH_SIMULATE_MAP = 150
 BLOCKED_COLOR = 255
 DELTA_X = 4
 DELTA_Y = 4
+NUM_POINTS_OF_DIRECTION = 15
+MAX_STRAIGHT_VELOCITY = 10
+MAX_TURN_VELOCITY = 4
+
+class Utils:
+    @staticmethod
+    def getVectorAB(A, B):
+        return B[0] - A[0], B[1] - A[1]
+    
+    @staticmethod
+    def getAngleOfVectors(A, B):
+        return np.arccos(np.dot(A, B)/(np.linalg.norm(A)*np.linalg.norm(B)))
+    
 
 class CombineLidarLane:
     def __init__(self) -> None:
@@ -30,6 +44,7 @@ class CombineLidarLane:
         self.lidar_signal_subscriber = rospy.Subscriber(
             TOPIC_NAME_LIDAR, LaserScan, self.updateLidarSignal)
         self.ranges = [1 for _ in range(360)]
+        self.tracePath = np.empty(shape=(0, 2), dtype=int)
 
         # Publisher
         # self.avoidance_publisher = rospy.Publisher(
@@ -80,7 +95,7 @@ class CombineLidarLane:
         t1 = time.time()
         # aStar = AStar(matrix=simulateMap, start=(initalX, initialY), goal=(goalX, goalY))
         # tracePath = aStar.find_path()
-        tracePath = np.empty(shape=(0, 2), dtype=int)
+        self.tracePath = np.empty(shape=(0, 2), dtype=int)
         if isExistLaneToGo:
             for row in range(1, HEIGH_SIMULATE_MAP - 1):
                 nonBlockedListCoor = np.empty(shape=(0, 2), dtype=int)
@@ -89,13 +104,13 @@ class CombineLidarLane:
                         nonBlockedListCoor = np.append(nonBlockedListCoor, [[col, row]], axis=0)
 
                 tmpIndex = np.argmin(np.abs(nonBlockedListCoor[:, 0] - goalX))
-                tracePath = np.append(tracePath, [nonBlockedListCoor[tmpIndex]], axis=0)
+                self.tracePath = np.append(self.tracePath, [nonBlockedListCoor[tmpIndex]], axis=0)
 
         t2 = time.time()
         # print(t2 - t1)
         # print(tracePath)
-        if len(tracePath):
-            for coor in tracePath:
+        if len(self.tracePath):
+            for coor in self.tracePath:
                 x, y = coor[0], coor[1]
                 # simulateMap =  cv2.circle(simulateMap, (x, y), 1, (255, 0, 0), 1)
                 pathOnlyMap[y, x] = 255
@@ -117,6 +132,20 @@ class CombineLidarLane:
     def solve(self, data):
         self.sendActionToTopic(action)
         rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+    
+    def getVelocity(self):
+        vecDirection = Utils.getVectorAB(self.tracePath[0], self.tracePath[NUM_POINTS_OF_DIRECTION])
+        vecZero = (1, 0)
+        angle = Utils.getAngleOfVectors(vecDirection, vecZero)
+        isRight = angle < math.radians(90)
+        # isCenter = math.radians(87) < angle < math.radians(93)
+        alpha = abs(angle - math.radians(90))
+        straightVel = math.cos(alpha) * MAX_STRAIGHT_VELOCITY
+        turnVel = math.sin(alpha) * MAX_TURN_VELOCITY
+        if isRight:
+            return straightVel, turnVel
+        
+        return straightVel, -turnVel
 
 
 if __name__ == '__main__':
