@@ -1,6 +1,6 @@
 import json
 import numpy as np
-from constant import *
+# from constant import *
 test1 = {"abbc":  1, "xyz": "10"}
 
 k = json.dumps(test1)
@@ -22,4 +22,4 @@ print(y*np.cos(x))
 
 t = [1, 2, 3]
 print("aaaa", t[::-1][::-1])
-print(NODE_NAME_DECISION_MAKING)
+# print(NODE_NAME_DECISION_MAKING)

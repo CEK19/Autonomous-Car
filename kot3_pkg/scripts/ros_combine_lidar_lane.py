@@ -3,6 +3,7 @@
 import rospy
 from std_msgs.msg import String
 from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Twist
 import importlib
 import json
 import numpy as np
@@ -10,21 +11,27 @@ import cv2
 import heapq
 import time
 import math
+import threading
 
 # Test here
 
 TOPIC_NAME_AVOIDANCE = 'avoidance_topic'
 NODE_NAME_AVOIDANCE = 'avoidance_node_name'
+TOPIC_NAME_VELOCITY = '/cmd_vel'
 TOPIC_NAME_LIDAR = '/scan' # Check it
 LIDAR_MAX_RANGE = 3 # metters, unit
 WIDTH_SIMULATE_MAP = 300
 HEIGH_SIMULATE_MAP = 150
 BLOCKED_COLOR = 255
-DELTA_X = 4
-DELTA_Y = 4
-NUM_POINTS_OF_DIRECTION = 15
-MAX_STRAIGHT_VELOCITY = 10
-MAX_TURN_VELOCITY = 4
+DELTA = 35
+DELTA_X = DELTA
+DELTA_Y = DELTA
+NUM_POINTS_OF_DIRECTION = 7
+MAX_STRAIGHT_VELOCITY = 0.1     # 0.25
+MAX_TURN_VELOCITY = 0.22        # 0.1
+
+
+pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=10)
 
 class Utils:
     @staticmethod
@@ -34,6 +41,19 @@ class Utils:
     @staticmethod
     def getAngleOfVectors(A, B):
         return np.arccos(np.dot(A, B)/(np.linalg.norm(A)*np.linalg.norm(B)))
+
+    @staticmethod
+    def publicVelocity(straight, angular):
+        print()
+        print("straight: ", straight)
+        print("turn: ", angular)
+        print()
+        myTwist = Twist()
+        myTwist.linear.x = straight
+        myTwist.angular.z = angular
+        pub.publish(myTwist)
+        # msg = {"linear": straight, "angular": angular}
+        # pub.publish(json.dumps(msg))
     
 
 class CombineLidarLane:
@@ -45,6 +65,11 @@ class CombineLidarLane:
             TOPIC_NAME_LIDAR, LaserScan, self.updateLidarSignal)
         self.ranges = [1 for _ in range(360)]
         self.tracePath = np.empty(shape=(0, 2), dtype=int)
+        self.straightVel = 0
+        self.turnVel = 0
+        
+        # while True:
+        #     self.updateVelocity()
 
         # Publisher
         # self.avoidance_publisher = rospy.Publisher(
@@ -53,8 +78,14 @@ class CombineLidarLane:
     def updateLidarSignal(self, scan):
         # Front of robot index = 0, anti clockwise +1 index (left = 90 deg)
         self.ranges = scan.ranges
+        # self.updateVelocity()
+    
+    def updateVelocity(self, event):
+        # self.getPath()
+        Utils.publicVelocity(self.straightVel, self.turnVel)
                 
     def pathFinding(self, event):
+        print("start path finding")
         # Convert lidar distance signal, result represent left to right (0 -> 179)
         angleList = np.arange(start=0, stop=180, step=1, dtype=np.int16)
         angleList = angleList * np.pi/180.
@@ -77,11 +108,15 @@ class CombineLidarLane:
         coordinateXObstacleSimulationMap = WIDTH_SIMULATE_MAP//2 + ((scaledLidarSignalBaseAngle/(np.sin(angleList) + 0.0001))*(np.cos(angleList))).astype(np.int16)        
         filteredIndex = np.where(((coordinateYObstacleSimulationMap >= 0) & (coordinateYObstacleSimulationMap < HEIGH_SIMULATE_MAP) & (coordinateXObstacleSimulationMap >= 0) & (coordinateXObstacleSimulationMap < WIDTH_SIMULATE_MAP)))
         
-        # Make obstacle bigger
         simulateMap[coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]] = BLOCKED_COLOR
-        for y, x in zip(coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]):
-            simulateMap[max(0, y - DELTA_Y) : min(HEIGH_SIMULATE_MAP, y + DELTA_Y), max(0, x - DELTA_X) : min(WIDTH_SIMULATE_MAP, x + DELTA_X)] = BLOCKED_COLOR
+        # Make obstacle bigger - Option 1
+        # for y, x in zip(coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]):
+        #     simulateMap[max(0, y - DELTA_Y) : min(HEIGH_SIMULATE_MAP, y + DELTA_Y), max(0, x - DELTA_X) : min(WIDTH_SIMULATE_MAP, x + DELTA_X)] = BLOCKED_COLOR
         # Displayed on the pre-pathplanning image
+        
+        # Make obstacle bigger - Option 2
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (DELTA, DELTA))
+        simulateMap = cv2.dilate(simulateMap, kernel)
 
         # Path finding here
         goalX, goalY = WIDTH_SIMULATE_MAP//2, 0
@@ -105,6 +140,7 @@ class CombineLidarLane:
 
                 tmpIndex = np.argmin(np.abs(nonBlockedListCoor[:, 0] - goalX))
                 self.tracePath = np.append(self.tracePath, [nonBlockedListCoor[tmpIndex]], axis=0)
+                # self.tracePath = np.flip(self.tracePath, axis=1)
 
         t2 = time.time()
         # print(t2 - t1)
@@ -118,6 +154,7 @@ class CombineLidarLane:
 
         cv2.imshow("simulate map", simulateMap)
         cv2.imshow("path only map", pathOnlyMap)
+        self.getVelocity()
         if cv2.waitKey(1) == ord('q'):
             return   
 
@@ -129,12 +166,16 @@ class CombineLidarLane:
         message = json.dumps({"action": action})
         self.avoidance_publisher.publish(message)
 
-    def solve(self, data):
-        self.sendActionToTopic(action)
-        rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+    # def solve(self, data):
+    #     self.sendActionToTopic(action)
+    #     rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+    def getPath(self):
+        print(self.tracePath)
+        return self.tracePath
     
     def getVelocity(self):
-        vecDirection = Utils.getVectorAB(self.tracePath[0], self.tracePath[NUM_POINTS_OF_DIRECTION])
+        point15th = len(self.tracePath) - 1 - NUM_POINTS_OF_DIRECTION
+        vecDirection = Utils.getVectorAB([HEIGH_SIMULATE_MAP, int(WIDTH_SIMULATE_MAP / 2)], self.tracePath[point15th])
         vecZero = (1, 0)
         angle = Utils.getAngleOfVectors(vecDirection, vecZero)
         isRight = angle < math.radians(90)
@@ -142,10 +183,21 @@ class CombineLidarLane:
         alpha = abs(angle - math.radians(90))
         straightVel = math.cos(alpha) * MAX_STRAIGHT_VELOCITY
         turnVel = math.sin(alpha) * MAX_TURN_VELOCITY
-        if isRight:
-            return straightVel, turnVel
         
-        return straightVel, -turnVel
+        print(self.tracePath[point15th:])
+        
+        if isRight:
+            self.straightVel = straightVel
+            self.turnVel = -turnVel
+            # self.updateVelocity()
+            return
+        
+        self.straightVel = straightVel
+        self.turnVel = turnVel
+        # self.updateVelocity()
+    
+    # def timerInterupt(self):
+    #     self.sendActionToTopic(action)
 
 
 if __name__ == '__main__':
@@ -153,6 +205,22 @@ if __name__ == '__main__':
         rospy.init_node(NODE_NAME_AVOIDANCE, anonymous=True)
         avoidance = CombineLidarLane()
         rospy.Timer(rospy.Duration(0.25), avoidance.pathFinding)
+        rospy.Timer(rospy.Duration(0.01), avoidance.updateVelocity)
+        
+        # while True:
+        #     avoidance.updateVelocity()
+        #     rospy.spin()
+        
+        # # Create timer 1
+        # timer1 = threading.Timer(0.25, avoidance.pathFinding)
+
+        # # Create timer 2
+        # timer2 = threading.Timer(0.01, avoidance.updateVelocity)
+
+        # # Start both timers
+        # timer1.start()
+        # timer2.start()
+        
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
