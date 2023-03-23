@@ -9,15 +9,51 @@ import cv2
 import math
 import numpy as np
 import json
-from os import listdir
-from os.path import isfile, join
-from numpy.core.fromnumeric import amax
-from numpy.lib.type_check import imag
 from keras import models
+import pickle
 import time
-from constant import *
 
 # index = 0
+
+
+# CONST FILE
+
+class Setting:
+	MODEL_NAME = "model-110.h5"
+	MODEL_PATH = "./assets/"
+	DATA_PATH = "./assets/"
+	
+class Sign:
+	EXTRA_SAFETY = 5
+	MIN_AREA = 100
+	MAX_AREA = 50000
+	MIN_WIDTH_HEIGHT = 30
+	MIN_ACCURACY = 0.2
+
+
+class MODULE_TRAFFIC_SIGNS:
+	AHEAD = "AHEAD"
+	FORBID = "FORBID"
+	STOP = "STOP"
+	LEFT = "LEFT"
+	RIGHT = "RIGHT"
+	NONE = "NONE"
+	LABEL_TO_TEXT = [AHEAD, FORBID, STOP, LEFT, RIGHT, NONE]
+
+NODE_NAME_TRAFFIC_SIGNS = 'traffic_signs_node_name'
+TOPIC_NAME_CAMERA = '/camera/rgb/image_raw'
+	
+#################################################
+
+pub = rospy.Publisher('chatter', String, queue_size=1)
+
+with open('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/mean_image_gray.pickle', 'rb') as f:
+    MEAN_IMAGE = pickle.load(f, encoding='latin1')
+
+with open('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/std_gray.pickle', 'rb') as f:
+    STD_IMAGE = pickle.load(f, encoding='latin1')
+
+#################################################
 
 
 def distanceBetweenTwoPoint(PointA, PointB):
@@ -27,7 +63,6 @@ def distanceBetweenTwoPoint(PointA, PointB):
 def returnRedness(img):
 	yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
 	y, u, v = cv2.split(yuv)
-	cv2.imshow("y", y)
 	return v
 	# gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 	# blur = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -43,7 +78,7 @@ def returnRedness(img):
 
 def threshold_RedSign(img, T=150):
 	_, img = cv2.threshold(img, T, 255, cv2.THRESH_BINARY)
-	cv2.imshow("red threshhold", img)
+	# cv2.imshow("red threshhold", img)
 	return img
 
 # T = 125	# data 2
@@ -53,7 +88,7 @@ def threshold_RedSign(img, T=150):
 # T = 120
 def threshold_BlueSign(img, T=110):
 	_, img = cv2.threshold(img, T, 255, cv2.THRESH_BINARY)
-	cv2.imshow("blue threshold", img)
+	# cv2.imshow("blue threshold", img)
 	return img
 
 
@@ -92,42 +127,48 @@ def preprocessingImageToClassifier(image=None, imageSize=32):
 	image = image.reshape(1, imageSize, imageSize, 1)
 	return image
 
-def preprocessingImageToStore(image=None, imageSize=32):
-	# GRAYSCALE
-	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+def preprocessingImageToClassifierV2(image=None, imageSize=32):
 	# RESIZE
 	image = cv2.resize(image, (imageSize, imageSize))
+
+	# GRAYSCALE
+	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
 	# LOCAL HISTOGRAM EQUALIZATION
 	clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
 	image = clahe.apply(image)
-	# image = image.astype(np.float32)/255.0
-	cv2.imshow("store img", image)
+
+	# /255.0 NORMALIZATION
+	image = image.astype(np.float32)/255.0
+
+	# Mean Normalization
+	image = image - MEAN_IMAGE["mean_image_gray"]
+
+	# STD Normalization
+	image = image / STD_IMAGE["std_gray"]
+
+	image = image.reshape(1, imageSize, imageSize, 1)
 	return image
 
+
 def predict(sign):
-	img = preprocessingImageToClassifier(sign, imageSize=32)
+	img = preprocessingImageToClassifierV2(sign, imageSize=32)
 	start_time = time.time()
 	ans = model.predict(img)
 	end_time = time.time()
 	return ans, end_time-start_time
 
 
-def probility(sign):
-	img = preprocessingImageToClassifier(sign, imageSize=32)
-	return np.amax(model.predict(img))
 
-
-
-def rosPublish(traffic_sign, size):
-	pub = rospy.Publisher('chatter', String, queue_size=1)
-	# rospy.init_node('talker', anonymous=True)
+def rosPublish(traffic_sign, size, accuracy):
 	rate = rospy.Rate(10) # 10hz
-
 	message = json.dumps({
-    	"sign": MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign],
-		"size": size,
-    })
-
+		"sign": MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign],
+		"size": float(size),
+		"accuracy": float(accuracy)
+	})
+	print(message)
 	pub.publish(message)
 
 
@@ -138,15 +179,7 @@ def callbackFunction(data):
 	print("Start Convert")
 	imgMatrix = bridge.imgmsg_to_cv2(data, "bgr8")	#data.encoding
 
-	# basePath = "/home/minhtulehoang/catkin_ws/src/rotate_turtlebot/src/img"
-	# baseFileName = "/pic" + str(index) + ".jpeg"
-	# imgMatrix = cv2.imread(fileName)
 	cv2.imshow("Origin", imgMatrix)
-
-	# print("Start Create File")
-	#cv2.imwrite(basePath + baseFileName, imgMatrix)
-	# print("Successful!")
-	# index +=1
 	cv2.waitKey(3)
 	final_sign = []
 	try:
@@ -221,10 +254,9 @@ def callbackFunction(data):
 			startTime = time.time()
 			prediction, t = predict(sign)
 			endTime = time.time()
-   
 			accuracy = np.amax(prediction)
 			size = cv2.contourArea(big)
-			rosPublish(np.argmax(prediction), size)
+			rosPublish(np.argmax(prediction), size, accuracy)
 		else:
 			cv2.imshow('final', imgMatrix)
 			print("I can't see anything !")
@@ -237,15 +269,11 @@ def callbackFunction(data):
 ###########################
 
 
-# modelPath = "C:\\Users\\Admin\Documents\\coding\\masterAI\\traffic sign detection\\models"
-modelPath = "./models"
-videoPath = "/Users/lap15864-local/Desktop/tempVid.mov"
-
 ###########################
 
 
 print("---------------begin---------------")
-model = models.load_model(modelPath + "\\" + "model-110.h5")
+model = models.load_model('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/model-110.h5')
 rospy.init_node(NODE_NAME_TRAFFIC_SIGNS)
 while not rospy.is_shutdown():
 	lis = rospy.Subscriber(TOPIC_NAME_CAMERA, Image, callbackFunction)

@@ -163,6 +163,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   scripts/talker.py
   scripts/listener.py
+  scripts/ros_combine_lidar_lane.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
