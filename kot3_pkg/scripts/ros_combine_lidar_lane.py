@@ -15,10 +15,11 @@ import threading
 
 # Test here
 
-TOPIC_NAME_AVOIDANCE = 'avoidance_topic'
-NODE_NAME_AVOIDANCE = 'avoidance_node_name'
-TOPIC_NAME_VELOCITY = '/cmd_vel'
-TOPIC_NAME_LIDAR = '/scan' # Check it
+NODE_NAME_AVOIDANCE = rospy.get_param('NODE_NAME_AVOIDANCE')
+TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')  # 'avoidance_topic'
+TOPIC_NAME_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
+TOPIC_NAME_LIDAR = rospy.get_param('TOPIC_NAME_LIDAR')
+
 LIDAR_MAX_RANGE = 3 # metters, unit
 WIDTH_SIMULATE_MAP = 2*LIDAR_MAX_RANGE*100
 HEIGH_SIMULATE_MAP = LIDAR_MAX_RANGE*100

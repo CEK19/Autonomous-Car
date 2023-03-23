@@ -40,11 +40,11 @@ class MODULE_TRAFFIC_SIGNS:
 	NONE = "NONE"
 	LABEL_TO_TEXT = [AHEAD, FORBID, STOP, LEFT, RIGHT, NONE]
 
-NODE_NAME_TRAFFIC_SIGNS = 'traffic_signs_node_name'
-TOPIC_NAME_CAMERA = '/camera/rgb/image_raw'
+NODE_NAME_TRAFFIC_SIGNS = rospy.get_param('NODE_NAME_TRAFFIC_SIGNS')
+TOPIC_NAME_CAMERA = rospy.get_param('TOPIC_NAME_CAMERA')
 	
 #################################################
-
+# TODO later, an dia r ghep
 pub = rospy.Publisher('chatter', String, queue_size=1)
 
 with open('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/mean_image_gray.pickle', 'rb') as f:
@@ -254,6 +254,7 @@ def callbackFunction(data):
 			startTime = time.time()
 			prediction, t = predict(sign)
 			endTime = time.time()
+			print("Time: ", endTime-startTime)
 			accuracy = np.amax(prediction)
 			size = cv2.contourArea(big)
 			rosPublish(np.argmax(prediction), size, accuracy)
@@ -270,9 +271,6 @@ def callbackFunction(data):
 
 
 ###########################
-
-print("holalala")
-print(rospy.get_param('paramName'))
 
 print("---------------begin---------------")
 model = models.load_model('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/model-110.h5')
