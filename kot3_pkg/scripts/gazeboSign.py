@@ -271,6 +271,8 @@ def callbackFunction(data):
 
 ###########################
 
+print("holalala")
+print(rospy.get_param('paramName'))
 
 print("---------------begin---------------")
 model = models.load_model('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/model-110.h5')
