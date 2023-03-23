@@ -15,7 +15,6 @@ from numpy.core.fromnumeric import amax
 from numpy.lib.type_check import imag
 from keras import models
 import time
-# from constant import *
 
 # index = 0
 
@@ -255,14 +254,10 @@ def callbackFunction(data):
 ###########################
 
 
-# modelPath = "C:\\Users\\Admin\Documents\\coding\\masterAI\\traffic sign detection\\models"
-videoPath = "/Users/lap15864-local/Desktop/tempVid.mov"
-
 ###########################
 
 
 print("---------------begin---------------")
-# model = models.load_model(Setting.MODEL_PATH + "/" + Setting.MODEL_NAME)
 model = models.load_model('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/model-110.h5')
 rospy.init_node(NODE_NAME_TRAFFIC_SIGNS)
 while not rospy.is_shutdown():
