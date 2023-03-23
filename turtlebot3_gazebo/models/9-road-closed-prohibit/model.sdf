@@ -1,0 +1,27 @@
+<?xml version='1.0'?>
+<sdf version='1.7'>
+  <model name='9-road-closed-prohibit'>
+	<static>true</static>
+    <link name='link_0'>
+		
+		<collision name="collision">
+		<geometry>
+			<mesh>
+				<uri>model://9-road-closed-prohibit/mesh/model.dae</uri>
+	            <scale>0 0 0</scale>
+			</mesh>
+		</geometry>
+		</collision>
+		
+		<visual name="visual">
+		<cast_shadows>true</cast_shadows>
+		<geometry>
+			<mesh>
+				<uri>model://9-road-closed-prohibit/mesh/model.dae</uri>
+	            <scale>0.1 0.1 0.1</scale>
+			</mesh>
+		</geometry>
+		</visual>
+    </link>
+  </model>
+</sdf>

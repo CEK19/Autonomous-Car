@@ -1,0 +1,27 @@
+<?xml version='1.0'?>
+<sdf version='1.7'>
+  <model name='grass2'>
+	<static>true</static>
+    <link name='link_0'>
+		
+		<collision name="collision">
+		<geometry>
+			<mesh>
+				<uri>model://grass2/mesh/model.dae</uri>
+				<scale>0 0 0</scale>
+			</mesh>
+		</geometry>
+		</collision>
+		
+		<visual name="visual">
+		<cast_shadows>true</cast_shadows>
+		<geometry>
+			<mesh>
+				<uri>model://grass2/mesh/model.dae</uri>
+				<scale>0.2 0.2 0.2</scale>
+			</mesh>
+		</geometry>
+		</visual>
+    </link>
+  </model>
+</sdf>
