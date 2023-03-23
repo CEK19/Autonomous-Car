@@ -113,11 +113,18 @@
 		</include>
 
 
-		<!-- bien bao -->
+		<!-- bien bao, traffic sign -->
 		<include>
 			<name>right</name>
 			<pose>0.3 4.27 -0.03 0 0 -1.5708</pose>
 			<uri>model://13-turn-right-ahead</uri>
+		</include>
+
+		<!-- fake -->
+		<include>
+			<name>left</name>
+			<pose>0.4 4.47 -0.03 0 0 -1.5708</pose>
+			<uri>model://12-turn-left-ahead</uri>
 		</include>
 
 		<include>
@@ -126,8 +133,22 @@
 			<uri>model://11-stop</uri>
 		</include>
 
+		<!-- fake -->
+		<include>
+			<name>ahead</name>
+			<pose>0.43 -1.06 -0.03 0 0 3.1416</pose>
+			<uri>model://0-ahead-only</uri>
+		</include>
 
-		<!-- Vat can -->
+		<!-- fake -->
+		<include>
+			<name>forbid</name>
+			<pose>0.83 -1.46 -0.03 0 0 3.1416</pose>
+			<uri>model://9-road-closed-prohibit</uri>
+		</include>
+
+
+		<!-- Vat can, obstacles -->
 		<model name="cylinder">
 			<pose>-9.55 5.11 0.16 0 0 0</pose>
 			<link name="link">

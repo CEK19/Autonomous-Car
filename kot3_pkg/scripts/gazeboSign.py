@@ -27,8 +27,11 @@ class Sign:
 	EXTRA_SAFETY = 5
 	MIN_AREA = 100
 	MAX_AREA = 50000
+	MAX_AREA_TODETECT = 40000
 	MIN_WIDTH_HEIGHT = 30
-	MIN_ACCURACY = 0.2
+	MIN_ACCURACY = 0.8
+	WIDTH_HEIGHT_RATIO = 1.3
+ 
 
 
 class MODULE_TRAFFIC_SIGNS:
@@ -40,7 +43,7 @@ class MODULE_TRAFFIC_SIGNS:
 	NONE = "NONE"
 	LABEL_TO_TEXT = [AHEAD, FORBID, STOP, LEFT, RIGHT, NONE]
 
-NODE_NAME_TRAFFIC_SIGNS = rospy.get_param('NODE_NAME_TRAFFIC_SIGNS')
+NODE_NAME_TRAFFIC_SIGN = rospy.get_param('NODE_NAME_TRAFFIC_SIGN')
 TOPIC_NAME_CAMERA = rospy.get_param('TOPIC_NAME_CAMERA')
 	
 #################################################
@@ -78,7 +81,7 @@ def returnRedness(img):
 
 def threshold_RedSign(img, T=150):
 	_, img = cv2.threshold(img, T, 255, cv2.THRESH_BINARY)
-	# cv2.imshow("red threshhold", img)
+	cv2.imshow("red threshhold", img)
 	return img
 
 # T = 125	# data 2
@@ -88,7 +91,7 @@ def threshold_RedSign(img, T=150):
 # T = 120
 def threshold_BlueSign(img, T=110):
 	_, img = cv2.threshold(img, T, 255, cv2.THRESH_BINARY)
-	# cv2.imshow("blue threshold", img)
+	cv2.imshow("blue threshold", img)
 	return img
 
 
@@ -104,11 +107,9 @@ def findBiggestContour(contours):
 	return contours[c.index(max(c))]
 
 
-def boundary_Green_Box(img, contours):
-	x, y, w, h = cv2.boundingRect(contours)
+def boundary_Green_Box(img, contour):
+	x, y, w, h = cv2.boundingRect(contour)
 	extra = Sign.EXTRA_SAFETY
-	# img = cv2.rectangle(img, (x-5, y-5), (x+w+4, y+h+4), (0, 255, 0), 10)
-	# sign = img[(y-5):(y+h+4), (x-5):(x+w+4)]
 	img = cv2.rectangle(img, (x-extra, y-extra), (x+w+extra, y+h+extra), (0, 255, 0), 5)
 	sign = img[(y-extra):(y+h+extra), (x-extra):(x+w+extra)]
 	return sign
@@ -161,15 +162,18 @@ def predict(sign):
 
 
 
-def rosPublish(traffic_sign, size, accuracy):
+def rosPublish(traffic_sign):
 	rate = rospy.Rate(10) # 10hz
-	message = json.dumps({
-		"sign": MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign],
-		"size": float(size),
-		"accuracy": float(accuracy)
-	})
-	print(message)
-	pub.publish(message)
+	# message = json.dumps({
+	# 	"sign": MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign],
+	# 	"size": float(size),
+	# 	"accuracy": float(accuracy)
+	# })
+	# print(message)
+	pub.publish(MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign])
+
+
+potentialSign = []
 
 
 def callbackFunction(data):
@@ -199,9 +203,11 @@ def callbackFunction(data):
 			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
 			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
-			# elif isConvext:
-			# 	continue
-			elif w/h >= 1.2 or h/w >= 1.2:
+			elif w/h >= Sign.WIDTH_HEIGHT_RATIO or h/w >= Sign.WIDTH_HEIGHT_RATIO:
+				print("blue not circle or square", w/h, h/w)
+				signTmp = boundary_Green_Box(imgMatrix, contour)
+				cv2.imshow("temp", signTmp)
+				# cv2.imshow("box", imgMatrix)
 				continue
 			elif farest_w/farest_h >= 1.2 or farest_h/farest_w >= 1.2:
 				continue
@@ -213,6 +219,7 @@ def callbackFunction(data):
 				print("from blue")
 				final_sign.append(contour)
 			else:
+				print('blue area: ', area)
 				continue
 
 		#### RED SIGN ####
@@ -232,7 +239,8 @@ def callbackFunction(data):
 				continue
 			# elif isConvext:
 			# 	continue
-			elif w/h >= 1.2 or h/w >= 1.2:
+			elif w/h >= Sign.WIDTH_HEIGHT_RATIO or h/w >= Sign.WIDTH_HEIGHT_RATIO:
+				print("blue not circle or square", w/h, h/w)
 				continue
 			elif farest_w/farest_h >= 1.2 or farest_h/farest_w >= 1.2:
 				continue
@@ -244,6 +252,7 @@ def callbackFunction(data):
 				print("from red")
 				final_sign.append(contour)
 			else:
+				print('red area: ', area)
 				continue
 
 		#### FINAL SIGN ####
@@ -257,7 +266,14 @@ def callbackFunction(data):
 			print("Time: ", endTime-startTime)
 			accuracy = np.amax(prediction)
 			size = cv2.contourArea(big)
-			rosPublish(np.argmax(prediction), size, accuracy)
+
+			if (size >= Sign.MAX_AREA_TODETECT):
+				if (len(potentialSign) > 1):
+					rosPublish(np.argmax(potentialSign))
+				potentialSign = []
+
+			elif (accuracy > Sign.MIN_ACCURACY):
+				potentialSign.append(np.argmax(prediction))
 		else:
 			cv2.imshow('final', imgMatrix)
 			print("I can't see anything !")
@@ -274,7 +290,7 @@ def callbackFunction(data):
 
 print("---------------begin---------------")
 model = models.load_model('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/model-110.h5')
-rospy.init_node(NODE_NAME_TRAFFIC_SIGNS)
+rospy.init_node(NODE_NAME_TRAFFIC_SIGN)
 while not rospy.is_shutdown():
 	lis = rospy.Subscriber(TOPIC_NAME_CAMERA, Image, callbackFunction)
 	rospy.spin()

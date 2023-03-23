@@ -6,14 +6,14 @@ TOPIC_NAME_AVOIDANCE = 'avoidance_topic'
 TOPIC_NAME_CAMERA = '/camera/rgb/image_raw'
 TOPIC_NAME_LIDAR = '/scan' # Check it
 TOPIC_NAME_VELOCITY = '/cmd' # Check it
-TOPIC_NAME_ACTION_DECISION = 'action_decision'
-TOPIC_NAME_TRAFFIC_LIGHTS ='traffic_lights_topic'
-TOPIC_NAME_TRAFFIC_SIGNS = 'traffic_signs_topic'
+TOPIC_NAME_DECISION_MAKING = 'action_decision'
+TOPIC_NAME_TRAFFIC_LIGHT ='traffic_lights_topic'
+TOPIC_NAME_TRAFFIC_SIGN = 'traffic_signs_topic'
 
 
 NODE_NAME_AVOIDANCE = 'avoidance_node_name'
-NODE_NAME_TRAFFIC_SIGNS = 'traffic_signs_node_name'
-NODE_NAME_TRAFFIC_LIGHTS = 'traffic_lights_node_name'
+NODE_NAME_TRAFFIC_SIGN = 'traffic_signs_node_name'
+NODE_NAME_TRAFFIC_LIGHT = 'traffic_lights_node_name'
 NODE_NAME_DECISION_MAKING = 'decision_making_node_name'
 
 class ASSETS:

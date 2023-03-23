@@ -165,6 +165,7 @@ catkin_install_python(PROGRAMS
   scripts/listener.py
   scripts/ros_combine_lidar_lane.py
   scripts/gazeboSign.py
+  scripts/decision_making_module.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

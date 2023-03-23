@@ -16,9 +16,9 @@ import threading
 # Test here
 
 NODE_NAME_AVOIDANCE = rospy.get_param('NODE_NAME_AVOIDANCE')
-TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')  # 'avoidance_topic'
 TOPIC_NAME_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
 TOPIC_NAME_LIDAR = rospy.get_param('TOPIC_NAME_LIDAR')
+TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')
 
 LIDAR_MAX_RANGE = 3 # metters, unit
 WIDTH_SIMULATE_MAP = 2*LIDAR_MAX_RANGE*100
@@ -32,7 +32,7 @@ MAX_STRAIGHT_VELOCITY = 0.2  # 0.2
 MAX_TURN_VELOCITY = 2.0  # 1.4
 
 
-pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=10)
+pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
 
 class Utils:
     @staticmethod
@@ -45,16 +45,12 @@ class Utils:
 
     @staticmethod
     def publicVelocity(straight, angular):
-        # print()
-        # print("straight: ", straight)
-        # print("turn: ", angular)
-        # print()
-        myTwist = Twist()
-        myTwist.linear.x = straight
-        myTwist.angular.z = angular
-        pub.publish(myTwist)
-        # msg = {"linear": straight, "angular": angular}
-        # pub.publish(json.dumps(msg))
+        # myTwist = Twist()
+        # myTwist.linear.x = straight
+        # myTwist.angular.z = angular
+        # pub.publish(myTwist)
+        msg = json.dumps({"linear": straight, "angular": angular})
+        pub.publish(msg)
     
 
 class CombineLidarLane: 
