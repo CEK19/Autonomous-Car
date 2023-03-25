@@ -43,6 +43,17 @@ class MODULE_TRAFFIC_SIGNS:
 	NONE = "NONE"
 	LABEL_TO_TEXT = [AHEAD, FORBID, STOP, LEFT, RIGHT, NONE]
 
+class ColorThreshold:
+    class RED:
+        sensitivity = np.array([170, 0, 0])
+        lower = np.array([0, 95, 110])     # [0, 113, 150]
+        upper = np.array([10, 255, 255])    # [10, 255, 255]
+    class BLUE:
+        sensitivity = np.array([0, 0, 0])
+        lower = np.array([95, 100, 100])      # [90, 50, 70]
+        upper = np.array([128, 255, 255])   # [128, 255, 255]
+
+
 NODE_NAME_TRAFFIC_SIGN = rospy.get_param('NODE_NAME_TRAFFIC_SIGN')
 TOPIC_NAME_CAMERA = rospy.get_param('TOPIC_NAME_CAMERA')
 	
@@ -51,10 +62,10 @@ TOPIC_NAME_CAMERA = rospy.get_param('TOPIC_NAME_CAMERA')
 pub = rospy.Publisher('chatter', String, queue_size=1)
 
 with open('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/mean_image_gray.pickle', 'rb') as f:
-    MEAN_IMAGE = pickle.load(f, encoding='latin1')
+	MEAN_IMAGE = pickle.load(f, encoding='latin1')
 
 with open('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/std_gray.pickle', 'rb') as f:
-    STD_IMAGE = pickle.load(f, encoding='latin1')
+	STD_IMAGE = pickle.load(f, encoding='latin1')
 
 #################################################
 
@@ -171,6 +182,38 @@ def rosPublish(traffic_sign):
 	# })
 	# print(message)
 	pub.publish(MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign])
+
+
+def colorFilter(img):
+	hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+	sensitivity = ColorThreshold.RED.sensitivity
+	
+	# Keep red color
+	maskColorRed1 = cv2.inRange(hsvImg, ColorThreshold.RED.lower, ColorThreshold.RED.upper)
+	maskColorRed2 = cv2.inRange(hsvImg, ColorThreshold.RED.lower + sensitivity, ColorThreshold.RED.upper + sensitivity)
+	maskColorRed = cv2.bitwise_or(maskColorRed1, maskColorRed2)
+	cv2.imshow("maskColorRed", maskColorRed)
+	
+	# Keep blue color
+	maskColorBlue = cv2.inRange(hsvImg, ColorThreshold.BLUE.lower, ColorThreshold.BLUE.upper)
+	cv2.imshow("maskColorBlue", maskColorBlue)
+	
+	# Combine mask
+	mask = cv2.bitwise_or(maskColorRed, maskColorBlue)
+	cv2.imshow("mask", mask)
+	
+	# connect gaps in binary image (another branch, not used yet)
+	contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+	for cnt in contours:
+		cv2.drawContours(mask, [cnt], 0, 255, 15)
+		cv2.drawContours(mask, [cnt], 0, 255, -1)
+	cv2.imshow("mask after contour", mask)
+	
+	
+	resultColor = cv2.bitwise_and(img, img, mask=mask)
+	cv2.imshow("resultColor", resultColor)
+	cv2.imshow("orgImg", img)
+	return resultColor
 
 
 potentialSign = []

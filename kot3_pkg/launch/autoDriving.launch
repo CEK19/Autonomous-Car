@@ -2,5 +2,5 @@
     <rosparam command="load" file="$(find kot3_pkg)/scripts/assets/config.yaml" />
     
     <node pkg="kot3_pkg" type="ros_combine_lidar_lane.py" name="avoidance_node_name"></node>
-    <node pkg="kot3_pkg" type="gazeboSign.py" name="traffic_signs_node_name"></node>
+    <node pkg="kot3_pkg" type="gazeboSign.py" name="traffic_sign_node_name"></node>
 </launch>

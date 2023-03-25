@@ -6,12 +6,12 @@ TOPIC_NAME_CAMERA: "/camera/rgb/image_raw"
 TOPIC_NAME_LIDAR: "/scan"
 TOPIC_NAME_VELOCITY: "/cmd_vel"
 TOPIC_NAME_DECISION_MAKING: "decision_making_topic"
-TOPIC_NAME_TRAFFIC_LIGHT: "traffic_lights_topic"
-TOPIC_NAME_TRAFFIC_SIGN: "traffic_signs_topic"
+TOPIC_NAME_TRAFFIC_LIGHT: "traffic_light_topic"
+TOPIC_NAME_TRAFFIC_SIGN: "traffic_sign_topic"
 
 NODE_NAME_AVOIDANCE: "avoidance_node_name"
-NODE_NAME_TRAFFIC_SIGN: "traffic_signs_node_name"
-NODE_NAME_TRAFFIC_LIGHT: "traffic_lights_node_name"
+NODE_NAME_TRAFFIC_SIGN: "traffic_sign_node_name"
+NODE_NAME_TRAFFIC_LIGHT: "traffic_light_node_name"
 NODE_NAME_DECISION_MAKING: "decision_making_node_name"
 
 MODULE_TRAFFIC_LIGTHS:
