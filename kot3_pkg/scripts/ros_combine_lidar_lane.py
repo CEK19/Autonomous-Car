@@ -4,6 +4,7 @@ import rospy
 from std_msgs.msg import String
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
+from std_msgs.msg import String
 import importlib
 import json
 import numpy as np
@@ -19,6 +20,7 @@ NODE_NAME_AVOIDANCE = rospy.get_param('NODE_NAME_AVOIDANCE')
 TOPIC_NAME_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
 TOPIC_NAME_LIDAR = rospy.get_param('TOPIC_NAME_LIDAR')
 TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')
+TOPIC_NAME_LANE_DETECTION = rospy.get_param('TOPIC_NAME_LANE_DETECTION')
 
 LIDAR_MAX_RANGE = 3 # metters, unit
 WIDTH_SIMULATE_MAP = 2*LIDAR_MAX_RANGE*100
@@ -55,15 +57,55 @@ class Utils:
 
 class CombineLidarLane: 
     def __init__(self) -> None:
-        # Subscribe from "AI Lane Dection" module
-        # self.lane_signal_subscriber = rospy.Subscriber(
-        #     TOPIC_NAME_LANE_DETECTION, String, self.updateEnvironmentLaneSignal)
+        self.lane_signal_subscriber = rospy.Subscriber(
+            TOPIC_NAME_LANE_DETECTION, String, self.updateLaneDetectionSignal
+        )
         self.lidar_signal_subscriber = rospy.Subscriber(
             TOPIC_NAME_LIDAR, LaserScan, self.updateLidarSignal)
         self.ranges = [1 for _ in range(360)]
         self.tracePath = []
         self.straightVel = 0
         self.turnVel = 0
+
+        # Goal of image
+        self.goalX = WIDTH_SIMULATE_MAP//2
+        self.goalY = 0
+
+        # Position of lane
+        self.leftBottomLaneX = 0
+        self.leftBottomLaneY = HEIGH_SIMULATE_MAP - 1
+
+        self.leftTopLaneX = WIDTH_SIMULATE_MAP//4
+        self.leftTopLaneY = 0
+
+        self.rightTopLaneX = WIDTH_SIMULATE_MAP - self.leftTopLaneX
+        self.rightTopLaneY = 0
+
+        self.rightBottomLaneX = WIDTH_SIMULATE_MAP - 1
+        self.rightBottomLaneY = HEIGH_SIMULATE_MAP - 1 
+
+    def drawLanesOnMap(self, simMap):
+        color = 255
+        thickness = 5
+        simMap = cv2.line(simMap, (self.leftBottomLaneX, self.leftBottomLaneY), (self.leftTopLaneX, self.leftTopLaneY), color, thickness)
+        simMap = cv2.line(simMap, (self.rightBottomLaneX, self.rightBottomLaneY), (self.rightTopLaneX, self.rightTopLaneY), color, thickness)
+        return simMap
+
+    def updateLaneDetectionSignal(self, msg):
+        # parsed = json.loads(msg.data)
+        # self.goalX = parsed["something-here"]
+        # self.goalY = parsed["something-here"]
+        # self.leftBottomLaneX = parsed["something-here"]
+        # self.leftBottomLaneY = parsed["something-here"]
+        # self.leftTopLaneX = parsed["something-here"]
+        # self.leftTopLaneY = parsed["something-here"]
+        # self.rightTopLaneX = parsed["something-here"]
+        # self.rightTopLaneY = parsed["something-here"]
+        # self.rightBottomLaneX = parsed["something-here"]
+        # self.rightBottomLaneY = parsed["something-here"]
+        
+        self.goalX = WIDTH_SIMULATE_MAP//2
+        self.goalY = 0
 
     def updateLidarSignal(self, scan):
         # Front of robot index = 0, anti clockwise +1 index (left = 90 deg)
@@ -97,7 +139,7 @@ class CombineLidarLane:
         coordinateYObstacleSimulationMap = HEIGH_SIMULATE_MAP - scaledLidarSignalBaseAngle.astype(np.int16) 
         coordinateXObstacleSimulationMap = WIDTH_SIMULATE_MAP//2 + ((scaledLidarSignalBaseAngle/(np.sin(angleList) + 0.0001))*(np.cos(angleList))).astype(np.int16)        
         filteredIndex = np.where(((coordinateYObstacleSimulationMap >= 0) & (coordinateYObstacleSimulationMap < HEIGH_SIMULATE_MAP) & (coordinateXObstacleSimulationMap >= 0) & (coordinateXObstacleSimulationMap < WIDTH_SIMULATE_MAP)))
-        
+
         # Make obstacle bigger
         simulateMap[coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]] = BLOCKED_COLOR
         # Make obstacle bigger - Option 1
@@ -109,8 +151,10 @@ class CombineLidarLane:
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (DELTA, DELTA))
         simulateMap = cv2.dilate(simulateMap, kernel)
 
+        # Draw path from lane detection in to map
+        simulateMap = self.drawLanesOnMap(simulateMap)
+
         # Path finding here
-        goalX, goalY = WIDTH_SIMULATE_MAP//2, 0
         initalX, initialY = WIDTH_SIMULATE_MAP//2, HEIGH_SIMULATE_MAP - 1
 
         # If not exist lane to go -> do nothing
@@ -119,15 +163,13 @@ class CombineLidarLane:
 
         # Get Path
         t1 = time.time()
-        # aStar = AStar(matrix=simulateMap, start=(initalX, initialY), goal=(goalX, goalY))
-        # tracePath = aStar.find_path()
         self.tracePath = []
 
         if (isExistLaneToGo):
             nonBlockedListCoor = [np.where(row != BLOCKED_COLOR)[0] for row in simulateMap]
             nonBlockedListCoor = np.array(nonBlockedListCoor, dtype=object)
             for row in range(1, HEIGH_SIMULATE_MAP - 1):
-                minIndexDiffX = np.argmin(np.abs(nonBlockedListCoor[row] - goalX))
+                minIndexDiffX = np.argmin(np.abs(nonBlockedListCoor[row] - self.goalX))
                 self.tracePath.append([nonBlockedListCoor[row][minIndexDiffX], row])
 
         t2 = time.time()
