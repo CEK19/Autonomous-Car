@@ -32,16 +32,16 @@ LIDAR_MAX_RANGE = 3 # metters, unit
 WIDTH_SIMULATE_MAP = 2*LIDAR_MAX_RANGE*100
 HEIGH_SIMULATE_MAP = LIDAR_MAX_RANGE*100
 BLOCKED_COLOR = 255
-DELTA = 50 
+DELTA = 25 # 50
 DELTA_X = DELTA
 DELTA_Y = DELTA
-NUM_POINTS_OF_DIRECTION = 35 # 27
-MAX_STRAIGHT_VELOCITY = 0.2  # 0.2
-MAX_TURN_VELOCITY = 2.0  # 1.4
+NUM_POINTS_OF_DIRECTION = 13 # 35
+MAX_STRAIGHT_VELOCITY = 0.05  # 0.2
+MAX_TURN_VELOCITY = 2.0  # 2.0
 
 
 # pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
-pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=5)
+pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=1)
 
 class Utils:
     @staticmethod
