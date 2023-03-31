@@ -1,0 +1,3 @@
+<launch>
+    <rosparam command="load" file="$(find kot3_pkg)/scripts/assets/config.yaml" />
+</launch>
