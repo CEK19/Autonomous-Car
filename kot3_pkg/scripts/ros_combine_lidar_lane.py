@@ -156,7 +156,8 @@ class CombineLidarLane:
         self.lastTimeReciveLane = time.time()
         R = self.straightVel / self.turnVel
         isRight = self.turnVel < 0
-        alpha = abs(self.turnVel * deltaTime)
+        angular = self.turnVel * deltaTime
+        alpha = abs(angular)
         curPos = [HEIGH_SIMULATE_MAP, int(WIDTH_SIMULATE_MAP / 2)]
         newPos = [0, 0]
         if isRight:
@@ -165,9 +166,23 @@ class CombineLidarLane:
             newPos = [curPos[0] - R - R*math.cos(alpha), curPos[1] + R*math.sin(alpha)]
         vector = Utils.getVectorAB(curPos, newPos)
         invertVec = Utils.getInvertVector(vector)
+        
+        leftBottom = [self.leftBottomLaneX + invertVec[0], self.leftBottomLaneY + invertVec[1]]
+        rightBottom = [self.rightBottomLaneX + invertVec[0], self.rightBottomLaneY + invertVec[1]]
+        leftTop = [self.leftTopLaneX + invertVec[0], self.leftTopLaneY + invertVec[1]]
+        rightTop = [self.rightTopLaneX + invertVec[0], self.rightTopLaneY + invertVec[1]]
+        goal = [self.goalX + invertVec[0], self.goalY + invertVec[1]]
+        
+        self.leftBottomLaneX, self.leftBottomLaneY = Utils.getRotatedPoint(leftBottom, curPos, alpha, angular)
+        self.rightBottomLaneX, self.rightBottomLaneY = Utils.getRotatedPoint(rightBottom, curPos, alpha, angular)
+        self.leftTopLaneX, self.leftTopLaneY = Utils.getRotatedPoint(leftTop, curPos, alpha, angular)
+        self.rightTopLaneX, self.rightTopLaneY = Utils.getRotatedPoint(rightTop, curPos, alpha, angular)
+        self.goalX, self.goalY = Utils.getRotatedPoint(goal, curPos, alpha, angular)
         pass
 
     def pathFinding(self, event):
+        self.rotatePoint()
+        
         # Convert lidar distance signal, result represent left to right (0 -> 179)
         angleList = np.arange(start=0, stop=180, step=1, dtype=np.int16)
         angleList = angleList * np.pi/180.
