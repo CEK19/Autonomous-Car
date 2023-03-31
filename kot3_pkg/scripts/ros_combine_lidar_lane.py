@@ -43,6 +43,16 @@ class Utils:
     @staticmethod
     def getVectorAB(A, B):
         return B[0] - A[0], B[1] - A[1]
+    
+    @staticmethod
+    def getInvertVector(A):
+        return -A[0], -A[1]
+    
+    @staticmethod
+    def getRotatedPoint(point, center, angle):
+        newX = center[0] + (point[0] - center[0]) * math.cos(angle) - (point[1] - center[1]) * math.sin(angle)
+        newY = center[1] + (point[0] - center[0]) * math.sin(angle) + (point[1] + center[1]) * math.cos(angle)
+        return
 
     @staticmethod
     def getAngleOfVectors(A, B):
@@ -82,6 +92,7 @@ class CombineLidarLane:
         self.goalY = 0
 
         # Position of lane
+        self.lastTimeReciveLane = time.time()
         self.leftBottomLaneX = 0
         self.leftBottomLaneY = HEIGH_SIMULATE_MAP - 1
 
@@ -103,6 +114,7 @@ class CombineLidarLane:
             (self.rightTopLaneX - self.rightBottomLaneX)
         self.rightLaneB = self.rightTopLaneY - self.rightLaneA * self.rightTopLaneX
 
+
     def drawLanesOnMap(self, simMap):
         color = 255
         thickness = 5
@@ -113,6 +125,7 @@ class CombineLidarLane:
         return simMap
 
     def updateLaneDetectionSignal(self, msg):
+        self.lastTimeReciveLane = time.time()
         # parsed = json.loads(msg.data)
         # self.goalX = parsed["something-here"]
         # self.goalY = parsed["something-here"]
@@ -137,6 +150,22 @@ class CombineLidarLane:
     def updateVelocity(self, event):
         # self.getPath()
         Utils.publicVelocity(self.straightVel, self.turnVel)
+    
+    def rotatePoint(self):
+        deltaTime = time.time() - self.lastTimeReciveLane
+        self.lastTimeReciveLane = time.time()
+        R = self.straightVel / self.turnVel
+        isRight = self.turnVel < 0
+        alpha = abs(self.turnVel * deltaTime)
+        curPos = [HEIGH_SIMULATE_MAP, int(WIDTH_SIMULATE_MAP / 2)]
+        newPos = [0, 0]
+        if isRight:
+            newPos = [curPos[0] + R + R*math.cos(alpha), curPos[1] + R*math.sin(alpha)]
+        else:
+            newPos = [curPos[0] - R - R*math.cos(alpha), curPos[1] + R*math.sin(alpha)]
+        vector = Utils.getVectorAB(curPos, newPos)
+        invertVec = Utils.getInvertVector(vector)
+        pass
 
     def pathFinding(self, event):
         # Convert lidar distance signal, result represent left to right (0 -> 179)
@@ -237,6 +266,8 @@ class CombineLidarLane:
         point15th = len(self.tracePath) - 1 - NUM_POINTS_OF_DIRECTION
         if (point15th < 0):
             return
+    
+        # check target point is in lane
         polygon = Polygon([
             (self.leftBottomLaneX, self.leftBottomLaneY),
             (self.rightBottomLaneX, self.rightBottomLaneY),
