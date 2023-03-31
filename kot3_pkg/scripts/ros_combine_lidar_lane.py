@@ -16,11 +16,17 @@ import threading
 
 # Test here
 
-NODE_NAME_AVOIDANCE = rospy.get_param('NODE_NAME_AVOIDANCE')
-TOPIC_NAME_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
-TOPIC_NAME_LIDAR = rospy.get_param('TOPIC_NAME_LIDAR')
-TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')
-TOPIC_NAME_LANE_DETECTION = rospy.get_param('TOPIC_NAME_LANE_DETECTION')
+# NODE_NAME_AVOIDANCE = rospy.get_param('NODE_NAME_AVOIDANCE')
+# TOPIC_NAME_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
+# TOPIC_NAME_LIDAR = rospy.get_param('TOPIC_NAME_LIDAR')
+# TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')
+# TOPIC_NAME_LANE_DETECTION = rospy.get_param('TOPIC_NAME_LANE_DETECTION')
+
+NODE_NAME_AVOIDANCE = "avoidance_node_name"
+TOPIC_NAME_VELOCITY = "/cmd_vel"
+TOPIC_NAME_LIDAR = "/scan"
+TOPIC_NAME_AVOIDANCE = "avoidance_topic"
+TOPIC_NAME_LANE_DETECTION = "lane_detection_topic"
 
 LIDAR_MAX_RANGE = 3 # metters, unit
 WIDTH_SIMULATE_MAP = 2*LIDAR_MAX_RANGE*100
@@ -34,7 +40,8 @@ MAX_STRAIGHT_VELOCITY = 0.2  # 0.2
 MAX_TURN_VELOCITY = 2.0  # 1.4
 
 
-pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
+# pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
+pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=5)
 
 class Utils:
     @staticmethod
@@ -47,12 +54,12 @@ class Utils:
 
     @staticmethod
     def publicVelocity(straight, angular):
-        # myTwist = Twist()
-        # myTwist.linear.x = straight
-        # myTwist.angular.z = angular
-        # pub.publish(myTwist)
-        msg = json.dumps({"linear": straight, "angular": angular})
-        pub.publish(msg)
+        myTwist = Twist()
+        myTwist.linear.x = straight
+        myTwist.angular.z = angular
+        pub.publish(myTwist)
+        # msg = json.dumps({"linear": straight, "angular": angular})
+        # pub.publish(msg)
     
 
 class CombineLidarLane: 
