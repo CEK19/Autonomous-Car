@@ -31,12 +31,13 @@ BLOCKED_COLOR = 255
 DELTA = 50
 DELTA_X = DELTA
 DELTA_Y = DELTA
-NUM_POINTS_OF_DIRECTION = 35  # 27
-MAX_STRAIGHT_VELOCITY = 0.2  # 0.2
+NUM_POINTS_OF_DIRECTION = 7  # 27
+MAX_STRAIGHT_VELOCITY = 0.1  # 0.2
 MAX_TURN_VELOCITY = 2.0  # 1.4
 
 
-pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
+pubVel=rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=1)
+# pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
 
 
 class Utils:
@@ -52,7 +53,7 @@ class Utils:
     def getRotatedPoint(point, center, angle):
         newX = center[0] + (point[0] - center[0]) * math.cos(angle) - (point[1] - center[1]) * math.sin(angle)
         newY = center[1] + (point[0] - center[0]) * math.sin(angle) + (point[1] + center[1]) * math.cos(angle)
-        return
+        return int(newX), int(newY)
 
     @staticmethod
     def getAngleOfVectors(A, B):
@@ -67,12 +68,12 @@ class Utils:
 
     @staticmethod
     def publicVelocity(straight, angular):
-        # myTwist = Twist()
-        # myTwist.linear.x = straight
-        # myTwist.angular.z = angular
-        # pub.publish(myTwist)
-        msg = json.dumps({"linear": straight, "angular": angular})
-        pub.publish(msg)
+        myTwist = Twist()
+        myTwist.linear.x = straight
+        myTwist.angular.z = angular
+        pubVel.publish(myTwist)
+        # msg = json.dumps({"linear": straight, "angular": angular})
+        # pub.publish(msg)
 
 
 class CombineLidarLane:
@@ -152,10 +153,15 @@ class CombineLidarLane:
         Utils.publicVelocity(self.straightVel, self.turnVel)
     
     def rotatePoint(self):
+        oldGoal = [self.goalX, self.goalY]
         deltaTime = time.time() - self.lastTimeReciveLane
         self.lastTimeReciveLane = time.time()
+        if self.turnVel == 0:
+            return
+        print("===== start rotate =====")
         R = self.straightVel / self.turnVel
         isRight = self.turnVel < 0
+        print("isRight: ", isRight, ", angular: ", self.turnVel, ", R: ", R, ", deltaTime: ", deltaTime)
         angular = self.turnVel * deltaTime
         alpha = abs(angular)
         curPos = [HEIGH_SIMULATE_MAP, int(WIDTH_SIMULATE_MAP / 2)]
@@ -167,17 +173,20 @@ class CombineLidarLane:
         vector = Utils.getVectorAB(curPos, newPos)
         invertVec = Utils.getInvertVector(vector)
         
-        leftBottom = [self.leftBottomLaneX + invertVec[0], self.leftBottomLaneY + invertVec[1]]
-        rightBottom = [self.rightBottomLaneX + invertVec[0], self.rightBottomLaneY + invertVec[1]]
-        leftTop = [self.leftTopLaneX + invertVec[0], self.leftTopLaneY + invertVec[1]]
-        rightTop = [self.rightTopLaneX + invertVec[0], self.rightTopLaneY + invertVec[1]]
+        # leftBottom = [self.leftBottomLaneX + invertVec[0], self.leftBottomLaneY + invertVec[1]]
+        # rightBottom = [self.rightBottomLaneX + invertVec[0], self.rightBottomLaneY + invertVec[1]]
+        # leftTop = [self.leftTopLaneX + invertVec[0], self.leftTopLaneY + invertVec[1]]
+        # rightTop = [self.rightTopLaneX + invertVec[0], self.rightTopLaneY + invertVec[1]]
         goal = [self.goalX + invertVec[0], self.goalY + invertVec[1]]
         
-        self.leftBottomLaneX, self.leftBottomLaneY = Utils.getRotatedPoint(leftBottom, curPos, alpha, angular)
-        self.rightBottomLaneX, self.rightBottomLaneY = Utils.getRotatedPoint(rightBottom, curPos, alpha, angular)
-        self.leftTopLaneX, self.leftTopLaneY = Utils.getRotatedPoint(leftTop, curPos, alpha, angular)
-        self.rightTopLaneX, self.rightTopLaneY = Utils.getRotatedPoint(rightTop, curPos, alpha, angular)
-        self.goalX, self.goalY = Utils.getRotatedPoint(goal, curPos, alpha, angular)
+        # self.leftBottomLaneX, self.leftBottomLaneY = Utils.getRotatedPoint(leftBottom, curPos, angular)
+        # self.rightBottomLaneX, self.rightBottomLaneY = Utils.getRotatedPoint(rightBottom, curPos, angular)
+        # self.leftTopLaneX, self.leftTopLaneY = Utils.getRotatedPoint(leftTop, curPos, angular)
+        # self.rightTopLaneX, self.rightTopLaneY = Utils.getRotatedPoint(rightTop, curPos, angular)
+        self.goalX, self.goalY = Utils.getRotatedPoint(goal, curPos, angular)
+        self.goalY = 0
+        print("old goal: ", oldGoal)
+        print("new goal: ", [self.goalX, self.goalY])
         pass
 
     def pathFinding(self, event):
@@ -307,7 +316,6 @@ class CombineLidarLane:
         if isRight:
             self.straightVel = straightVel
             self.turnVel = -turnVel
-            # self.updateVelocity()
             return
 
         self.straightVel = straightVel
