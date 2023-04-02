@@ -30,12 +30,14 @@ TOPIC_NAME_LANE_DETECTION = "lane_detection_topic"
 
 LIDAR_MAX_RANGE = 3.6 # metters, unit
 WIDTH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*100)
-HEIGH_SIMULATE_MAP = int(LIDAR_MAX_RANGE*100)
+HEIGH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*100)
+WIDTH_OPTIMAL_PATH = 50
+HEIGH_OPTIMAL_PATH = 50
 BLOCKED_COLOR = 255
-DELTA = 25 # 50
+DELTA = 12 # 50
 DELTA_X = DELTA
 DELTA_Y = DELTA
-NUM_POINTS_OF_DIRECTION = 13 # 35
+NUM_POINTS_OF_DIRECTION = 12 # 35
 MAX_STRAIGHT_VELOCITY = 0.05  # 0.2
 MAX_TURN_VELOCITY = 2.0  # 2.0
 
@@ -126,16 +128,18 @@ class CombineLidarLane:
                 
     def pathFinding(self, event):
         # Convert lidar distance signal, result represent left to right (0 -> 179)
-        angleList = np.arange(start=0, stop=180, step=1, dtype=np.int16)
+        angleList = np.arange(start=0, stop=360, step=1, dtype=np.int16)
         angleList = angleList * np.pi/180.
-        convertedLidarSignalBaseAngle = np.zeros(shape=((180, )))
+        convertedLidarSignalBaseAngle = np.zeros(shape=((360, )))
 
         # 0 -> 180 in anti clockwise
         convertedLidarSignalBaseAngle[0:90] = self.ranges[270:360]
         convertedLidarSignalBaseAngle[90:180] = self.ranges[0:90]
+        convertedLidarSignalBaseAngle[180:270] = self.ranges[90:180]
+        convertedLidarSignalBaseAngle[270:360] = self.ranges[180:270]
         
         # Convert distance signal into vertical axis, then find the scale factor
-        scaleFactor = HEIGH_SIMULATE_MAP/LIDAR_MAX_RANGE
+        scaleFactor = HEIGH_SIMULATE_MAP/(2*LIDAR_MAX_RANGE)
 
         # Projected onto the Y axis
         scaledLidarSignalBaseAngle = convertedLidarSignalBaseAngle*scaleFactor*np.sin(angleList)
@@ -143,12 +147,15 @@ class CombineLidarLane:
         # Finding the scale distance param to display on image
         simulateMap = np.zeros(shape=(HEIGH_SIMULATE_MAP, WIDTH_SIMULATE_MAP), dtype='uint8')
         pathOnlyMap = np.zeros(shape=(HEIGH_SIMULATE_MAP, WIDTH_SIMULATE_MAP), dtype='uint8')
-        coordinateYObstacleSimulationMap = HEIGH_SIMULATE_MAP - scaledLidarSignalBaseAngle.astype(np.int16) 
+        coordinateYObstacleSimulationMap = HEIGH_SIMULATE_MAP//2 - scaledLidarSignalBaseAngle.astype(np.int16) 
         coordinateXObstacleSimulationMap = WIDTH_SIMULATE_MAP//2 + ((scaledLidarSignalBaseAngle/(np.sin(angleList) + 0.0001))*(np.cos(angleList))).astype(np.int16)        
         filteredIndex = np.where(((coordinateYObstacleSimulationMap >= 0) & (coordinateYObstacleSimulationMap < HEIGH_SIMULATE_MAP) & (coordinateXObstacleSimulationMap >= 0) & (coordinateXObstacleSimulationMap < WIDTH_SIMULATE_MAP)))
-
+        
         # Make obstacle bigger
         simulateMap[coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]] = BLOCKED_COLOR
+        
+        # Magic code to fix point at (width/2, height/2) is collision
+        simulateMap[HEIGH_SIMULATE_MAP//2 - 1 : HEIGH_SIMULATE_MAP//2 + 1, WIDTH_SIMULATE_MAP//2 - 1 : WIDTH_SIMULATE_MAP//2 + 1] = 0
         # Make obstacle bigger - Option 1
         # for y, x in zip(coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]):
         #     simulateMap[max(0, y - DELTA_Y) : min(HEIGH_SIMULATE_MAP, y + DELTA_Y), max(0, x - DELTA_X) : min(WIDTH_SIMULATE_MAP, x + DELTA_X)] = BLOCKED_COLOR
@@ -158,39 +165,42 @@ class CombineLidarLane:
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (DELTA, DELTA))
         simulateMap = cv2.dilate(simulateMap, kernel)
 
+        # Cut the image in range 50px radius from robot (25px from left to 25px from right)
+        simulateMap = simulateMap[WIDTH_SIMULATE_MAP//2 - WIDTH_OPTIMAL_PATH//2 : WIDTH_SIMULATE_MAP//2 + WIDTH_OPTIMAL_PATH//2, HEIGH_SIMULATE_MAP//2 - HEIGH_OPTIMAL_PATH//2 : HEIGH_SIMULATE_MAP//2 + HEIGH_OPTIMAL_PATH//2]
+        
         # Draw path from lane detection in to map
-        simulateMap = self.drawLanesOnMap(simulateMap)
+        # simulateMap = self.drawLanesOnMap(simulateMap)
 
         # Path finding here
-        initalX, initialY = WIDTH_SIMULATE_MAP//2, HEIGH_SIMULATE_MAP - 1
+        # initalX, initialY = WIDTH_SIMULATE_MAP//2, HEIGH_SIMULATE_MAP - 1
 
         # If not exist lane to go -> do nothing
         rowAllBlocked = np.all(simulateMap == BLOCKED_COLOR, axis=1)
-        isExistLaneToGo = not np.any(rowAllBlocked == True)
+        # isExistLaneToGo = not np.any(rowAllBlocked == True)
 
         # Get Path
-        t1 = time.time()
-        self.tracePath = []
+        # t1 = time.time()
+        # self.tracePath = []
 
-        if (isExistLaneToGo):
-            nonBlockedListCoor = [np.where(row != BLOCKED_COLOR)[0] for row in simulateMap]
-            nonBlockedListCoor = np.array(nonBlockedListCoor, dtype=object)
-            for row in range(1, HEIGH_SIMULATE_MAP - 1):
-                minIndexDiffX = np.argmin(np.abs(nonBlockedListCoor[row] - self.goalX))
-                self.tracePath.append([nonBlockedListCoor[row][minIndexDiffX], row])
+        # if (isExistLaneToGo):
+        #     nonBlockedListCoor = [np.where(row != BLOCKED_COLOR)[0] for row in simulateMap]
+        #     nonBlockedListCoor = np.array(nonBlockedListCoor, dtype=object)
+        #     for row in range(1, WIDTH_OPTIMAL_PATH - 1):
+        #         minIndexDiffX = np.argmin(np.abs(nonBlockedListCoor[row] - self.goalX))
+        #         self.tracePath.append([nonBlockedListCoor[row][minIndexDiffX], row])
 
-        t2 = time.time()
-        print(t2 - t1)
-        if len(self.tracePath):
-            for coor in self.tracePath:
-                x, y = coor[0], coor[1]
-                # simulateMap =  cv2.circle(simulateMap, (x, y), 1, (255, 0, 0), 1)
-                pathOnlyMap[y, x] = 255
-                simulateMap[y, x] = 255
+        # t2 = time.time()
+        # print(t2 - t1)
+        # if len(self.tracePath):
+        #     for coor in self.tracePath:
+        #         x, y = coor[0], coor[1]
+        #         # simulateMap =  cv2.circle(simulateMap, (x, y), 1, (255, 0, 0), 1)
+        #         pathOnlyMap[y, x] = 255
+        #         # simulateMap[y, x] = 255
 
 
         cv2.imshow("simulate map", simulateMap)
-        cv2.imshow("path only map", pathOnlyMap)
+        # cv2.imshow("path only map", pathOnlyMap)
         self.getVelocity()
         if cv2.waitKey(1) == ord('q'):
             return   
