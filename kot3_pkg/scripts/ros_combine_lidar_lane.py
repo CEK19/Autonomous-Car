@@ -28,9 +28,9 @@ TOPIC_NAME_LIDAR = "/scan"
 TOPIC_NAME_AVOIDANCE = "avoidance_topic"
 TOPIC_NAME_LANE_DETECTION = "lane_detection_topic"
 
-LIDAR_MAX_RANGE = 3 # metters, unit
-WIDTH_SIMULATE_MAP = 2*LIDAR_MAX_RANGE*100
-HEIGH_SIMULATE_MAP = LIDAR_MAX_RANGE*100
+LIDAR_MAX_RANGE = 3.6 # metters, unit
+WIDTH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*100)
+HEIGH_SIMULATE_MAP = int(LIDAR_MAX_RANGE*100)
 BLOCKED_COLOR = 255
 DELTA = 25 # 50
 DELTA_X = DELTA
@@ -40,8 +40,8 @@ MAX_STRAIGHT_VELOCITY = 0.05  # 0.2
 MAX_TURN_VELOCITY = 2.0  # 2.0
 
 
-# pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
-pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=1)
+pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
+# pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=1)
 
 class Utils:
     @staticmethod
@@ -54,12 +54,12 @@ class Utils:
 
     @staticmethod
     def publicVelocity(straight, angular):
-        myTwist = Twist()
-        myTwist.linear.x = straight
-        myTwist.angular.z = angular
-        pub.publish(myTwist)
-        # msg = json.dumps({"linear": straight, "angular": angular})
-        # pub.publish(msg)
+        # myTwist = Twist()
+        # myTwist.linear.x = straight
+        # myTwist.angular.z = angular
+        # pub.publish(myTwist)
+        msg = json.dumps({"linear": straight, "angular": angular})
+        pub.publish(msg)
     
 
 class CombineLidarLane: 
