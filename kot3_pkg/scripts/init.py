@@ -11,8 +11,7 @@ def callback(data):
 
 def listener():
 
-    rospy.init_node(NODE_NAME_INIT = rospy.get_param("NODE_NAME_INIT")
-, anonymous=True)
+    rospy.init_node(NODE_NAME_INIT, anonymous=True)
 
     # rospy.Subscriber('chatter', String, callback)
 
