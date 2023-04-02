@@ -13,6 +13,9 @@ import heapq
 import time
 import math
 import threading
+from pathfinding.core.diagonal_movement import DiagonalMovement
+from pathfinding.finder.best_first import BestFirst
+from pathfinding.core.grid import Grid
 
 # Test here
 
@@ -34,6 +37,7 @@ HEIGH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*100)
 WIDTH_OPTIMAL_PATH = 50
 HEIGH_OPTIMAL_PATH = 50
 BLOCKED_COLOR = 255
+NON_BLOCKED_COLOR = 0
 DELTA = 12 # 50
 DELTA_X = DELTA
 DELTA_Y = DELTA
@@ -51,6 +55,10 @@ class Utils:
         return B[0] - A[0], B[1] - A[1]
     
     @staticmethod
+    def distanceBetweenPoints(A, B):
+        return math.sqrt((B[0] - A[0])**2 + (B[1] - A[1])**2)
+    
+    @staticmethod
     def getAngleOfVectors(A, B):
         return np.arccos(np.dot(A, B)/(np.linalg.norm(A)*np.linalg.norm(B)))
 
@@ -65,7 +73,7 @@ class Utils:
     
 
 class CombineLidarLane: 
-    def __init__(self) -> None:
+    def __init__(self):
         self.lane_signal_subscriber = rospy.Subscriber(
             TOPIC_NAME_LANE_DETECTION, String, self.updateLaneDetectionSignal
         )
@@ -75,10 +83,14 @@ class CombineLidarLane:
         self.tracePath = []
         self.straightVel = 0
         self.turnVel = 0
+        
+        self.pathFinder = BestFirst(diagonal_movement=DiagonalMovement.always)
 
         # Goal of image
         self.goalX = WIDTH_SIMULATE_MAP//2
         self.goalY = 0
+        self.goal2X = "404"
+        self.goal2Y = "404"
 
         # Position of lane
         self.leftBottomLaneX = 0
@@ -104,6 +116,8 @@ class CombineLidarLane:
         # parsed = json.loads(msg.data)
         # self.goalX = parsed["something-here"]
         # self.goalY = parsed["something-here"]
+        # self.goal2X = parsed["something-here"]
+        # self.goal2Y = parsed["something-here"]
         # self.leftBottomLaneX = parsed["something-here"]
         # self.leftBottomLaneY = parsed["something-here"]
         # self.leftTopLaneX = parsed["something-here"]
@@ -156,7 +170,8 @@ class CombineLidarLane:
         
         # Magic code to fix point at (width/2, height/2) is collision
         simulateMap[HEIGH_SIMULATE_MAP//2 - 1 : HEIGH_SIMULATE_MAP//2 + 1, WIDTH_SIMULATE_MAP//2 - 1 : WIDTH_SIMULATE_MAP//2 + 1] = 0
-        # Make obstacle bigger - Option 1
+        
+        ## Make obstacle bigger - Option 1
         # for y, x in zip(coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]):
         #     simulateMap[max(0, y - DELTA_Y) : min(HEIGH_SIMULATE_MAP, y + DELTA_Y), max(0, x - DELTA_X) : min(WIDTH_SIMULATE_MAP, x + DELTA_X)] = BLOCKED_COLOR
         # Displayed on the pre-pathplanning image
@@ -197,6 +212,41 @@ class CombineLidarLane:
         #         # simulateMap =  cv2.circle(simulateMap, (x, y), 1, (255, 0, 0), 1)
         #         pathOnlyMap[y, x] = 255
         #         # simulateMap[y, x] = 255
+        
+        
+        # PathFinding with library approach
+        curGoalX = 0
+        curGoalY = 0
+        isGoal1Available = self.goalX is not "404" and self.goalY is not "404" and simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
+        isGoal2Available = self.goal2X is not "404" and self.goal2Y is not "404" and simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
+        if isGoal1Available and not isGoal2Available:
+            curGoalX, curGoalY = self.goalX, self.goalY
+        elif isGoal2Available and not isGoal1Available:
+            curGoalX, curGoalY = self.goal2X, self.goal2Y
+        elif not isGoal1Available and not isGoal2Available:
+            # stop the car
+            self.tracePath = []
+        else:
+            # find shortest path
+            curPoint = [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2]
+            d1 = Utils.distanceBetweenPoints([self.goalX, self.goalY], curPoint)
+            d2 = Utils.distanceBetweenPoints([self.goal2X, self.goal2Y], curPoint)
+            if d1 <= d2:
+                curGoalX, curGoalY = self.goalX, self.goalY
+            else:
+                curGoalX, curGoalY = self.goal2X, self.goal2Y
+        
+        grid = Grid(matrix=simulateMap)
+        start = grid.node(WIDTH_SIMULATE_MAP//2, HEIGH_SIMULATE_MAP // 2)
+        end = grid.node(curGoalX, curGoalY)
+        self.tracePath, _ = self.pathFinder.find_path(grid, start, end)
+        
+        if len(self.tracePath):
+            for coor in self.tracePath:
+                x, y = coor[0], coor[1]
+                # simulateMap =  cv2.circle(simulateMap, (x, y), 1, (255, 0, 0), 1)
+                pathOnlyMap[y, x] = 255
+                simulateMap[y, x] = 255
 
 
         cv2.imshow("simulate map", simulateMap)
