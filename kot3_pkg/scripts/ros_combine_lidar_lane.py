@@ -87,23 +87,23 @@ class CombineLidarLane:
         self.pathFinder = BestFirst(diagonal_movement=DiagonalMovement.always)
 
         # Goal of image
-        self.goalX = WIDTH_SIMULATE_MAP//2
+        self.goalX = WIDTH_OPTIMAL_PATH//4
         self.goalY = 0
-        self.goal2X = "404"
-        self.goal2Y = "404"
+        self.goal2X = WIDTH_OPTIMAL_PATH*3//4
+        self.goal2Y = 0
 
         # Position of lane
         self.leftBottomLaneX = 0
-        self.leftBottomLaneY = HEIGH_SIMULATE_MAP - 1
+        self.leftBottomLaneY = HEIGH_OPTIMAL_PATH - 1
 
-        self.leftTopLaneX = WIDTH_SIMULATE_MAP//4
+        self.leftTopLaneX = WIDTH_OPTIMAL_PATH//4
         self.leftTopLaneY = 0
 
-        self.rightTopLaneX = WIDTH_SIMULATE_MAP - self.leftTopLaneX
+        self.rightTopLaneX = WIDTH_OPTIMAL_PATH - self.leftTopLaneX
         self.rightTopLaneY = 0
 
-        self.rightBottomLaneX = WIDTH_SIMULATE_MAP - 1
-        self.rightBottomLaneY = HEIGH_SIMULATE_MAP - 1 
+        self.rightBottomLaneX = WIDTH_OPTIMAL_PATH - 1
+        self.rightBottomLaneY = HEIGH_OPTIMAL_PATH - 1 
 
     def drawLanesOnMap(self, simMap):
         color = 255
@@ -182,6 +182,7 @@ class CombineLidarLane:
 
         # Cut the image in range 50px radius from robot (25px from left to 25px from right)
         simulateMap = simulateMap[WIDTH_SIMULATE_MAP//2 - WIDTH_OPTIMAL_PATH//2 : WIDTH_SIMULATE_MAP//2 + WIDTH_OPTIMAL_PATH//2, HEIGH_SIMULATE_MAP//2 - HEIGH_OPTIMAL_PATH//2 : HEIGH_SIMULATE_MAP//2 + HEIGH_OPTIMAL_PATH//2]
+        pathOnlyMap = pathOnlyMap[WIDTH_SIMULATE_MAP//2 - WIDTH_OPTIMAL_PATH//2 : WIDTH_SIMULATE_MAP//2 + WIDTH_OPTIMAL_PATH//2, HEIGH_SIMULATE_MAP//2 - HEIGH_OPTIMAL_PATH//2 : HEIGH_SIMULATE_MAP//2 + HEIGH_OPTIMAL_PATH//2]
         
         # Draw path from lane detection in to map
         # simulateMap = self.drawLanesOnMap(simulateMap)
@@ -219,8 +220,8 @@ class CombineLidarLane:
         curGoalY = 0
         
         # Choose current goal from 2 goals
-        isGoal1Available = self.goalX is not "404" and self.goalY is not "404" and simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
-        isGoal2Available = self.goal2X is not "404" and self.goal2Y is not "404" and simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
+        isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
+        isGoal2Available = simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
         if isGoal1Available and not isGoal2Available:
             curGoalX, curGoalY = self.goalX, self.goalY
         elif isGoal2Available and not isGoal1Available:
@@ -238,10 +239,14 @@ class CombineLidarLane:
             else:
                 curGoalX, curGoalY = self.goal2X, self.goal2Y
         
-        grid = Grid(matrix=simulateMap)
-        start = grid.node(WIDTH_SIMULATE_MAP//2, HEIGH_SIMULATE_MAP // 2)
+        invertMap = cv2.bitwise_not(simulateMap)
+        grid = Grid(matrix=invertMap)
+        start = grid.node(WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH // 2)
         end = grid.node(curGoalX, curGoalY)
-        self.tracePath, _ = self.pathFinder.find_path(grid, start, end)
+        # start = grid.node(1, 1)
+        # end = grid.node(48, 48)
+        self.tracePath, _ = self.pathFinder.find_path(start, end, grid)
+        print("Path: ", self.tracePath)
         
         if len(self.tracePath):
             for coor in self.tracePath:
@@ -252,7 +257,7 @@ class CombineLidarLane:
 
 
         cv2.imshow("simulate map", simulateMap)
-        # cv2.imshow("path only map", pathOnlyMap)
+        cv2.imshow("path only map", pathOnlyMap)
         self.getVelocity()
         if cv2.waitKey(1) == ord('q'):
             return   
