@@ -217,6 +217,8 @@ class CombineLidarLane:
         # PathFinding with library approach
         curGoalX = 0
         curGoalY = 0
+        
+        # Choose current goal from 2 goals
         isGoal1Available = self.goalX is not "404" and self.goalY is not "404" and simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
         isGoal2Available = self.goal2X is not "404" and self.goal2Y is not "404" and simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
         if isGoal1Available and not isGoal2Available:
