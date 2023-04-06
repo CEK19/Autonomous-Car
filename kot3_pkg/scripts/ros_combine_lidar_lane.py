@@ -31,14 +31,14 @@ TOPIC_NAME_LIDAR = "/scan"
 TOPIC_NAME_AVOIDANCE = "avoidance_topic"
 TOPIC_NAME_LANE_DETECTION = "lane_detection_topic"
 
-LIDAR_MAX_RANGE = 3.6 # metters, unit
+LIDAR_MAX_RANGE = 3.5 # metters, unit
 WIDTH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*100)
 HEIGH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*100)
 WIDTH_OPTIMAL_PATH = 50
 HEIGH_OPTIMAL_PATH = 50
 BLOCKED_COLOR = 255
 NON_BLOCKED_COLOR = 0
-DELTA = 12 # 50
+DELTA = 14 # 50
 DELTA_X = DELTA
 DELTA_Y = DELTA
 NUM_POINTS_OF_DIRECTION = 12 # 35
@@ -46,8 +46,8 @@ MAX_STRAIGHT_VELOCITY = 0.05  # 0.2
 MAX_TURN_VELOCITY = 2.0  # 2.0
 
 
-pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
-# pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=1)
+# pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
+pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=1)
 
 class Utils:
     @staticmethod
@@ -64,12 +64,13 @@ class Utils:
 
     @staticmethod
     def publicVelocity(straight, angular):
-        # myTwist = Twist()
-        # myTwist.linear.x = straight
-        # myTwist.angular.z = angular
-        # pub.publish(myTwist)
-        msg = json.dumps({"linear": straight, "angular": angular})
-        pub.publish(msg)
+        myTwist = Twist()
+        myTwist.linear.x = straight
+        myTwist.angular.z = angular
+        # print(myTwist)
+        pub.publish(myTwist)
+        # msg = json.dumps({"linear": straight, "angular": angular})
+        # pub.publish(msg)
     
 
 class CombineLidarLane: 
@@ -256,8 +257,11 @@ class CombineLidarLane:
         end = grid.node(curGoalX, curGoalY)
         # start = grid.node(1, 1)
         # end = grid.node(48, 48)
+        start_QTM = time.time()
         self.tracePath, _ = self.pathFinder.find_path(start, end, grid)
-        print("Path: ", self.tracePath)
+        end_QTM = time.time()
+        print(end_QTM - start_QTM)
+        # print("Path: ", self.tracePath)
         
         visualizedMap = cv2.cvtColor(simulateMap, cv2.COLOR_GRAY2RGB)
         if len(self.tracePath):
@@ -293,10 +297,11 @@ class CombineLidarLane:
         return self.tracePath
     
     def getVelocity(self):
-        point15th = len(self.tracePath) - 1 - NUM_POINTS_OF_DIRECTION
-        if (point15th < 0):
+        # point15th = len(self.tracePath) - 1 - NUM_POINTS_OF_DIRECTION
+        point15th = NUM_POINTS_OF_DIRECTION
+        if (point15th < 0 or not len(self.tracePath)):
             return
-        vecDirection = Utils.getVectorAB([HEIGH_SIMULATE_MAP, int(WIDTH_SIMULATE_MAP / 2)], self.tracePath[point15th])
+        vecDirection = Utils.getVectorAB([HEIGH_OPTIMAL_PATH//2, int(WIDTH_OPTIMAL_PATH // 2)], self.tracePath[point15th])
         vecZero = (1, 0)
         angle = Utils.getAngleOfVectors(vecDirection, vecZero)
         isRight = angle < math.radians(90)
