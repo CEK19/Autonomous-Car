@@ -87,10 +87,10 @@ class CombineLidarLane:
         self.pathFinder = BestFirst(diagonal_movement=DiagonalMovement.always)
 
         # Goal of image
-        self.goalX = WIDTH_OPTIMAL_PATH//4
+        self.goalX = WIDTH_OPTIMAL_PATH//2          # WIDTH_OPTIMAL_PATH//4
         self.goalY = 0
-        self.goal2X = WIDTH_OPTIMAL_PATH*3//4
-        self.goal2Y = 0
+        self.goal2X = None                          # WIDTH_OPTIMAL_PATH*3//4
+        self.goal2Y = None
 
         # Position of lane
         self.leftBottomLaneX = 0
@@ -221,43 +221,59 @@ class CombineLidarLane:
         
         # Choose current goal from 2 goals
         isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
-        isGoal2Available = simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
+        isGoal2Available = self.goal2X is not None and self.goal2Y is not None and simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
+        
+        if not isGoal1Available and not isGoal2Available:
+            if self.goal2Y is None:
+                simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
+            elif self.goalY < self.goal2Y:
+                simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
+            else:
+                simulateMap[self.goal2Y, :] = NON_BLOCKED_COLOR
+                
+        
         if isGoal1Available and not isGoal2Available:
             curGoalX, curGoalY = self.goalX, self.goalY
         elif isGoal2Available and not isGoal1Available:
             curGoalX, curGoalY = self.goal2X, self.goal2Y
-        elif not isGoal1Available and not isGoal2Available:
-            # stop the car
-            self.tracePath = []
         else:
             # find shortest path
             curPoint = [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2]
-            d1 = Utils.distanceBetweenPoints([self.goalX, self.goalY], curPoint)
-            d2 = Utils.distanceBetweenPoints([self.goal2X, self.goal2Y], curPoint)
-            if d1 <= d2:
+            if self.goal2X is None or self.goal2Y is None:
                 curGoalX, curGoalY = self.goalX, self.goalY
             else:
-                curGoalX, curGoalY = self.goal2X, self.goal2Y
+                d1 = Utils.distanceBetweenPoints([self.goalX, self.goalY], curPoint)
+                d2 = Utils.distanceBetweenPoints([self.goal2X, self.goal2Y], curPoint)
+                if d1 <= d2:
+                    curGoalX, curGoalY = self.goalX, self.goalY
+                else:
+                    curGoalX, curGoalY = self.goal2X, self.goal2Y
         
         invertMap = cv2.bitwise_not(simulateMap)
         grid = Grid(matrix=invertMap)
         start = grid.node(WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH // 2)
+        print(curGoalX, curGoalY)
         end = grid.node(curGoalX, curGoalY)
         # start = grid.node(1, 1)
         # end = grid.node(48, 48)
         self.tracePath, _ = self.pathFinder.find_path(start, end, grid)
         print("Path: ", self.tracePath)
         
+        visualizedMap = cv2.cvtColor(simulateMap, cv2.COLOR_GRAY2RGB)
         if len(self.tracePath):
             for coor in self.tracePath:
                 x, y = coor[0], coor[1]
                 # simulateMap =  cv2.circle(simulateMap, (x, y), 1, (255, 0, 0), 1)
                 pathOnlyMap[y, x] = 255
+                visualizedMap[y, x] = (0, 0, 255)
                 simulateMap[y, x] = 255
 
 
-        cv2.imshow("simulate map", simulateMap)
-        cv2.imshow("path only map", pathOnlyMap)
+        # cv2.imshow("simulate map", simulateMap)
+        cv2.imshow("simulate map", cv2.resize(simulateMap, (WIDTH_OPTIMAL_PATH*4, HEIGH_OPTIMAL_PATH*4)))
+        cv2.imshow("simulate map", cv2.resize(visualizedMap, (WIDTH_OPTIMAL_PATH*4, HEIGH_OPTIMAL_PATH*4)))
+        # cv2.imshow("path only map", pathOnlyMap)
+        cv2.imshow("path only map", cv2.resize(pathOnlyMap, (WIDTH_OPTIMAL_PATH*4, HEIGH_OPTIMAL_PATH*4)))
         self.getVelocity()
         if cv2.waitKey(1) == ord('q'):
             return   
