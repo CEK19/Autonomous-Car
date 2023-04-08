@@ -1,3 +1,5 @@
 <launch>
     <rosparam command="load" file="$(find kot3_pkg)/scripts/assets/config.yaml" />
+
+    <node pkg="kot3_pkg" type="init.py" name="init_node_name"></node>
 </launch>

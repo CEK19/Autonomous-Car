@@ -167,6 +167,7 @@ catkin_install_python(PROGRAMS
   scripts/gazeboSign.py
   scripts/trafficLight.py
   scripts/decision_making_module.py
+  scripts/init.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

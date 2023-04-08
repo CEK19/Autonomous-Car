@@ -4,7 +4,6 @@ import rospy
 from std_msgs.msg import String
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
-from std_msgs.msg import String
 import importlib
 import json
 import numpy as np
@@ -19,30 +18,30 @@ from pathfinding.core.grid import Grid
 
 # Test here
 
-# NODE_NAME_AVOIDANCE = rospy.get_param('NODE_NAME_AVOIDANCE')
-# TOPIC_NAME_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
-# TOPIC_NAME_LIDAR = rospy.get_param('TOPIC_NAME_LIDAR')
-# TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')
-# TOPIC_NAME_LANE_DETECTION = rospy.get_param('TOPIC_NAME_LANE_DETECTION')
+NODE_NAME_AVOIDANCE = rospy.get_param('NODE_NAME_AVOIDANCE')
+TOPIC_NAME_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
+TOPIC_NAME_LIDAR = rospy.get_param('TOPIC_NAME_LIDAR')
+TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')
+TOPIC_NAME_LANE_DETECTION = rospy.get_param('TOPIC_NAME_LANE_DETECTION')
 
-NODE_NAME_AVOIDANCE = "avoidance_node_name"
-TOPIC_NAME_VELOCITY = "/cmd_vel"
-TOPIC_NAME_LIDAR = "/scan"
-TOPIC_NAME_AVOIDANCE = "avoidance_topic"
-TOPIC_NAME_LANE_DETECTION = "lane_detection_topic"
+# NODE_NAME_AVOIDANCE = "avoidance_node_name"
+# TOPIC_NAME_VELOCITY = "/cmd_vel"
+# TOPIC_NAME_LIDAR = "/scan"
+# TOPIC_NAME_AVOIDANCE = "avoidance_topic"
+# TOPIC_NAME_LANE_DETECTION = "lane_detection_topic"
 
 LIDAR_MAX_RANGE = 3.5 # metters, unit
-WIDTH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*100)
-HEIGH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*100)
+WIDTH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*50)
+HEIGH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*50)
 WIDTH_OPTIMAL_PATH = 50
 HEIGH_OPTIMAL_PATH = 50
 BLOCKED_COLOR = 255
 NON_BLOCKED_COLOR = 0
-LANE_THICKNESS = 1
-DELTA = 35 # 50 / 14
+LANE_THICKNESS = 2
+DELTA = 10 # 50 / 14
 DELTA_X = DELTA
 DELTA_Y = DELTA
-NUM_POINTS_OF_DIRECTION = 25 # 35 / 12
+NUM_POINTS_OF_DIRECTION = 12 # 35 / 12
 MAX_STRAIGHT_VELOCITY = 0.05  # 0.2
 MAX_TURN_VELOCITY = 2.0  # 2.0
 
@@ -158,24 +157,37 @@ class CombineLidarLane:
         # Lane right: y = Cx + D
         C, D = Utils.getEquationOfLane([self.rightBottomLaneX, self.rightBottomLaneY], [self.rightTopLaneX, self.rightTopLaneY])
         
+        self.leftBottomLaneX = round((HEIGH_OPTIMAL_PATH-1-B)/(A+0.0001))
+        self.leftBottomLaneY = HEIGH_OPTIMAL_PATH-1
+        self.leftTopLaneX = round(-B/(A+0.0001))
+        self.leftTopLaneY = 0
+        self.rightTopLaneX = round(-D/(C+0.0001))
+        self.rightTopLaneY = 0
+        self.rightBottomLaneX = round((HEIGH_OPTIMAL_PATH-1-D)/(C+0.0001))
+        self.rightBottomLaneY = HEIGH_OPTIMAL_PATH-1
+
+        self.goalX = (3*self.leftTopLaneX+self.rightTopLaneX)//4
+        self.goalY = (3*self.leftTopLaneY+self.rightTopLaneY)//4
+        self.goal2X = (self.leftTopLaneX+3*self.rightTopLaneX)//4
+        self.goal2Y = (self.leftTopLaneY+3*self.rightTopLaneY)//4
+
+        print(self.leftTopLaneX,self.rightTopLaneX,self.goalX,self.goalY,self.goal2X,self.goal2Y)
+
         simMap = cv2.line(simMap, (round(-B/(A+0.0001)), 0), (round((HEIGH_OPTIMAL_PATH-1-B)/(A+0.0001)), HEIGH_OPTIMAL_PATH-1), color, LANE_THICKNESS)
         simMap = cv2.line(simMap, (round(-D/(C+0.0001)), 0), (round((HEIGH_OPTIMAL_PATH-1-D)/(C+0.0001)), HEIGH_OPTIMAL_PATH-1), color, LANE_THICKNESS)
         return simMap
 
     def updateLaneDetectionSignal(self, msg):
-        # parsed = json.loads(msg.data)
-        # self.goalX = parsed["something-here"]
-        # self.goalY = parsed["something-here"]
-        # self.goal2X = parsed["something-here"]
-        # self.goal2Y = parsed["something-here"]
-        # self.leftBottomLaneX = parsed["something-here"]
-        # self.leftBottomLaneY = parsed["something-here"]
-        # self.leftTopLaneX = parsed["something-here"]
-        # self.leftTopLaneY = parsed["something-here"]
-        # self.rightTopLaneX = parsed["something-here"]
-        # self.rightTopLaneY = parsed["something-here"]
-        # self.rightBottomLaneX = parsed["something-here"]
-        # self.rightBottomLaneY = parsed["something-here"]
+        parsed = json.loads(msg.data)
+        
+        self.leftBottomLaneX = parsed["bl"][0]
+        self.leftBottomLaneY = parsed["bl"][1]
+        self.leftTopLaneX = parsed["tl"][0]
+        self.leftTopLaneY = parsed["tl"][1]
+        self.rightTopLaneX = parsed["tr"][0]
+        self.rightTopLaneY = parsed["tr"][1]
+        self.rightBottomLaneX = parsed["br"][0]
+        self.rightBottomLaneY = parsed["br"][1]
         
         self.goalX = WIDTH_SIMULATE_MAP//2
         self.goalY = 0
@@ -228,7 +240,8 @@ class CombineLidarLane:
         rightBottom = [self.rightBottomLaneX + invertVec[0], self.rightBottomLaneY + invertVec[1]]
         leftTop = [self.leftTopLaneX + invertVec[0], self.leftTopLaneY + invertVec[1]]
         rightTop = [self.rightTopLaneX + invertVec[0], self.rightTopLaneY + invertVec[1]]
-        # goal = [self.goalX + invertVec[0], self.goalY + invertVec[1]]
+        goal = [self.goalX + invertVec[0], self.goalY + invertVec[1]]
+        goal2 = [self.goal2X + invertVec[0], self.goal2Y + invertVec[1]]
         
         # print old value
         print("leftBottom old", self.leftBottomLaneX, self.leftBottomLaneY)
@@ -242,8 +255,8 @@ class CombineLidarLane:
         self.rightBottomLaneX, self.rightBottomLaneY = Utils.getRotatedPoint(rightBottom, curPos, angular)
         self.leftTopLaneX, self.leftTopLaneY = Utils.getRotatedPoint(leftTop, curPos, angular)
         self.rightTopLaneX, self.rightTopLaneY = Utils.getRotatedPoint(rightTop, curPos, angular)
-        # self.goalX, self.goalY = Utils.getRotatedPoint(goal, curPos, -angular)
-        # self.goalY = 0
+        self.goalX, self.goalY = Utils.getRotatedPoint(goal, curPos, angular)
+        self.goal2X, self.goal2Y = Utils.getRotatedPoint(goal2, curPos, angular)
         # print("old goal: ", oldGoal)
         # print("new goal: ", [self.goalX, self.goalY])
         
