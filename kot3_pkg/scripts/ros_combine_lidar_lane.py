@@ -95,14 +95,6 @@ class Utils:
     def convertPixelToMet(pixel):
         return pixel/100
 
-    @staticmethod
-    def publicVelocity(straight, angular):
-        myTwist = Twist()
-        myTwist.linear.x = straight
-        myTwist.angular.z = angular
-        pub.publish(myTwist)
-        # msg = json.dumps({"linear": straight, "angular": angular})
-        # pub.publish(msg)
     
 
 class CombineLidarLane: 
@@ -149,6 +141,8 @@ class CombineLidarLane:
         self.rightLaneB = self.rightTopLaneY - self.rightLaneA * self.rightTopLaneX
 
     def drawLanesOnMap(self, simMap):
+        print("before",self.leftBottomLaneX,self.leftBottomLaneY,self.leftTopLaneX,self.leftTopLaneY,self.rightBottomLaneX,self.rightBottomLaneY,self.rightTopLaneX,self.rightTopLaneY)
+        print("before",self.goalX,self.goalY,self.goal2X,self.goal2Y)
         color = 255
         
         # Lane left: y = Ax + B
@@ -171,7 +165,10 @@ class CombineLidarLane:
         self.goal2X = (self.leftTopLaneX+3*self.rightTopLaneX)//4
         self.goal2Y = (self.leftTopLaneY+3*self.rightTopLaneY)//4
 
-        print(self.leftTopLaneX,self.rightTopLaneX,self.goalX,self.goalY,self.goal2X,self.goal2Y)
+        # _,returnDict["tl"],returnDict["bl"] = cv2.clipLine((0, 0, 49, 49),returnDict["tl"],returnDict["bl"])
+
+        print(self.leftBottomLaneX,self.leftBottomLaneY,self.leftTopLaneX,self.leftTopLaneY,self.rightBottomLaneX,self.rightBottomLaneY,self.rightTopLaneX,self.rightTopLaneY)
+        print(self.goalX,self.goalY,self.goal2X,self.goal2Y)
 
         simMap = cv2.line(simMap, (round(-B/(A+0.0001)), 0), (round((HEIGH_OPTIMAL_PATH-1-B)/(A+0.0001)), HEIGH_OPTIMAL_PATH-1), color, LANE_THICKNESS)
         simMap = cv2.line(simMap, (round(-D/(C+0.0001)), 0), (round((HEIGH_OPTIMAL_PATH-1-D)/(C+0.0001)), HEIGH_OPTIMAL_PATH-1), color, LANE_THICKNESS)
@@ -189,8 +186,8 @@ class CombineLidarLane:
         self.rightBottomLaneX = parsed["br"][0]
         self.rightBottomLaneY = parsed["br"][1]
         
-        self.goalX = WIDTH_SIMULATE_MAP//2
-        self.goalY = 0
+        # self.goalX = WIDTH_SIMULATE_MAP//2
+        # self.goalY = 0
 
     def updateLidarSignal(self, scan):
         # Front of robot index = 0, anti clockwise +1 index (left = 90 deg)
@@ -202,7 +199,7 @@ class CombineLidarLane:
         myTwist = Twist()
         myTwist.linear.x = self.straightVel
         myTwist.angular.z = self.turnVel
-        pub.publish(myTwist)
+        # pub.publish(myTwist)
         # msg = json.dumps({"linear": straight, "angular": angular})
         # pub.publish(msg)
         
@@ -414,8 +411,8 @@ class CombineLidarLane:
                 simulateMap[y, x] = 255
 
         # draw goal
-        cv2.circle(visualizedMap, (self.goalY, self.goalX), 1, (0, 255, 0), 2)
-        cv2.circle(visualizedMap, (self.goal2Y, self.goal2X), 1, (255, 255, 0), 2)
+        cv2.circle(visualizedMap, (self.goalX, self.goalY), 1, (0, 255, 0), 2)
+        cv2.circle(visualizedMap, (self.goal2X, self.goal2Y), 1, (255, 255, 0), 2)
 
         # cv2.imshow("simulate map", simulateMap)
         cv2.imshow("simulate map", cv2.resize(simulateMap, (WIDTH_OPTIMAL_PATH*4, HEIGH_OPTIMAL_PATH*4)))
