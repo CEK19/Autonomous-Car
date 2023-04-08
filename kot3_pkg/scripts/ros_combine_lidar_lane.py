@@ -403,6 +403,7 @@ class CombineLidarLane:
         print(end_QTM - start_QTM)
         # print("Path: ", self.tracePath)
         
+        # draw trace path
         visualizedMap = cv2.cvtColor(simulateMap, cv2.COLOR_GRAY2RGB)
         if len(self.tracePath):
             for coor in self.tracePath:
@@ -412,6 +413,9 @@ class CombineLidarLane:
                 visualizedMap[y, x] = (0, 0, 255)
                 simulateMap[y, x] = 255
 
+        # draw goal
+        cv2.circle(visualizedMap, (self.goalY, self.goalX), 1, (0, 255, 0), 2)
+        cv2.circle(visualizedMap, (self.goal2Y, self.goal2X), 1, (255, 255, 0), 2)
 
         # cv2.imshow("simulate map", simulateMap)
         cv2.imshow("simulate map", cv2.resize(simulateMap, (WIDTH_OPTIMAL_PATH*4, HEIGH_OPTIMAL_PATH*4)))
