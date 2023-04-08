@@ -159,6 +159,9 @@ class CombineLidarLane:
         self.rightTopLaneY = 0
         self.rightBottomLaneX = round((HEIGH_OPTIMAL_PATH-1-D)/(C+0.0001))
         self.rightBottomLaneY = HEIGH_OPTIMAL_PATH-1
+        
+        self.leftBottomLaneX, self.leftBottomLaneY = cv2.clipLine((0, 0, WIDTH_OPTIMAL_PATH-1, HEIGH_OPTIMAL_PATH-1), (self.leftBottomLaneX, self.leftBottomLaneY), (self.leftTopLaneX, self.leftTopLaneY))
+        self.leftTopLaneX, self.leftTopLaneY = cv2.clipLine((0, 0, WIDTH_OPTIMAL_PATH-1, HEIGH_OPTIMAL_PATH-1), (self.leftBottomLaneX, self.leftBottomLaneY), (self.leftTopLaneX, self.leftTopLaneY))
 
         self.goalX = (3*self.leftTopLaneX+self.rightTopLaneX)//4
         self.goalY = (3*self.leftTopLaneY+self.rightTopLaneY)//4
