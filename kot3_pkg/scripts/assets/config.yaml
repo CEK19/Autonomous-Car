@@ -9,6 +9,7 @@ TOPIC_NAME_DECISION_MAKING: "decision_making_topic"
 TOPIC_NAME_TRAFFIC_LIGHT: "traffic_light_topic"
 TOPIC_NAME_TRAFFIC_SIGN: "traffic_sign_topic"
 
+NODE_NAME_INIT: "init_node_name"
 NODE_NAME_AVOIDANCE: "avoidance_node_name"
 NODE_NAME_TRAFFIC_SIGN: "traffic_sign_node_name"
 NODE_NAME_TRAFFIC_LIGHT: "traffic_light_node_name"
