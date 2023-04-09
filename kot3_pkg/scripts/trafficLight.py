@@ -2,18 +2,11 @@
 
 import rospy
 from std_msgs.msg import String
-from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Twist
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
-import importlib
 import json
 import numpy as np
 import cv2
-import heapq
-import time
-import math
-import threading
 
 # Test here
 NODE_NAME_TRAFFIC_LIGHT = rospy.get_param('NODE_NAME_TRAFFIC_LIGHT')
