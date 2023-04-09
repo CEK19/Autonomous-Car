@@ -164,9 +164,10 @@ catkin_install_python(PROGRAMS
   scripts/talker.py
   scripts/listener.py
   scripts/ros_combine_lidar_lane.py
-  scripts/gazeboSign.py
+  scripts/trafficSign.py
   scripts/trafficLight.py
   scripts/decision_making_module.py
+  scripts/init.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
