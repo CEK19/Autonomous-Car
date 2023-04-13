@@ -14,6 +14,8 @@ NODE_NAME_TRAFFIC_LIGHT = rospy.get_param('NODE_NAME_TRAFFIC_LIGHT')
 TOPIC_NAME_CAMERA = rospy.get_param('TOPIC_NAME_CAMERA')
 TOPIC_NAME_TRAFFIC_LIGHT = rospy.get_param('TOPIC_NAME_TRAFFIC_LIGHT')
 
+RESPONSE_LIGHT = rospy.get_param('RESPONSE_LIGHT')
+
 pub = rospy.Publisher(TOPIC_NAME_TRAFFIC_LIGHT, String, queue_size=1)
 
 #########
@@ -21,10 +23,10 @@ pub = rospy.Publisher(TOPIC_NAME_TRAFFIC_LIGHT, String, queue_size=1)
 #########
 class Const:
 	class TRAFFIC_LIGHT:
-		red = "red"
-		yellow = "yellow"
-		green = "green"
-		none = "none"
+		red = RESPONSE_LIGHT.RED or "red"
+		yellow = RESPONSE_LIGHT.YELLOW or "yellow"
+		green = RESPONSE_LIGHT.GREEN or "green"
+		none = RESPONSE_LIGHT.NONE or "none"
 
 	class STANDARD_PROPERTY:
 		minArea = 100

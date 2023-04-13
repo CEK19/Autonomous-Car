@@ -14,7 +14,11 @@ import pickle
 import time
 
 # index = 0
+NODE_NAME_TRAFFIC_SIGN = rospy.get_param('NODE_NAME_TRAFFIC_SIGN')
 
+TOPIC_NAME_CAMERA = rospy.get_param('TOPIC_NAME_CAMERA')
+
+RESPONSE_SIGN = rospy.get_param('RESPONSE_SIGN')
 
 # CONST FILE
 
@@ -33,15 +37,15 @@ class Sign:
 	WIDTH_HEIGHT_RATIO = 1.3
  
 
-
-class MODULE_TRAFFIC_SIGNS:
-	AHEAD = "AHEAD"
-	FORBID = "FORBID"
-	STOP = "STOP"
-	LEFT = "LEFT"
-	RIGHT = "RIGHT"
-	NONE = "NONE"
-	LABEL_TO_TEXT = [AHEAD, FORBID, STOP, LEFT, RIGHT, NONE]
+### change to read in yaml file
+# class MODULE_TRAFFIC_SIGNS:
+#     	AHEAD = "AHEAD"
+# 	FORBID = "FORBID"
+# 	STOP = "STOP"
+# 	LEFT = "LEFT"
+# 	RIGHT = "RIGHT"
+# 	NONE = "NONE"
+# 	LABEL_TO_TEXT = [AHEAD, FORBID, STOP, LEFT, RIGHT, NONE]
 
 class ColorThreshold:
     class RED:
@@ -53,9 +57,6 @@ class ColorThreshold:
         lower = np.array([95, 100, 100])      # [90, 50, 70]
         upper = np.array([128, 255, 255])   # [128, 255, 255]
 
-
-NODE_NAME_TRAFFIC_SIGN = rospy.get_param('NODE_NAME_TRAFFIC_SIGN')
-TOPIC_NAME_CAMERA = rospy.get_param('TOPIC_NAME_CAMERA')
 	
 #################################################
 # TODO later, an dia r ghep
@@ -181,7 +182,8 @@ def rosPublish(traffic_sign):
 	# 	"accuracy": float(accuracy)
 	# })
 	# print(message)
-	pub.publish(MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign])
+	# pub.publish(MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign])
+	pub.publish(RESPONSE_SIGN.LABEL_TO_TEXT[traffic_sign])
 
 
 def colorFilter(img):
