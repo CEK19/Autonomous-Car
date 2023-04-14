@@ -15,7 +15,7 @@ NODE_NAME_TRAFFIC_SIGN: "traffic_sign_node_name"
 NODE_NAME_TRAFFIC_LIGHT: "traffic_light_node_name"
 NODE_NAME_DECISION_MAKING: "decision_making_node_name"
 
-RESPONSE_LIGTH:
+RESPONSE_LIGHT:
   RED: "RED"
   GREEN: "GREEN"
   YELLOW: "YELLOW"
