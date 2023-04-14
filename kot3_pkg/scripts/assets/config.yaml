@@ -2,7 +2,7 @@ paramName: "tu dep trai lam nha"
 
 TOPIC_NAME_LANE_DETECTION: "lane_detection_topic"
 TOPIC_NAME_AVOIDANCE: "avoidance_topic"
-TOPIC_NAME_CAMERA: "/camera/rgb/image_raw"
+TOPIC_NAME_CAMERA: "/camera/image"
 TOPIC_NAME_LIDAR: "/scan"
 TOPIC_NAME_VELOCITY: "/cmd_vel"
 TOPIC_NAME_DECISION_MAKING: "decision_making_topic"

@@ -23,10 +23,10 @@ pub = rospy.Publisher(TOPIC_NAME_TRAFFIC_LIGHT, String, queue_size=1)
 #########
 class Const:
 	class TRAFFIC_LIGHT:
-		red = RESPONSE_LIGHT.RED or "red"
-		yellow = RESPONSE_LIGHT.YELLOW or "yellow"
-		green = RESPONSE_LIGHT.GREEN or "green"
-		none = RESPONSE_LIGHT.NONE or "none"
+		red = RESPONSE_LIGHT['RED'] or "red"
+		yellow = RESPONSE_LIGHT['YELLOW'] or "yellow"
+		green = RESPONSE_LIGHT['GREEN'] or "green"
+		none = RESPONSE_LIGHT['NONE'] or "none"
 
 	class STANDARD_PROPERTY:
 		minArea = 100
@@ -142,7 +142,7 @@ class TrafficLight:
 			# pass all standard property
 			self.setNewValue(color, contour, area, x, y, w, h)
 
-	def singleLightDetect(self, img: cv2.Mat, color: str):
+	def singleLightDetect(self, img, color):
 		hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 		sensitivity = Const.COLOR_THRESHOLD[color]["sensitivity"]
 		lowerColor = Const.COLOR_THRESHOLD[color]["lower"]
@@ -223,7 +223,6 @@ if __name__ == '__main__':
 	try:
 		rospy.init_node(NODE_NAME_TRAFFIC_LIGHT, anonymous=True)
 		rospy.Subscriber(TOPIC_NAME_CAMERA, Image, trafficLightDetector)
-
 		rospy.spin()
 	except rospy.ROSInterruptException:
 		pass

@@ -49,8 +49,8 @@ class CombineDecisionModule:
         self.backupAngular = 0
         
         # PRIOTIRY SIGNAL
-        self.light = RESPONSE_LIGTH.NONE
-        self.sign = RESPONSE_SIGN.NONE
+        self.light = RESPONSE_LIGTH['NONE']
+        self.sign = RESPONSE_SIGN['NONE']
         self.isInProcess = False
         self.action = None
         self.processStartTime = 0
@@ -59,14 +59,14 @@ class CombineDecisionModule:
     
     # for case that don't care AVOIDANCE_MODULE velocity
     def isExistPriority(self):
-        return self.light is RESPONSE_LIGTH.RED or self.light is RESPONSE_LIGTH.YELLOW or self.sign is RESPONSE_SIGN.STOP
+        return self.light is RESPONSE_LIGTH['RED'] or self.light is RESPONSE_LIGTH['YELLOW'] or self.sign is RESPONSE_SIGN['STOP']
     
     def trafficLightCallback(self, colorMsg):
         self.light = colorMsg
-        if colorMsg is RESPONSE_LIGTH.RED:
+        if colorMsg is RESPONSE_LIGTH['RED']:
             self.linear = 0
             self.angular = 0
-        elif colorMsg is RESPONSE_LIGTH.YELLOW:
+        elif colorMsg is RESPONSE_LIGTH['YELLOW']:
             self.linear = self.linear // 2
             self.angular = self.angular // 2
         # green and none case
@@ -78,10 +78,10 @@ class CombineDecisionModule:
         # parsed = json.loads(msg.data)
         # if parsed['type'] == 'STOP':
         self.sign = signMsg
-        if signMsg is RESPONSE_SIGN.STOP:
+        if signMsg is RESPONSE_SIGN['STOP']:
             self.linear = 0
             self.angular = 0
-        elif signMsg is RESPONSE_SIGN.LEFT or signMsg is RESPONSE_SIGN.RIGHT:
+        elif signMsg is RESPONSE_SIGN['LEFT'] or signMsg is RESPONSE_SIGN['RIGHT']:
             self.isInProcess = True
             self.action = signMsg
         # forward and none case (and forbid case)
@@ -132,10 +132,10 @@ class CombineDecisionModule:
                 myTwist.linear.x = STRAIGHT_VEL
                 myTwist.angular.z = 0
             # turn at step 1
-            elif self.action is RESPONSE_SIGN.LEFT:
+            elif self.action is RESPONSE_SIGN['LEFT']:
                 self.linear = 0
                 self.angular = TURN_VEL
-            elif self.action is RESPONSE_SIGN.RIGHT:
+            elif self.action is RESPONSE_SIGN['RIGHT']:
                 self.linear = 0
                 self.angular = -TURN_VEL
             return self.veloPublisher.publish(myTwist)
