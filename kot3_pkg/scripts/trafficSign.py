@@ -183,7 +183,7 @@ def rosPublish(traffic_sign):
 	# })
 	# print(message)
 	# pub.publish(MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign])
-	pub.publish(RESPONSE_SIGN.LABEL_TO_TEXT[traffic_sign])
+	pub.publish(RESPONSE_SIGN['LABEL_TO_TEXT'][traffic_sign])
 
 
 def colorFilter(img):

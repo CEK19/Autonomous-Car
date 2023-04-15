@@ -38,18 +38,18 @@ class Const:
 		maxRange = 30000	# Equal to STANDARD_PROPERTY.maxArea
 
 	COLOR_THRESHOLD = {
-		"yellow": {  # done
+		"YELLOW": {  # done
 			"sensitivity": np.array([]),
 			"lower": np.array([15, 20, 230]),  # H,S,V
 			"upper": np.array([30, 255, 255])
 		},
-		"red": {  # demo
+		"RED": {  # demo
 			"sensitivity": np.array([170, 0, 0]),		# [170, 0, 0]
 			# [0, 210, 110]	[0, 228, 124]
 			"lower": np.array([0, 100, 110]),
 			"upper": np.array([7, 150, 255])
 		},
-		"green": {  # done
+		"GREEN": {  # done
 			"sensitivity": np.array([]),
 			"lower": np.array([48, 119, 125]),
 			"upper": np.array([93, 255, 215])
@@ -168,7 +168,7 @@ class TrafficLight:
 			print("red")
 			self.color = Const.TRAFFIC_LIGHT.red
 			sign = Utils.boundaryBox(img, self.red, COLOR.red)
-			Utils.putText(img, "Traffic light detected: red", COLOR.red)
+			Utils.putText(img, "Light: red", COLOR.red)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
 			return Const.TRAFFIC_LIGHT.red, redSize
@@ -177,7 +177,7 @@ class TrafficLight:
 			print("green")
 			self.color = Const.TRAFFIC_LIGHT.green
 			sign = Utils.boundaryBox(img, self.green, COLOR.green)
-			Utils.putText(img, "Traffic light detected: green", COLOR.green)
+			Utils.putText(img, "Light: green", COLOR.green)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
 			return Const.TRAFFIC_LIGHT.green, greenSize
@@ -185,7 +185,7 @@ class TrafficLight:
 		elif (yellowSize >= redSize and yellowSize >= greenSize and yellowSize != 0):
 			print("yellow")
 			self.color = Const.TRAFFIC_LIGHT.yellow
-			Utils.putText(img, "Traffic light detected: yellow", COLOR.yellow)
+			Utils.putText(img, "Light: yellow", COLOR.yellow)
 			sign = Utils.boundaryBox(img, self.yellow, COLOR.yellow)
 			cv2.imshow("final", img)
 			cv2.imshow('sign', sign)
@@ -193,7 +193,7 @@ class TrafficLight:
 
 		else:
 			self.color = None
-			Utils.putText(img, "Traffic light detected: nothing", COLOR.white)
+			Utils.putText(img, "Light: nothing", COLOR.white)
 			cv2.imshow("final", img)
 			return Const.TRAFFIC_LIGHT.none, 0
 
@@ -201,7 +201,7 @@ class TrafficLight:
 def trafficLightDetector(data):
 	bridge = CvBridge()
 	orgImg = bridge.imgmsg_to_cv2(data, "bgr8")
-	cv2.imshow("org", orgImg)
+	# cv2.imshow("org", orgImg)
 	trafficLight = TrafficLight()
 	trafficLight.singleLightDetect(orgImg, Const.TRAFFIC_LIGHT.green)
 	trafficLight.singleLightDetect(orgImg, Const.TRAFFIC_LIGHT.red)
