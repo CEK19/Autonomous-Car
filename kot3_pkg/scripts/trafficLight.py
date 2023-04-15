@@ -32,6 +32,7 @@ class Const:
 		minArea = 100
 		maxArea = 30000
 		widthHeightRatio = 1.8
+		flashAera = 4	# 4 pixels around flash
 
 	class PUBLISH_PROPERTY:
 		minRange = 20000
@@ -53,6 +54,11 @@ class Const:
 			"sensitivity": np.array([]),
 			"lower": np.array([48, 119, 125]),
 			"upper": np.array([93, 255, 215])
+		},
+		"WHITE": {
+			"sensitivity": np.array([]),
+			"lower": np.array([150, 150, 150]),
+			"upper": np.array([255, 255, 255])
 		}
 	}
 
@@ -87,6 +93,14 @@ class Utils:
 		# pub.publish(myTwist)
 		msg = json.dumps({"linear": straight, "angular": angular})
 		pub.publish(msg)
+
+	@staticmethod
+	def flashDetect(img):
+		lower = Const.COLOR_THRESHOLD['WHITE']["lower"]
+		upper = Const.COLOR_THRESHOLD['WHITE']["upper"]
+		mask = cv2.inRange(img, lower, upper)
+		result = cv2.inpaint(img, mask, Const.STANDARD_PROPERTY.flashAera, cv2.INPAINT_TELEA)
+		return result
 
 
 class Light:
@@ -201,11 +215,14 @@ class TrafficLight:
 def trafficLightDetector(data):
 	bridge = CvBridge()
 	orgImg = bridge.imgmsg_to_cv2(data, "bgr8")
-	# cv2.imshow("org", orgImg)
+
+	# remove flash
+	img = Utils.flashDetect(orgImg)
+
 	trafficLight = TrafficLight()
-	trafficLight.singleLightDetect(orgImg, Const.TRAFFIC_LIGHT.green)
-	trafficLight.singleLightDetect(orgImg, Const.TRAFFIC_LIGHT.red)
-	trafficLight.singleLightDetect(orgImg, Const.TRAFFIC_LIGHT.yellow)
+	trafficLight.singleLightDetect(img, Const.TRAFFIC_LIGHT.green)
+	trafficLight.singleLightDetect(img, Const.TRAFFIC_LIGHT.red)
+	trafficLight.singleLightDetect(img, Const.TRAFFIC_LIGHT.yellow)
 	# print(trafficLight.red.size)
 	# print(trafficLight.green.size)
 	# print(trafficLight.yellow.size)
