@@ -42,8 +42,8 @@ DELTA = 10 # 50 / 14
 DELTA_X = DELTA
 DELTA_Y = DELTA
 NUM_POINTS_OF_DIRECTION = 12 # 35 / 12
-MAX_STRAIGHT_VELOCITY = 0.02  # 0.05
-MAX_TURN_VELOCITY = 0.8  # 2.0
+MAX_STRAIGHT_VELOCITY = 0.05  # 0.05
+MAX_TURN_VELOCITY = 2.0  # 2.0
 
 IMAGE_SAVED_PER_FRAME = 1
 frameIndex = 0
@@ -440,7 +440,7 @@ class CombineLidarLane:
     
         global frameIndex
         if frameIndex % IMAGE_SAVED_PER_FRAME == 0:
-            cv2.imwrite("./imgs/" + str(frameIndex) + ".png", visualizedMap)
+            cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/" + str(frameIndex) + ".png", visualizedMap)
         frameIndex += 1
         
         if cv2.waitKey(1) == ord('q'):
