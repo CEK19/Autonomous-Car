@@ -259,7 +259,10 @@ def callbackFunction(data):
 		if signs.conf[i] < Sign.MIN_ACCURACY:
 			print("low accuracy")
 			return
+
+		# center point (x,y), width (w), height (h)
 		xywh = (np.rint(signs.xywh[i].numpy())).astype(int)
+		# Top left corner (x1,y1), bottom right corner (x2,y2)
 		xyxy = (np.rint(signs.xyxy[i].numpy())).astype(int)
 		width, height = xywh[2], xywh[3]
 		if (width*height > bigSize):
