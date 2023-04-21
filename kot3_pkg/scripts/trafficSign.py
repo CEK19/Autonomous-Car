@@ -91,18 +91,14 @@ def returnRedness(img):
 # T= < T=120 -> blue sign detection -> best: 110
 
 
-def threshold_RedSign(img, T=150):
-	_, img = cv2.threshold(img, T, 255, cv2.THRESH_BINARY)
+def threshold_RedSign(img, T_lower=125, T_upper=255):
+	_, img = cv2.threshold(img, T_lower, T_upper, cv2.THRESH_BINARY)
 	cv2.imshow("red threshhold", img)
 	return img
 
-# T = 125	# data 2
-# T = 110
-# T = 100	# data 3
-# T = 122
-# T = 120
-def threshold_BlueSign(img, T=110):
-	_, img = cv2.threshold(img, T, 255, cv2.THRESH_BINARY)
+
+def threshold_BlueSign(img, T_lower=100, T_upper=130):
+	_, img = cv2.threshold(img, T_lower, T_upper, cv2.THRESH_BINARY)
 	cv2.imshow("blue threshold", img)
 	return img
 
@@ -119,10 +115,10 @@ def findBiggestContour(contours):
 	return contours[c.index(max(c))]
 
 
-def boundary_Green_Box(img, contour):
+def boundary_Box(img, contour, color=(0,255,0)):
 	x, y, w, h = cv2.boundingRect(contour)
 	extra = Sign.EXTRA_SAFETY
-	img = cv2.rectangle(img, (x-extra, y-extra), (x+w+extra, y+h+extra), (0, 255, 0), 5)
+	img = cv2.rectangle(img, (x-extra, y-extra), (x+w+extra, y+h+extra), color, 5)
 	sign = img[(y-extra):(y+h+extra), (x-extra):(x+w+extra)]
 	return sign
 
@@ -167,10 +163,10 @@ def preprocessingImageToClassifierV2(image=None, imageSize=32):
 
 def predict(sign):
 	img = preprocessingImageToClassifierV2(sign, imageSize=32)
-	start_time = time.time()
-	ans = model.predict(img)
-	end_time = time.time()
-	return ans, end_time-start_time
+	prediction = model.predict(img)
+	label = RESPONSE_SIGN['LABEL_TO_TEXT'][np.argmax(prediction)]
+	accuracy = np.amax(prediction)
+	return label, accuracy
 
 
 
@@ -183,7 +179,7 @@ def rosPublish(traffic_sign):
 	# })
 	# print(message)
 	# pub.publish(MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign])
-	pub.publish(RESPONSE_SIGN['LABEL_TO_TEXT'][traffic_sign])
+	pub.publish(traffic_sign)
 
 
 def colorFilter(img):
@@ -228,46 +224,63 @@ def callbackFunction(data):
 	print("Start Convert")
 	imgMatrix = bridge.imgmsg_to_cv2(data, "bgr8")	#data.encoding
 
+	# define the contrast and brightness value
+	# contrast = 5. # Contrast control ( 0 to 127)
+	# brightness = 2. # Brightness control (0-100)
+	# imgMatrix = cv2.addWeighted( img, contrast, img, 0, brightness)
+
+	# img = colorFilter(imgMatrix)
+	# cv2.imshow("filtered", img)
+
 	cv2.imshow("Origin", imgMatrix)
 	cv2.waitKey(3)
 	final_sign = []
 	try:
 		redness = returnRedness(imgMatrix)
+
 		#### BLUE SIGN ####
+		# print("start blue")
 		thresh = threshold_BlueSign(redness)
 		contours = findContour(thresh)
 		for contour in contours:
+			# print(contour)
 			area = cv2.contourArea(contour)
+			# print("area", area)
 			x, y, w, h = cv2.boundingRect(contour)
-			# isConvext = cv2.isContourConvex(contour)
-			leftmost = tuple(contour[contour[:, :, 0].argmin()][0])
-			rightmost = tuple(contour[contour[:, :, 0].argmax()][0])
-			topmost = tuple(contour[contour[:, :, 1].argmin()][0])
-			bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
-			farest_h = distanceBetweenTwoPoint(topmost, bottommost)
-			farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
+			# print("x, y, w, h", x, y, w, h)
+			
+			# leftmost = tuple(contour[contour[:, :, 0].argmin()][0])
+			# rightmost = tuple(contour[contour[:, :, 0].argmax()][0])
+			# topmost = tuple(contour[contour[:, :, 1].argmin()][0])
+			# bottommost = tuple(contour[contour[:, :, 1].argmax()][0])
+			# farest_h = distanceBetweenTwoPoint(topmost, bottommost)
+			# farest_w = distanceBetweenTwoPoint(leftmost, rightmost)
+
 			if (w <= Sign.MIN_WIDTH_HEIGHT or h <= Sign.MIN_WIDTH_HEIGHT):
 				continue
 			elif w/h >= Sign.WIDTH_HEIGHT_RATIO or h/w >= Sign.WIDTH_HEIGHT_RATIO:
-				print("blue not circle or square", w/h, h/w)
-				signTmp = boundary_Green_Box(imgMatrix, contour)
-				cv2.imshow("temp", signTmp)
+				# print("blue not circle or square", w/h, h/w)
+				# signTmp = boundary_Box(imgMatrix, contour)
+				# cv2.imshow("temp", signTmp)
 				# cv2.imshow("box", imgMatrix)
 				continue
-			elif farest_w/farest_h >= 1.2 or farest_h/farest_w >= 1.2:
-				continue
-			elif farest_h/h >= 1.1 or h/farest_h >= 1.1:
-				continue
-			elif farest_w/w >= 1.1 or w/farest_w >= 1.1:
-				continue
+			# elif farest_w/farest_h >= 1.2 or farest_h/farest_w >= 1.2:
+			# 	continue
+			# elif farest_h/h >= 1.1 or h/farest_h >= 1.1:
+			# 	continue
+			# elif farest_w/w >= 1.1 or w/farest_w >= 1.1:
+			# 	continue
 			elif area > Sign.MIN_AREA and area < Sign.MAX_AREA:  # 15000
 				print("from blue")
 				final_sign.append(contour)
+				# print("append blue success")
 			else:
-				print('blue area: ', area)
+				# print('blue area: ', area)
 				continue
+		# print("end blue")
 
 		#### RED SIGN ####
+		# print("start red")
 		thresh = threshold_RedSign(redness)
 		contours = findContour(thresh)
 		for contour in contours:
@@ -285,7 +298,7 @@ def callbackFunction(data):
 			# elif isConvext:
 			# 	continue
 			elif w/h >= Sign.WIDTH_HEIGHT_RATIO or h/w >= Sign.WIDTH_HEIGHT_RATIO:
-				print("blue not circle or square", w/h, h/w)
+				# print("blue not circle or square", w/h, h/w)
 				continue
 			elif farest_w/farest_h >= 1.2 or farest_h/farest_w >= 1.2:
 				continue
@@ -297,28 +310,29 @@ def callbackFunction(data):
 				print("from red")
 				final_sign.append(contour)
 			else:
-				print('red area: ', area)
+				# print('red area: ', area)
 				continue
+		# print("end red")
 
 		#### FINAL SIGN ####
 		if final_sign:  # non-empty
 			big = findBiggestContour(final_sign)
-			sign = boundary_Green_Box(imgMatrix, big)
+			sign = boundary_Box(imgMatrix, big)
 			cv2.imshow('final', imgMatrix)
 			startTime = time.time()
-			prediction, t = predict(sign)
+			prediction, accuracy = predict(sign)
 			endTime = time.time()
 			print("Time: ", endTime-startTime)
-			accuracy = np.amax(prediction)
+			print("Prediction: ", prediction, accuracy)
 			size = cv2.contourArea(big)
 
 			if (size >= Sign.MAX_AREA_TODETECT):
 				if (len(potentialSign) > 1):
-					rosPublish(np.argmax(potentialSign))
+					rosPublish(potentialSign)
 				potentialSign = []
 
 			elif (accuracy > Sign.MIN_ACCURACY):
-				potentialSign.append(np.argmax(prediction))
+				potentialSign.append(prediction)
 		else:
 			cv2.imshow('final', imgMatrix)
 			print("I can't see anything !")

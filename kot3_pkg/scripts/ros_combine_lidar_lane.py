@@ -143,9 +143,12 @@ class CombineLidarLane:
         self.rightLaneA = (self.rightTopLaneY - self.rightBottomLaneY) / \
             (self.rightTopLaneX - self.rightBottomLaneX)
         self.rightLaneB = self.rightTopLaneY - self.rightLaneA * self.rightTopLaneX
+        
+        # lane detection
+        self.frameIndex = 0
 
     def drawLanesOnMap(self, simMap):
-        # print("before",self.leftBottomLaneX,self.leftBottomLaneY,self.leftTopLaneX,self.leftTopLaneY,self.rightBottomLaneX,self.rightBottomLaneY,self.rightTopLaneX,self.rightTopLaneY)
+        print("before", "[", self.leftBottomLaneX,self.leftBottomLaneY,"]", "[",self.leftTopLaneX,self.leftTopLaneY,"]", "[",self.rightBottomLaneX,self.rightBottomLaneY,"]","[",self.rightTopLaneX,self.rightTopLaneY,"]")
         # print("before",self.goalX,self.goalY,self.goal2X,self.goal2Y)
         color = 255
         
@@ -163,6 +166,8 @@ class CombineLidarLane:
         self.rightTopLaneY = 0
         self.rightBottomLaneX = round((HEIGH_OPTIMAL_PATH-1-D)/(C+0.0001))
         self.rightBottomLaneY = HEIGH_OPTIMAL_PATH-1
+        
+        print("middle", "[", self.leftBottomLaneX,self.leftBottomLaneY,"]", "[",self.leftTopLaneX,self.leftTopLaneY,"]", "[",self.rightBottomLaneX,self.rightBottomLaneY,"]","[",self.rightTopLaneX,self.rightTopLaneY,"]")
         
         _, lbPoint, ltPoint = cv2.clipLine((0, 0, WIDTH_OPTIMAL_PATH-1, HEIGH_OPTIMAL_PATH-1), (self.leftBottomLaneX, self.leftBottomLaneY), (self.leftTopLaneX, self.leftTopLaneY))
         _, rbPoint, rtPoint = cv2.clipLine((0, 0, WIDTH_OPTIMAL_PATH-1, HEIGH_OPTIMAL_PATH-1), (self.rightBottomLaneX, self.rightBottomLaneY), (self.rightTopLaneX, self.rightTopLaneY))
@@ -184,7 +189,7 @@ class CombineLidarLane:
 
         # _,returnDict["tl"],returnDict["bl"] = cv2.clipLine((0, 0, 49, 49),returnDict["tl"],returnDict["bl"])
 
-        # print(self.leftBottomLaneX,self.leftBottomLaneY,self.leftTopLaneX,self.leftTopLaneY,self.rightBottomLaneX,self.rightBottomLaneY,self.rightTopLaneX,self.rightTopLaneY)
+        print("after", "[", self.leftBottomLaneX,self.leftBottomLaneY,"]", "[",self.leftTopLaneX,self.leftTopLaneY,"]", "[",self.rightBottomLaneX,self.rightBottomLaneY,"]","[",self.rightTopLaneX,self.rightTopLaneY,"]")
         # print(self.goalX,self.goalY,self.goal2X,self.goal2Y)
 
         simMap = cv2.line(simMap, (round(-B/(A+0.0001)), 0), (round((HEIGH_OPTIMAL_PATH-1-B)/(A+0.0001)), HEIGH_OPTIMAL_PATH-1), color, LANE_THICKNESS)
@@ -192,7 +197,9 @@ class CombineLidarLane:
         return simMap
 
     def updateLaneDetectionSignal(self, msg):
+        print("msg", msg)
         parsed = json.loads(msg.data)
+        print("parsed", parsed)
         
         self.leftBottomLaneX = parsed["bl"][0]
         self.leftBottomLaneY = parsed["bl"][1]
@@ -202,6 +209,8 @@ class CombineLidarLane:
         self.rightTopLaneY = parsed["tr"][1]
         self.rightBottomLaneX = parsed["br"][0]
         self.rightBottomLaneY = parsed["br"][1]
+        self.frameIndex = parsed["frameIndex"]
+        print("frameIndex", parsed["frameIndex"])
         
         # self.goalX = WIDTH_SIMULATE_MAP//2
         # self.goalY = 0
@@ -224,9 +233,11 @@ class CombineLidarLane:
         
     def rotatePoint(self):
         oldGoal = [self.goalX, self.goalY]
-        deltaTime = time.time() - self.lastTimeReciveLane
-        self.lastTimeReciveLane = time.time()
+        time_t = time.time()
+        deltaTime = time_t - self.lastTimeReciveLane
+        self.lastTimeReciveLane = time_t
         if self.turnVel == 0:
+            print("plus toa do", deltaTime, self.straightVel,  Utils.convertMetToPixel(self.straightVel) * deltaTime)
             self.leftBottomLaneY = self.leftBottomLaneY + Utils.convertMetToPixel(self.straightVel) * deltaTime
             self.rightBottomLaneY = self.rightBottomLaneY + Utils.convertMetToPixel(self.straightVel) * deltaTime
             self.leftTopLaneY = self.leftTopLaneY + Utils.convertMetToPixel(self.straightVel) * deltaTime
@@ -440,7 +451,7 @@ class CombineLidarLane:
     
         global frameIndex
         if frameIndex % IMAGE_SAVED_PER_FRAME == 0:
-            cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/" + str(frameIndex) + ".png", visualizedMap)
+            cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/lidar/" + str(frameIndex) + "-" + str(self.frameIndex) + ".png", cv2.putText(visualizedMap, "F: " + str(self.frameIndex),(10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=(255, 255, 0)))
         frameIndex += 1
         
         if cv2.waitKey(1) == ord('q'):
