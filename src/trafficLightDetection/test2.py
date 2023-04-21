@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 # read image
-img = cv2.imread('./assets/demo/yellow1.jpg')
+img = cv2.imread('./assets/tmp/red2_inpaint.png')
 hh, ww = img.shape[:2]
 
 # threshold
@@ -52,4 +52,5 @@ cv2.imshow("RESULT", result)
 # cv2.imshow("RESULT0", result0)
 # cv2.imshow("RESULT1", result1)
 # cv2.imshow("RESULT2", result2)
+cv2.imwrite("./assets/tmp/red2_inpaintV2.png", result)
 cv2.waitKey(0)
