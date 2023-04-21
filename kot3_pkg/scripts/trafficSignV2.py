@@ -38,7 +38,7 @@ class Sign:
 	MAX_AREA = 50000
 	MAX_AREA_TODETECT = 40000
 	MIN_WIDTH_HEIGHT = 30
-	MIN_ACCURACY = 0.8
+	MIN_ACCURACY = 0.75
 	WIDTH_HEIGHT_RATIO = 1.3
  
 
@@ -230,44 +230,68 @@ potentialSign = []
 def callbackFunction(data):
 	# global index
 	global potentialSign
-	# "---------------read img---------------"
+	print("---------------read img---------------")
 	bridge = CvBridge()
-	print("Start Convert")
 	imgMatrix = bridge.imgmsg_to_cv2(data, "bgr8")	#data.encoding
 
 	cv2.imshow("Origin", imgMatrix)
 	cv2.waitKey(3)
 	final_sign = []
+	print("done read img")
 
 
-	# "---------------detection---------------"
-	signs = YOLOmodel([imgMatrix])
-	big = []
+	print("---------------detection---------------")
+	# YOLO only detect traffic sign
+	result = YOLOmodel(imgMatrix)[0]
+	visual = result.plot()
+	signs = result.boxes
+	cv2.imshow("YOLO", visual)
 	bigSize = 0
-	bigXYWH = [0,0,0,0]
-	for sign in signs:
-		if sign.boxes[0].conf < Sign.MIN_ACCURACY:
-			continue
-		x, y, w, h = sign.boxes[0].xywh
-		if (w*h > bigSize):
-			bigSize = w*h
-			big = sign
-			bigXYWH = [x, y, w, h]
+	x, y, w, h = 0, 0, 0, 0
+
+	if not len(signs.conf):
+		return
+
+	for i in range(len(signs.conf)):
+		# print()
+		print("My boxes:", signs)
+		print()
+		if signs.conf[i] < Sign.MIN_ACCURACY:
+			print("low accuracy")
+			return
+		xywh = (np.rint(signs.xywh[i].numpy())).astype(int)
+		xyxy = (np.rint(signs.xyxy[i].numpy())).astype(int)
+		width, height = xywh[2], xywh[3]
+		if (width*height > bigSize):
+			bigSize = width*height
+			x = round( xyxy[0] )
+			y = round( xyxy[1] )
+			w = round( xywh[2] )
+			h = round( xywh[3] )
+			# big = signs
+
+	print("---------------crop---------------")
+	print(x, y, w, h)
+	extra = 0	# Sign.EXTRA_SAFETY
+	sign = imgMatrix[(y-extra):(y+h+extra), (x-extra):(x+w+extra)]
 
 
 	# big = findBiggestContour(final_sign)
 	# sign = boundary_Green_Box(imgMatrix, big)
 	# cv2.imshow('final', imgMatrix)
 
+	print("---------------classification---------------")
+	cv2.imshow("sign", sign)
 	startTime = time.time()
-	prediction, t = predict(big)
+	prediction, t = predict(sign)
 	endTime = time.time()
 	print("total time: ", endTime-startTime, ", predict time:", t)
-	label = np.argmax(prediction)
+	label = RESPONSE_SIGN['LABEL_TO_TEXT'][np.argmax(prediction)]
 	accuracy = np.amax(prediction)
-	size = cv2.contourArea(big)
+	
+	print("=====> label: ", label, ", accuracy: ", accuracy)
 
-	if (size >= Sign.MAX_AREA_TODETECT):
+	if (bigSize >= Sign.MAX_AREA_TODETECT):
 		if (len(potentialSign) > 1):
 			rosPublish(label)
 		potentialSign = []
