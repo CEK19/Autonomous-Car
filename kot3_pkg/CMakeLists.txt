@@ -165,6 +165,7 @@ catkin_install_python(PROGRAMS
   scripts/listener.py
   scripts/ros_combine_lidar_lane.py
   scripts/trafficSign.py
+  scripts/trafficSignV2.py
   scripts/trafficLight.py
   scripts/decision_making_module.py
   scripts/init.py
