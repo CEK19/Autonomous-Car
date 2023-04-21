@@ -238,10 +238,11 @@ class CombineLidarLane:
         self.lastTimeReciveLane = time_t
         if self.turnVel == 0:
             print("plus toa do", deltaTime, self.straightVel,  Utils.convertMetToPixel(self.straightVel) * deltaTime)
-            self.leftBottomLaneY = self.leftBottomLaneY + Utils.convertMetToPixel(self.straightVel) * deltaTime
-            self.rightBottomLaneY = self.rightBottomLaneY + Utils.convertMetToPixel(self.straightVel) * deltaTime
-            self.leftTopLaneY = self.leftTopLaneY + Utils.convertMetToPixel(self.straightVel) * deltaTime
-            self.rightTopLaneY = self.rightTopLaneY + Utils.convertMetToPixel(self.straightVel) * deltaTime
+            deltaY = math.ceil(Utils.convertMetToPixel(self.straightVel) * deltaTime)
+            self.leftBottomLaneY = self.leftBottomLaneY + deltaY
+            self.rightBottomLaneY = self.rightBottomLaneY + deltaY
+            self.leftTopLaneY = self.leftTopLaneY + deltaY
+            self.rightTopLaneY = self.rightTopLaneY + deltaY
             return
         print("===== start rotate =====")
         # R = self.straightVel / self.turnVel
