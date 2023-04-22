@@ -224,12 +224,20 @@ def colorFilter(img):
 
 
 potentialSign = []
-
+lastTime = time.time()
 
 
 def callbackFunction(data):
-	# global index
+	QTM_time_start = time.time()
+	global lastTime
 	global potentialSign
+
+	print(lastTime, QTM_time_start, QTM_time_start - lastTime)
+	if QTM_time_start - lastTime >= 0.1 or QTM_time_start - lastTime < 0.02:
+		lastTime = QTM_time_start
+		return
+	lastTime = QTM_time_start
+ 
 	print("---------------read img---------------")
 	bridge = CvBridge()
 	imgMatrix = bridge.imgmsg_to_cv2(data, "bgr8")	#data.encoding
@@ -250,6 +258,7 @@ def callbackFunction(data):
 	x, y, w, h = 0, 0, 0, 0
 
 	if not len(signs.conf):
+		print("time: ", time.time()-QTM_time_start)
 		return
 
 	for i in range(len(signs.conf)):
@@ -258,6 +267,7 @@ def callbackFunction(data):
 		print()
 		if signs.conf[i] < Sign.MIN_ACCURACY:
 			print("low accuracy")
+			print("time: ", time.time()-QTM_time_start)
 			return
 
 		# center point (x,y), width (w), height (h)
@@ -301,6 +311,8 @@ def callbackFunction(data):
 
 	elif (accuracy > Sign.MIN_ACCURACY):
 		potentialSign.append(label)
+	
+	print("time: ", time.time()-QTM_time_start)
 
 ###########################
 ### MAIN FUNCTION	###
