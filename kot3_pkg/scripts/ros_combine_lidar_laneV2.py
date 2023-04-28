@@ -125,6 +125,8 @@ class CombineLidarLane:
         self.goalY = 0
         self.goal2X = None                          # WIDTH_OPTIMAL_PATH*3//4
         self.goal2Y = None
+        
+        self.isFirstTime = True
 
         # Position of lane
         self.lastTimeReciveLane = time.time()
@@ -207,6 +209,8 @@ class CombineLidarLane:
         return simMap
 
     def updateLaneDetectionSignal(self, msg):
+        if not self.isFirstTime:
+            return
         # print("msg", msg)
         parsed = json.loads(msg.data)
         # print("parsed", parsed)
@@ -221,6 +225,7 @@ class CombineLidarLane:
         self.rightBottomLaneY = parsed["br"][1]
         self.frameIndex = parsed["frameIndex"]
         print("frameIndex", parsed["frameIndex"])
+        self.isFirstTime = False
         
         # self.goalX = WIDTH_SIMULATE_MAP//2
         # self.goalY = 0
