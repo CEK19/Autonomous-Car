@@ -151,6 +151,13 @@ class CombineLidarLane:
         
         # lane detection
         self.frameIndex = 0
+        self.cmdStartTime = time.time()
+        self.cmdCount = 0
+    
+    def printInfo(self):
+        print("Bottom point: ", "[", self.leftBottomLaneX, self.leftBottomLaneY, "]", "[", self.rightBottomLaneX, self.rightBottomLaneY, "]")
+        print("Top point: ", "[", self.leftTopLaneX, self.leftTopLaneY, "]", "[", self.rightTopLaneX, self.rightTopLaneY, "]")
+        pass
 
     def drawLanesOnMap(self, simMap):
         # print("before", "[", self.leftBottomLaneX,self.leftBottomLaneY,"]", "[",self.leftTopLaneX,self.leftTopLaneY,"]", "[",self.rightBottomLaneX,self.rightBottomLaneY,"]","[",self.rightTopLaneX,self.rightTopLaneY,"]")
@@ -232,6 +239,8 @@ class CombineLidarLane:
         # self.updateVelocity()
     
     def updateVelocity(self, event):
+        self.cmdCount += 1
+        print("cmd publish frequency: ", self.cmdCount/(time.time() - self.cmdTime))
         myTwist = Twist()
         myTwist.linear.x = self.straightVel
         myTwist.angular.z = self.turnVel
@@ -242,10 +251,10 @@ class CombineLidarLane:
         # Utils.publicVelocity(self.straightVel, self.turnVel)
         
     def rotatePoint(self):
-        oldGoal = [self.goalX, self.goalY]
         time_t = time.time()
         deltaTime = time_t - self.lastTimeReciveLane
         self.lastTimeReciveLane = time_t
+        
         if self.turnVel == 0:
             print("plus toa do", deltaTime, self.straightVel,  Utils.convertMetToPixel(self.straightVel) * deltaTime)
             deltaY = Utils.convertMetToPixel(self.straightVel) * deltaTime
@@ -254,6 +263,7 @@ class CombineLidarLane:
             self.leftTopLaneY = self.leftTopLaneY + deltaY
             self.rightTopLaneY = self.rightTopLaneY + deltaY
             return
+        
         print("===== start rotate =====")
         # R = self.straightVel / self.turnVel
         R = abs(Utils.convertMetToPixel(self.straightVel) / self.turnVel)
@@ -265,10 +275,8 @@ class CombineLidarLane:
         newPos = [0, 0]
         if isRight:
             newPos = [curPos[0] + 2*R*math.sin(alpha/2)*math.cos(math.pi/2 - alpha/2), curPos[1] - 2*R*math.sin(alpha/2)*math.sin(math.pi/2 - alpha/2)]
-            # newPos = [curPos[0] + R + R*math.cos(alpha), curPos[1] + R*math.sin(alpha)]
         else:
             newPos = [curPos[0] - 2*R*math.sin(alpha/2)*math.cos(math.pi/2 - alpha/2), curPos[1] - 2*R*math.sin(alpha/2)*math.sin(math.pi/2 - alpha/2)]
-            # newPos = [curPos[0] - R - R*math.cos(alpha), curPos[1] + R*math.sin(alpha)]
         vector = Utils.getVectorAB(curPos, newPos)
         invertVec = Utils.getInvertVector(vector)
         
@@ -279,13 +287,6 @@ class CombineLidarLane:
         goal = [self.goalX + invertVec[0], self.goalY + invertVec[1]]
         goal2 = [self.goal2X + invertVec[0], self.goal2Y + invertVec[1]]
         
-        # print old value
-        # print("leftBottom old", self.leftBottomLaneX, self.leftBottomLaneY)
-        # print("rightBottom old", self.rightBottomLaneX, self.rightBottomLaneY)
-        # print("leftTop old", self.leftTopLaneX, self.leftTopLaneY)
-        # print("rightTop old", self.rightTopLaneX, self.rightTopLaneY)
-        
-        # print()
         
         self.leftBottomLaneX, self.leftBottomLaneY = Utils.getRotatedPoint(leftBottom, curPos, angular)
         self.rightBottomLaneX, self.rightBottomLaneY = Utils.getRotatedPoint(rightBottom, curPos, angular)
@@ -293,22 +294,30 @@ class CombineLidarLane:
         self.rightTopLaneX, self.rightTopLaneY = Utils.getRotatedPoint(rightTop, curPos, angular)
         self.goalX, self.goalY = Utils.getRotatedPoint(goal, curPos, angular)
         self.goal2X, self.goal2Y = Utils.getRotatedPoint(goal2, curPos, angular)
-        # print("old goal: ", oldGoal)
-        # print("new goal: ", [self.goalX, self.goalY])
-        
-        # print("leftBottom new", self.leftBottomLaneX, self.leftBottomLaneY)
-        # print("rightBottom new", self.rightBottomLaneX, self.rightBottomLaneY)
-        # print("leftTop new", self.leftTopLaneX, self.leftTopLaneY)
-        # print("rightTop new", self.rightTopLaneX, self.rightTopLaneY)
-        
-        # print("")
-        
-        # print("leftBottom d", Utils.distanceBetweenPoints(curPos, leftBottom), Utils.distanceBetweenPoints(curPos, [self.leftBottomLaneX, self.leftBottomLaneY]))
-        # print("rightBottom d", Utils.distanceBetweenPoints(curPos, rightBottom), Utils.distanceBetweenPoints(curPos, [self.rightBottomLaneX, self.rightBottomLaneY]))
-        # print("leftTop d", Utils.distanceBetweenPoints(curPos, leftTop), Utils.distanceBetweenPoints(curPos, [self.leftTopLaneX, self.leftTopLaneY]))
-        # print("rightTop d", Utils.distanceBetweenPoints(curPos, rightTop), Utils.distanceBetweenPoints(curPos, [self.rightTopLaneX, self.rightTopLaneY]))
-        
-        # print()
+
+        cond1 = Utils.distanceBetweenPoints(curPos, leftBottom) == Utils.distanceBetweenPoints(curPos, [self.leftBottomLaneX, self.leftBottomLaneY])
+        if not cond1:
+            print("fail rotate bottom left point", curPos, leftBottom, [self.leftBottomLaneX, self.leftBottomLaneY])
+            
+        cond2 = Utils.distanceBetweenPoints(curPos, rightBottom) == Utils.distanceBetweenPoints(curPos, [self.rightBottomLaneX, self.rightBottomLaneY])
+        if not cond2:
+            print("fail rotate bottom right point", curPos, rightBottom, [self.rightBottomLaneX, self.rightBottomLaneY])
+            
+        cond3 = Utils.distanceBetweenPoints(curPos, leftTop) == Utils.distanceBetweenPoints(curPos, [self.leftTopLaneX, self.leftTopLaneY])
+        if not cond3:
+            print("fail rotate top left point", curPos, leftTop, [self.leftTopLaneX, self.leftTopLaneY])
+            
+        cond4 = Utils.distanceBetweenPoints(curPos, rightTop) == Utils.distanceBetweenPoints(curPos, [self.rightTopLaneX, self.rightTopLaneY])
+        if not cond4:
+            print("fail rotate top right point", curPos, rightTop, [self.rightTopLaneX, self.rightTopLaneY])
+            
+        cond5 = Utils.distanceBetweenPoints(curPos, goal) == Utils.distanceBetweenPoints(curPos, [self.goalX, self.goalY])
+        if not cond5:
+            print("fail rotate goal point", curPos, goal, [self.goalX, self.goalY])
+            
+        cond6 = Utils.distanceBetweenPoints(curPos, goal2) == Utils.distanceBetweenPoints(curPos, [self.goal2X, self.goal2Y])
+        if not cond6:
+            print("fail rotate goal2 point", curPos, goal2, [self.goal2X, self.goal2Y])
         
         pass
                 
@@ -347,10 +356,6 @@ class CombineLidarLane:
             # Magic code to fix point at (width/2, height/2) is collision
             simulateMap[HEIGH_SIMULATE_MAP//2 - 1 : HEIGH_SIMULATE_MAP//2 + 1, WIDTH_SIMULATE_MAP//2 - 1 : WIDTH_SIMULATE_MAP//2 + 1] = 0
             
-            ## Make obstacle bigger - Option 1
-            # for y, x in zip(coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]):
-            #     simulateMap[max(0, y - DELTA_Y) : min(HEIGH_SIMULATE_MAP, y + DELTA_Y), max(0, x - DELTA_X) : min(WIDTH_SIMULATE_MAP, x + DELTA_X)] = BLOCKED_COLOR
-            # Displayed on the pre-pathplanning image
             
             # Make obstacle bigger - Option 2
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (DELTA, DELTA))
@@ -371,26 +376,6 @@ class CombineLidarLane:
             # If not exist lane to go -> do nothing
             rowAllBlocked = np.all(simulateMap == BLOCKED_COLOR, axis=1)
             # isExistLaneToGo = not np.any(rowAllBlocked == True)
-
-            # Get Path
-            # t1 = time.time()
-            # self.tracePath = []
-
-            # if (isExistLaneToGo):
-            #     nonBlockedListCoor = [np.where(row != BLOCKED_COLOR)[0] for row in simulateMap]
-            #     nonBlockedListCoor = np.array(nonBlockedListCoor, dtype=object)
-            #     for row in range(1, WIDTH_OPTIMAL_PATH - 1):
-            #         minIndexDiffX = np.argmin(np.abs(nonBlockedListCoor[row] - self.goalX))
-            #         self.tracePath.append([nonBlockedListCoor[row][minIndexDiffX], row])
-
-            # t2 = time.time()
-            # print(t2 - t1)
-            # if len(self.tracePath):
-            #     for coor in self.tracePath:
-            #         x, y = coor[0], coor[1]
-            #         # simulateMap =  cv2.circle(simulateMap, (x, y), 1, (255, 0, 0), 1)
-            #         pathOnlyMap[y, x] = 255
-            #         # simulateMap[y, x] = 255
             
             
             # PathFinding with library approach
@@ -515,7 +500,9 @@ class CombineLidarLane:
         straightVel = math.cos(alpha) * MAX_STRAIGHT_VELOCITY
         turnVel = math.sin(alpha) * MAX_TURN_VELOCITY
         
-        # print(self.tracePath[point15th:])
+        
+        if straightVel < 0 or turnVel < 0:
+            print("fail at negative vel")
         
         if isRight:
             self.straightVel = straightVel    # straightVel
