@@ -268,7 +268,7 @@ def callbackFunction(data):
 	global nhanIndex
 	nhanIndex += 1
 	if DO_NHAN_WANT_SAVE_IMG:
-		cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/sign/yolo_" + str(nhanIndex), visual)
+		cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/sign/yolo_" + str(nhanIndex) + ".png", visual)
 
 	for i in range(len(signs.conf)):
 		# print()
@@ -277,7 +277,7 @@ def callbackFunction(data):
 		if signs.conf[i] < Sign.MIN_ACCURACY:
 			print("low accuracy")
 			print("time: ", time.time()-QTM_time_start)
-			return
+			continue
 
 		# center point (x,y), width (w), height (h)
 		xywh = (np.rint(signs.xywh[i].numpy())).astype(int)
@@ -290,9 +290,11 @@ def callbackFunction(data):
 			y = round( xyxy[1] )
 			w = round( xywh[2] )
 			h = round( xywh[3] )
-			# big = signs
+			print("save bigger img")
 
 	print("---------------crop---------------")
+	if w == 0 and h == 0:
+		return
 	print(x, y, w, h)
 	extra = 0	# Sign.EXTRA_SAFETY
 	sign = imgMatrix[(y-extra):(y+h+extra), (x-extra):(x+w+extra)]
@@ -313,9 +315,9 @@ def callbackFunction(data):
 	
 	print("=====> label: ", label, ", accuracy: ", accuracy)
 	visualImg = cv2.resize(sign, (300, 300))
-	visualImg = cv2.putText(visualImg, label + "-" + str(accuracy*100).slice(5) + "%", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+	visualImg = cv2.putText(visualImg, label + "-" + str(accuracy*100)[:5] + "%", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 	if DO_NHAN_WANT_SAVE_IMG:
-		cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/sign/sign_" + str(nhanIndex), visualImg)
+		cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/sign/sign_" + str(nhanIndex) + ".png", visualImg)
 
 	if (bigSize >= Sign.MAX_AREA_TODETECT):
 		if (len(potentialSign) > 1):
