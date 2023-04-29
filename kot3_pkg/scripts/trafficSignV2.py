@@ -26,6 +26,10 @@ RESPONSE_SIGN = rospy.get_param('RESPONSE_SIGN')
 CNNmodel = models.load_model('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/model-110.h5')
 YOLOmodel = YOLO('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/yolo-model.pt')
 
+# Nhan config
+nhanIndex = 0
+DO_NHAN_WANT_SAVE_IMG = False
+
 # CONST FILE
 class Setting:
 	MODEL_NAME = "model-110.h5"
@@ -261,6 +265,11 @@ def callbackFunction(data):
 		print("time: ", time.time()-QTM_time_start)
 		return
 
+	global nhanIndex
+	nhanIndex += 1
+	if DO_NHAN_WANT_SAVE_IMG:
+		cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/sign/yolo_" + str(nhanIndex), visual)
+
 	for i in range(len(signs.conf)):
 		# print()
 		print("My boxes:", signs)
@@ -303,6 +312,10 @@ def callbackFunction(data):
 	accuracy = np.amax(prediction)
 	
 	print("=====> label: ", label, ", accuracy: ", accuracy)
+	visualImg = cv2.resize(sign, (300, 300))
+	visualImg = cv2.putText(visualImg, label + "-" + str(accuracy*100).slice(5) + "%", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+	if DO_NHAN_WANT_SAVE_IMG:
+		cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/sign/sign_" + str(nhanIndex), visualImg)
 
 	if (bigSize >= Sign.MAX_AREA_TODETECT):
 		if (len(potentialSign) > 1):

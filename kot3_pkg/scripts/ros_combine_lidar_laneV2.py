@@ -130,16 +130,16 @@ class CombineLidarLane:
 
         # Position of lane
         self.lastTimeReciveLane = time.time()
-        self.leftBottomLaneX = 0
+        self.leftBottomLaneX = WIDTH_OPTIMAL_PATH//10
         self.leftBottomLaneY = HEIGH_OPTIMAL_PATH - 1
 
         self.leftTopLaneX = WIDTH_OPTIMAL_PATH//10
         self.leftTopLaneY = 0
 
-        self.rightTopLaneX = WIDTH_OPTIMAL_PATH - self.leftTopLaneX
+        self.rightTopLaneX = WIDTH_OPTIMAL_PATH - 1 - self.leftTopLaneX
         self.rightTopLaneY = 0
 
-        self.rightBottomLaneX = WIDTH_OPTIMAL_PATH - 1
+        self.rightBottomLaneX = WIDTH_OPTIMAL_PATH - 1 - self.leftBottomLaneX
         self.rightBottomLaneY = HEIGH_OPTIMAL_PATH - 1 
         
         #  Pt duong thang y = Ax + b     =>      Ax - y + b = 0
