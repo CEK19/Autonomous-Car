@@ -41,6 +41,9 @@ LANE_THICKNESS = 2
 DELTA = 10 # 50 / 14
 DELTA_X = DELTA
 DELTA_Y = DELTA
+# for check space of goal is free
+AREA_WIDTH = 4
+AREA_HEIGHT = 10
 NUM_POINTS_OF_DIRECTION = 12 # 35 / 12
 MAX_STRAIGHT_VELOCITY = 0.05  # 0.05
 MAX_TURN_VELOCITY = 0.75  # 2.0 # 1.0
@@ -238,7 +241,7 @@ class CombineLidarLane:
         myTwist = Twist()
         myTwist.linear.x = self.straightVel
         myTwist.angular.z = self.turnVel
-        pub.publish(myTwist)
+        # pub.publish(myTwist)
         # msg = json.dumps({"linear": straight, "angular": angular})
         # pub.publish(msg)
         
@@ -356,10 +359,10 @@ class CombineLidarLane:
             cv2.imshow("hinhSimulatQQ before", simulateMap)
             
             # Magic code to fix point at (width/2, height/2) is collision
-            simulateMap[HEIGH_SIMULATE_MAP//2 - 6 : HEIGH_SIMULATE_MAP//2 + 6, WIDTH_SIMULATE_MAP//2 - 6 : WIDTH_SIMULATE_MAP//2 + 6] = NON_BLOCKED_COLOR
+            simulateMap[HEIGH_SIMULATE_MAP//2 - 4 : HEIGH_SIMULATE_MAP//2 + 4, WIDTH_SIMULATE_MAP//2 - 4 : WIDTH_SIMULATE_MAP//2 + 4] = NON_BLOCKED_COLOR
             
             tmpImg = Utils.imgInColor(simulateMap)
-            tmpImg[HEIGH_SIMULATE_MAP//2 - 6 : HEIGH_SIMULATE_MAP//2 + 6, WIDTH_SIMULATE_MAP//2 - 6 : WIDTH_SIMULATE_MAP//2 + 6] = (255, 255, 0)
+            tmpImg[HEIGH_SIMULATE_MAP//2 - 4 : HEIGH_SIMULATE_MAP//2 + 4, WIDTH_SIMULATE_MAP//2 - 4 : WIDTH_SIMULATE_MAP//2 + 4] = (255, 255, 0)
             cv2.imshow("hinhSimulatQQ after", tmpImg)
             
             # Make obstacle bigger - Option 2
@@ -384,47 +387,62 @@ class CombineLidarLane:
             rowAllBlocked = np.all(simulateMap == BLOCKED_COLOR, axis=1)
             # isExistLaneToGo = not np.any(rowAllBlocked == True)
             
-            
             # PathFinding with library approach
             curGoalX = 0
             curGoalY = 0
             
-            # Choose current goal from 2 goals
-            isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
-            isGoal2Available = self.goal2X is not None and self.goal2Y is not None and simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
+            leftGoalArea = simulateMap[self.goalX:self.goalX + AREA_WIDTH, self.goalY:self.goalY + AREA_HEIGHT]
+            rightGoalArea = simulateMap[self.goal2X:self.goal2X - AREA_WIDTH, self.goal2Y:self.goal2Y + AREA_HEIGHT]
             
-            if not isGoal1Available and not isGoal2Available:
-                if self.goal2Y is None:
-                    simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
-                elif self.goalY < self.goal2Y:
-                    simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
-                else:
-                    simulateMap[self.goal2Y, :] = NON_BLOCKED_COLOR
-                    
+            isLeftGoalAreaBlocked = np.sum(leftGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT) > 0.6
+            isRightGoalAreaBlocked = np.sum(rightGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT) > 0.6
             
-            if isGoal1Available and not isGoal2Available:
-                curGoalX, curGoalY = self.goalX, self.goalY
-            elif isGoal2Available and not isGoal1Available:
-                curGoalX, curGoalY = self.goal2X, self.goal2Y
+            print("isLeftGoalAreaBlocked: ", isLeftGoalAreaBlocked, np.sum(leftGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT))
+            print("isRightGoalAreaBlocked: ", isRightGoalAreaBlocked, np.sum(rightGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT))
+            if isLeftGoalAreaBlocked and not isRightGoalAreaBlocked:
+                curGoalX = self.goal2X
+                curGoalY = self.goal2Y
+            elif not isLeftGoalAreaBlocked and isRightGoalAreaBlocked:
+                curGoalX = self.goalX
+                curGoalY = self.goalY
             else:
-                # find shortest path
-                curPoint = [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2]
-                if self.goal2X is None or self.goal2Y is None:
+            
+                # Choose current goal from 2 goals
+                isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
+                isGoal2Available = self.goal2X is not None and self.goal2Y is not None and simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
+                
+                if not isGoal1Available and not isGoal2Available:
+                    if self.goal2Y is None:
+                        simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
+                    elif self.goalY < self.goal2Y:
+                        simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
+                    else:
+                        simulateMap[self.goal2Y, :] = NON_BLOCKED_COLOR
+                        
+                
+                if isGoal1Available and not isGoal2Available:
                     curGoalX, curGoalY = self.goalX, self.goalY
+                elif isGoal2Available and not isGoal1Available:
+                    curGoalX, curGoalY = self.goal2X, self.goal2Y
                 else:
-                    # left Lane: y = Ax + B
-                    A, B = Utils.getEquationOfLane([self.leftBottomLaneX, self.leftBottomLaneY], [self.leftTopLaneX, self.leftTopLaneY])
-                    # right Lane: y = Cx + D
-                    C, D = Utils.getEquationOfLane([self.rightBottomLaneX, self.rightBottomLaneY], [self.rightTopLaneX, self.rightTopLaneY])
-                    
-                    # d1 = Utils.distanceBetweenPoints([self.goalX, self.goalY], curPoint)
-                    # d2 = Utils.distanceBetweenPoints([self.goal2X, self.goal2Y], curPoint)
-                    d1 = Utils.getDistanceFromPointToLane(A, B, curPoint)
-                    d2 = Utils.getDistanceFromPointToLane(C, D, curPoint)
-                    if d1 <= d2:
+                    # find shortest path
+                    curPoint = [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2]
+                    if self.goal2X is None or self.goal2Y is None:
                         curGoalX, curGoalY = self.goalX, self.goalY
                     else:
-                        curGoalX, curGoalY = self.goal2X, self.goal2Y
+                        # left Lane: y = Ax + B
+                        A, B = Utils.getEquationOfLane([self.leftBottomLaneX, self.leftBottomLaneY], [self.leftTopLaneX, self.leftTopLaneY])
+                        # right Lane: y = Cx + D
+                        C, D = Utils.getEquationOfLane([self.rightBottomLaneX, self.rightBottomLaneY], [self.rightTopLaneX, self.rightTopLaneY])
+                        
+                        # d1 = Utils.distanceBetweenPoints([self.goalX, self.goalY], curPoint)
+                        # d2 = Utils.distanceBetweenPoints([self.goal2X, self.goal2Y], curPoint)
+                        d1 = Utils.getDistanceFromPointToLane(A, B, curPoint)
+                        d2 = Utils.getDistanceFromPointToLane(C, D, curPoint)
+                        if d1 <= d2:
+                            curGoalX, curGoalY = self.goalX, self.goalY
+                        else:
+                            curGoalX, curGoalY = self.goal2X, self.goal2Y
             
             invertMap = cv2.bitwise_not(simulateMap)
             grid = Grid(matrix=invertMap)
@@ -462,7 +480,7 @@ class CombineLidarLane:
         
             global frameIndex
             if frameIndex % IMAGE_SAVED_PER_FRAME == 0:
-                cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/lidar/" + str(frameIndex) + "-" + str(self.frameIndex) + ".png", cv2.putText(visualizedMap, "F: " + str(self.frameIndex),(10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=(255, 255, 0)))
+                cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/lidar/" + str(self.frameIndex) + "-" + str(frameIndex) + ".png", cv2.putText(visualizedMap, "F: " + str(self.frameIndex),(10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=(255, 255, 0)))
             frameIndex += 1
             
             if cv2.waitKey(1) == ord('q'):
