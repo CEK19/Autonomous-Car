@@ -1,0 +1,4 @@
+# send ngat quang
+velocity: 0.05m/s		distance: 1/25cm		time: 10.000853061
+velocity: 0.05m/s		distance: 0.1/25cm		time: 10.002094507
+velocity: 0.05m/s		distance: 1.3/25cm		time: 10.002859593

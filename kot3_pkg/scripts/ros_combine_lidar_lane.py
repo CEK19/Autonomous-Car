@@ -46,7 +46,9 @@ AREA_WIDTH = 4
 AREA_HEIGHT = 10
 NUM_POINTS_OF_DIRECTION = 12  # 35 / 12
 MAX_STRAIGHT_VELOCITY = 0.05  # 0.05
+MIN_STRAIGHT_VELOCITY = 0
 MAX_TURN_VELOCITY = 0.75  # 2.0 # 1.0
+MIN_TURN_VELOCITY = 0.1
 
 IMAGE_SAVED_PER_FRAME = 1
 frameIndex = 0
@@ -116,6 +118,19 @@ class Utils:
     def imgInColor(img):
         imgRGB = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         return imgRGB
+    
+    @staticmethod
+    def rotate(image, angle, center = None, scale = 1.0):
+        (h, w) = image.shape[:2]
+
+        if center is None:
+            center = (w / 2, h / 2)
+
+        # Perform the rotation
+        M = cv2.getRotationMatrix2D(center, angle, scale)
+        rotated = cv2.warpAffine(image, M, (w, h))
+
+        return rotated
 
 
 class CombineLidarLane:
@@ -170,19 +185,28 @@ class CombineLidarLane:
         rightTopLaneXtmp = 0
         rightTopLaneYtmp = 0
         
+        a=0
+        c=0
+        d1=0
+        d2=0
+        
         if self.leftBottomLaneX == self.leftTopLaneX:
             leftBottomLaneXtmp = self.leftBottomLaneX
             leftBottomLaneYtmp = HEIGH_OPTIMAL_PATH-1
             leftTopLaneXtmp = self.leftTopLaneX
             leftTopLaneYtmp = 0
             simMap = cv2.line(simMap, (leftBottomLaneXtmp, leftBottomLaneYtmp), (leftTopLaneXtmp, leftTopLaneYtmp), BLOCKED_COLOR, LANE_THICKNESS)
+            a = 9999
+            d1 = abs(leftBottomLaneXtmp - WIDTH_OPTIMAL_PATH//2)
         else:
             # Lane left: y = Ax + B
             A, B = Utils.getEquationOfLane([self.leftBottomLaneX, self.leftBottomLaneY], [self.leftTopLaneX, self.leftTopLaneY])
+            a = A
+            d1 = Utils.getDistanceFromPointToLane(A, B, [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2])
             
-            leftBottomLaneXtmp = round((HEIGH_OPTIMAL_PATH-1-B)/(A+0.0001))
+            leftBottomLaneXtmp = round((HEIGH_OPTIMAL_PATH-1-B)/A)
             leftBottomLaneYtmp = HEIGH_OPTIMAL_PATH-1
-            leftTopLaneXtmp = round(-B/(A+0.0001))
+            leftTopLaneXtmp = round(-B/A)
             leftTopLaneYtmp = 0
             
             _, lbPoint, ltPoint = cv2.clipLine((0, 0, WIDTH_OPTIMAL_PATH-1, HEIGH_OPTIMAL_PATH-1), (leftBottomLaneXtmp, leftBottomLaneYtmp), (leftTopLaneXtmp, leftTopLaneYtmp))
@@ -192,7 +216,7 @@ class CombineLidarLane:
             leftTopLaneXtmp = ltPoint[0]
             leftTopLaneYtmp = ltPoint[1]
             
-            simMap = cv2.line(simMap, (round(-B/(A+0.0001)), 0), (round((HEIGH_OPTIMAL_PATH-1-B)/(A+0.0001)), HEIGH_OPTIMAL_PATH-1), BLOCKED_COLOR, LANE_THICKNESS)
+            simMap = cv2.line(simMap, (leftBottomLaneXtmp, leftBottomLaneYtmp), (leftTopLaneXtmp, leftTopLaneYtmp), BLOCKED_COLOR, LANE_THICKNESS)
         
         if self.rightBottomLaneX == self.rightTopLaneX:
             rightBottomLaneXtmp = self.rightBottomLaneX
@@ -200,14 +224,18 @@ class CombineLidarLane:
             rightTopLaneXtmp = self.rightTopLaneX
             rightTopLaneYtmp = 0
             simMap = cv2.line(simMap, (rightBottomLaneXtmp, rightBottomLaneYtmp), (rightTopLaneXtmp, rightTopLaneYtmp), BLOCKED_COLOR, LANE_THICKNESS)
+            c = 9999
+            d2 = abs(self.rightBottomLaneX - WIDTH_OPTIMAL_PATH//2)
         else:
             # Lane right: y = Cx + D
             C, D = Utils.getEquationOfLane([self.rightBottomLaneX, self.rightBottomLaneY], [self.rightTopLaneX, self.rightTopLaneY])
+            c = C
+            d2 = Utils.getDistanceFromPointToLane(C, D, [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2])
             
-            rightTopLaneXtmp = round(-D/(C+0.0001))
-            rightTopLaneYtmp = 0
-            rightBottomLaneXtmp = round((HEIGH_OPTIMAL_PATH-1-D)/(C+0.0001))
+            rightBottomLaneXtmp = round((HEIGH_OPTIMAL_PATH-1-D)/C)
             rightBottomLaneYtmp = HEIGH_OPTIMAL_PATH-1
+            rightTopLaneXtmp = round(-D/C)
+            rightTopLaneYtmp = 0
             
             _, rbPoint, rtPoint = cv2.clipLine((0, 0, WIDTH_OPTIMAL_PATH-1, HEIGH_OPTIMAL_PATH-1), (rightBottomLaneXtmp, rightBottomLaneYtmp), (rightTopLaneXtmp, rightTopLaneYtmp))
             
@@ -216,8 +244,11 @@ class CombineLidarLane:
             rightTopLaneXtmp = rtPoint[0]
             rightTopLaneYtmp = rtPoint[1]
             
-            simMap = cv2.line(simMap, (round(-D/(C+0.0001)), 0), (round((HEIGH_OPTIMAL_PATH-1-D)/(C+0.0001)), HEIGH_OPTIMAL_PATH-1), BLOCKED_COLOR, LANE_THICKNESS)
+            simMap = cv2.line(simMap, (rightBottomLaneXtmp, rightBottomLaneYtmp), (rightTopLaneXtmp, rightTopLaneYtmp), BLOCKED_COLOR, LANE_THICKNESS)
 
+        print("a: ", a)
+        print("c: ", c)
+        print("========> lane width:", d1 + d2, d1, d2)
 
         self.goalX = (3*leftTopLaneXtmp+rightTopLaneXtmp)//4
         self.goalY = (3*leftTopLaneYtmp+rightTopLaneYtmp)//4
@@ -228,6 +259,11 @@ class CombineLidarLane:
 
     def updateLaneDetectionSignal(self, msg):
         parsed = json.loads(msg.data)
+        
+        if parsed['bl'][1] == parsed['tl'][1]:
+            return
+        if parsed['br'][1] == parsed['tr'][1]:
+            return
 
         self.leftBottomLaneX = parsed["bl"][0]
         self.leftBottomLaneY = parsed["bl"][1]
@@ -245,8 +281,6 @@ class CombineLidarLane:
         # Front of robot index = 0, anti clockwise +1 index (left = 90 deg)
         self.ranges = scan.ranges
 
-        # self.updateVelocity()
-
     def updateVelocity(self, event):
         if self.cmdFirstPub:
             self.cmdFirstPub = False
@@ -254,47 +288,66 @@ class CombineLidarLane:
         self.cmdCount += 1
         print("cmd publish frequency: ", self.cmdCount / (time.time() - self.cmdStartTime))
         myTwist = Twist()
-        myTwist.linear.x = self.straightVel
-        myTwist.angular.z = self.turnVel
-        # pub.publish(myTwist)
+        # myTwist.linear.x = self.straightVel
+        # myTwist.angular.z = self.turnVel
+        
+        global frameIndex
+        myTwist.linear.x = 0
+        if frameIndex % 2 == 0:
+            myTwist.angular.z = 0
+        else:
+            myTwist.angular.z = 0.06228410989030499
+        
+        pub.publish(myTwist)
+        print("in frame: ", frameIndex, "straightVel:", self.straightVel, "turnVel:", self.turnVel)
         # msg = json.dumps({"linear": straight, "angular": angular})
         # pub.publish(msg)
 
         # Utils.publicVelocity(self.straightVel, self.turnVel)
 
-    def clearLineWhereGoalStuck(self, simulateMap, isGoal1Available, isGoal2Available):
-        if not isGoal1Available and not isGoal2Available:
-            if self.goal2Y is None:
-                simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
-            elif self.goalY < self.goal2Y:
-                simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
-            else:
-                simulateMap[self.goal2Y, :] = NON_BLOCKED_COLOR
-    
+    def clearLineWhereGoalStuck(self, simulateMap):
+        if self.goalY < self.goal2Y:
+            simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
+        else:
+            simulateMap[self.goal2Y, :] = NON_BLOCKED_COLOR
+
     def chooseGoal(self, simulateMap):
+        # check if only 1 goal feature
+        if self.goal2X is None or self.goal2Y is None:
+            return self.goalX, self.goalY
+
         # check free space above goals
         goalChoosen, curGoalX, curGoalY = self.chooseGoalByFreeSpaceAGoal(simulateMap)
         if goalChoosen is not ANOTHER_GOAL:
             return curGoalX, curGoalY
-        
-        # check if only 1 goal feature
-        if self.goal2X is None or self.goal2Y is None:
-            return self.goalX, self.goalY
-        
+
         # Go to another goal if 1 goal is blocked
         isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
         isGoal2Available = simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
-        self.clearLineWhereGoalStuck(simulateMap, isGoal1Available, isGoal2Available)
         if isGoal1Available and not isGoal2Available:
             return self.goalX, self.goalY
         elif isGoal2Available and not isGoal1Available:
             return self.goal2X, self.goal2Y
-        
-        # compare distance robot to each lanes
-        goalChoosen, curGoalX, curGoalY =self.chooseGoalByDistanceRobotToLane()
+        elif isGoal1Available and isGoal2Available:
+            # compare distance robot to each lanes
+            goalChoosen, curGoalX, curGoalY = self.chooseGoalByDistanceRobotToLane()
+            if goalChoosen is not ANOTHER_GOAL:
+                return curGoalX, curGoalY
+        else:
+            # both stuck
+            self.clearLineWhereGoalStuck(simulateMap)
+
+
+        # check free space above goals
+        goalChoosen, curGoalX, curGoalY = self.chooseGoalByFreeSpaceAGoal(simulateMap)
         if goalChoosen is not ANOTHER_GOAL:
             return curGoalX, curGoalY
-        
+
+        # compare distance robot to each lanes
+        goalChoosen, curGoalX, curGoalY = self.chooseGoalByDistanceRobotToLane()
+        if goalChoosen is not ANOTHER_GOAL:
+            return curGoalX, curGoalY
+
         # Go on right lane at default
         return self.goal2X, self.goal2Y
 
@@ -350,8 +403,14 @@ class CombineLidarLane:
         return ANOTHER_GOAL, None, None
     
     def chooseGoalByFreeSpaceAGoalV2(self, simulateMap):
-        leftGoalArea = simulateMap[self.goalX : self.goalX + AREA_WIDTH, self.goalY : self.goalY + AREA_HEIGHT]
-        rightGoalArea = simulateMap[self.goal2X : self.goal2X - AREA_WIDTH, self.goal2Y : self.goal2Y + AREA_HEIGHT]
+        leftGoalArea, rightGoalArea = 0, 0
+        
+        if self.leftBottomLaneX == self.leftTopLaneX:
+            leftGoalArea = simulateMap[self.goalX : self.goalX + AREA_WIDTH, self.goalY : self.goalY + AREA_HEIGHT]
+            rightGoalArea = simulateMap[self.goal2X : self.goal2X - AREA_WIDTH, self.goal2Y : self.goal2Y + AREA_HEIGHT]
+        else:
+            leftGoalArea = simulateMap[self.goalX : self.goalX + AREA_WIDTH, self.goalY : self.goalY + AREA_HEIGHT]
+            rightGoalArea = simulateMap[self.goal2X : self.goal2X - AREA_WIDTH, self.goal2Y : self.goal2Y + AREA_HEIGHT]
 
         isLeftGoalAreaBlocked = np.sum(leftGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT) > 0.6
         isRightGoalAreaBlocked = np.sum(rightGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT) > 0.6
@@ -496,49 +555,12 @@ class CombineLidarLane:
             curGoalX = 0
             curGoalY = 0
             
-            # curGoalX, curGoalY = self.chooseGoal(simulateMap)
-
-            leftGoalArea = simulateMap[self.goalX : self.goalX + AREA_WIDTH, self.goalY : self.goalY + AREA_HEIGHT]
-            rightGoalArea = simulateMap[self.goal2X : self.goal2X - AREA_WIDTH, self.goal2Y : self.goal2Y + AREA_HEIGHT]
-
-            isLeftGoalAreaBlocked = np.sum(leftGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT) > 0.6
-            isRightGoalAreaBlocked = np.sum(rightGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT) > 0.6
-
-            print("isLeftGoalAreaBlocked: ", isLeftGoalAreaBlocked, np.sum(leftGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT))
-            print("isRightGoalAreaBlocked: ", isRightGoalAreaBlocked, np.sum(rightGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT))
-            if isLeftGoalAreaBlocked and not isRightGoalAreaBlocked:
-                curGoalX = self.goal2X
-                curGoalY = self.goal2Y
-            elif not isLeftGoalAreaBlocked and isRightGoalAreaBlocked:
-                curGoalX = self.goalX
-                curGoalY = self.goalY
-            elif self.goal2X is None or self.goal2Y is None:
-                curGoalX, curGoalY = self.goalX, self.goalY
+            curGoalX, curGoalY = self.chooseGoal(simulateMap)
+            if curGoalX == self.goalX  and curGoalY == self.goalY:
+                print("left goal selected")
             else:
-                isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
-                isGoal2Available = self.goal2X is not None and self.goal2Y is not None and simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
-                
-                self.clearLineWhereGoalStuck(simulateMap, isGoal1Available, isGoal2Available)
+                print("right goal selected")
 
-                if isGoal1Available and not isGoal2Available:
-                    curGoalX, curGoalY = self.goalX, self.goalY
-                elif isGoal2Available and not isGoal1Available:
-                    curGoalX, curGoalY = self.goal2X, self.goal2Y
-                else:
-                    # find shortest path
-                    curPoint = [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2]
-
-                    # left Lane: y = Ax + B
-                    A, B = Utils.getEquationOfLane([self.leftBottomLaneX, self.leftBottomLaneY], [self.leftTopLaneX, self.leftTopLaneY])
-                    # right Lane: y = Cx + D
-                    C, D = Utils.getEquationOfLane([self.rightBottomLaneX, self.rightBottomLaneY], [self.rightTopLaneX, self.rightTopLaneY])
-
-                    d1 = Utils.getDistanceFromPointToLane(A, B, curPoint)
-                    d2 = Utils.getDistanceFromPointToLane(C, D, curPoint)
-                    if d1 <= d2:
-                        curGoalX, curGoalY = self.goalX, self.goalY
-                    else:
-                        curGoalX, curGoalY = self.goal2X, self.goal2Y
 
             invertMap = cv2.bitwise_not(simulateMap)
             grid = Grid(matrix=invertMap)
@@ -548,6 +570,7 @@ class CombineLidarLane:
 
             start_QTM = time.time()
             self.tracePath, _ = self.pathFinder.find_path(start, end, grid)
+            print(self.tracePath)
             end_QTM = time.time()
             print(end_QTM - start_QTM)
 
@@ -620,6 +643,11 @@ class CombineLidarLane:
 
         if straightVel < 0 or turnVel < 0:
             print("fail at negative vel")
+
+        if straightVel < MIN_STRAIGHT_VELOCITY:
+            straightVel = 0
+        if turnVel < MIN_TURN_VELOCITY:
+            turnVel = 0
 
         if isRight:
             self.straightVel = straightVel    # straightVel
