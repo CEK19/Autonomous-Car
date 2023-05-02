@@ -38,7 +38,7 @@ HEIGH_OPTIMAL_PATH = 50
 BLOCKED_COLOR = 255
 NON_BLOCKED_COLOR = 0
 LANE_THICKNESS = 2
-DELTA = 10  # 50 / 14
+DELTA = 11  # 50 / 14
 DELTA_X = DELTA
 DELTA_Y = DELTA
 # for check space of goal is free
@@ -48,7 +48,8 @@ NUM_POINTS_OF_DIRECTION = 12  # 35 / 12
 MAX_STRAIGHT_VELOCITY = 0.05  # 0.05
 MIN_STRAIGHT_VELOCITY = 0
 MAX_TURN_VELOCITY = 0.75  # 2.0 # 1.0
-MIN_TURN_VELOCITY = 0.1
+MIN_TURN_VELOCITY = 0
+MAGIC_NUMBER = 4
 
 IMAGE_SAVED_PER_FRAME = 1
 frameIndex = 0
@@ -288,15 +289,15 @@ class CombineLidarLane:
         self.cmdCount += 1
         print("cmd publish frequency: ", self.cmdCount / (time.time() - self.cmdStartTime))
         myTwist = Twist()
-        # myTwist.linear.x = self.straightVel
-        # myTwist.angular.z = self.turnVel
+        myTwist.linear.x = self.straightVel
+        myTwist.angular.z = self.turnVel
         
-        global frameIndex
-        myTwist.linear.x = 0
-        if frameIndex % 2 == 0:
-            myTwist.angular.z = 0
-        else:
-            myTwist.angular.z = 0.06228410989030499
+        # global frameIndex
+        # myTwist.linear.x = 0
+        # if frameIndex % 2 == 0:
+        #     myTwist.angular.z = 0
+        # else:
+        #     myTwist.angular.z = 0.06228410989030499
         
         pub.publish(myTwist)
         print("in frame: ", frameIndex, "straightVel:", self.straightVel, "turnVel:", self.turnVel)
@@ -306,10 +307,8 @@ class CombineLidarLane:
         # Utils.publicVelocity(self.straightVel, self.turnVel)
 
     def clearLineWhereGoalStuck(self, simulateMap):
-        if self.goalY < self.goal2Y:
-            simulateMap[self.goalY, :] = NON_BLOCKED_COLOR
-        else:
-            simulateMap[self.goal2Y, :] = NON_BLOCKED_COLOR
+        simulateMap[self.goalY:self.goalY + 2, :] = NON_BLOCKED_COLOR
+        simulateMap[self.goal2Y:self.goal2Y + 2, :] = NON_BLOCKED_COLOR
 
     def chooseGoal(self, simulateMap):
         # check if only 1 goal feature
@@ -339,9 +338,9 @@ class CombineLidarLane:
 
 
         # check free space above goals
-        goalChoosen, curGoalX, curGoalY = self.chooseGoalByFreeSpaceAGoal(simulateMap)
-        if goalChoosen is not ANOTHER_GOAL:
-            return curGoalX, curGoalY
+        # goalChoosen, curGoalX, curGoalY = self.chooseGoalByFreeSpaceAGoal(simulateMap)
+        # if goalChoosen is not ANOTHER_GOAL:
+        #     return curGoalX, curGoalY
 
         # compare distance robot to each lanes
         goalChoosen, curGoalX, curGoalY = self.chooseGoalByDistanceRobotToLane()
@@ -533,7 +532,7 @@ class CombineLidarLane:
             simulateMap[HEIGH_SIMULATE_MAP//2 - 4: HEIGH_SIMULATE_MAP//2 + 4, WIDTH_SIMULATE_MAP//2 - 4: WIDTH_SIMULATE_MAP//2 + 4] = NON_BLOCKED_COLOR
 
             tmpImg = Utils.imgInColor(simulateMap)
-            tmpImg[HEIGH_SIMULATE_MAP//2 - 4: HEIGH_SIMULATE_MAP//2 + 4, WIDTH_SIMULATE_MAP//2 - 4: WIDTH_SIMULATE_MAP//2 + 4] = (255, 255, 0)
+            tmpImg[HEIGH_SIMULATE_MAP//2 - MAGIC_NUMBER: HEIGH_SIMULATE_MAP//2 + MAGIC_NUMBER, WIDTH_SIMULATE_MAP//2 - MAGIC_NUMBER: WIDTH_SIMULATE_MAP//2 + MAGIC_NUMBER] = (255, 255, 0)
             cv2.imshow("hinhSimulatQQ after", tmpImg)
 
             # Make obstacle bigger - Option 2
@@ -541,7 +540,7 @@ class CombineLidarLane:
             simulateMap = cv2.dilate(simulateMap, kernel)
 
             qqImg = Utils.imgInColor(simulateMap)
-            qqImg[HEIGH_SIMULATE_MAP//2 - 6: HEIGH_SIMULATE_MAP//2 + 6, WIDTH_SIMULATE_MAP//2 - 6: WIDTH_SIMULATE_MAP//2 + 6] = (255, 255, 0)
+            qqImg[HEIGH_SIMULATE_MAP//2 - MAGIC_NUMBER: HEIGH_SIMULATE_MAP//2 + MAGIC_NUMBER, WIDTH_SIMULATE_MAP//2 - MAGIC_NUMBER: WIDTH_SIMULATE_MAP//2 + MAGIC_NUMBER] = (255, 255, 0)
             cv2.imshow("big Map", simulateMap)
 
             # Cut the image in range 50px radius from robot (25px from left to 25px from right)
