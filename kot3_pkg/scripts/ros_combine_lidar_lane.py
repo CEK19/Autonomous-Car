@@ -69,6 +69,21 @@ else:
 
 class Utils:
     @staticmethod
+    def writeLog(txt="", txt1="", txt2="", txt3="", txt4=""):
+        log = open("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/log.txt", "a")
+        if len(txt) > 0:
+            log.write(txt + " ")
+        if len(txt1) > 0:
+            log.write(txt1 + " ")
+        if len(txt2) > 0:
+            log.write(txt2 + " ")
+        if len(txt3) > 0:
+            log.write(txt3 + " ")
+        if len(txt4) > 0:
+            log.write(txt4 + " ")
+        log.write("\n")
+
+    @staticmethod
     def getVectorAB(A, B):
         return B[0] - A[0], B[1] - A[1]
 
@@ -313,24 +328,29 @@ class CombineLidarLane:
     def chooseGoal(self, simulateMap):
         # check if only 1 goal feature
         if self.goal2X is None or self.goal2Y is None:
+            Utils.writeLog("ChooseGoal func", "never appear", goalChoosen)
             return LEFT_GOAL, self.goalX, self.goalY
 
         # check free space above goals
         goalChoosen, curGoalX, curGoalY = self.chooseGoalByFreeSpaceAGoal(simulateMap)
         if goalChoosen is not ANOTHER_GOAL:
+            Utils.writeLog("ChooseGoal func", "free space", goalChoosen)
             return goalChoosen, curGoalX, curGoalY
 
         # Go to another goal if 1 goal is blocked
         isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
         isGoal2Available = simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
         if isGoal1Available and not isGoal2Available:
+            Utils.writeLog("ChooseGoal func", "1 goal block", goalChoosen)
             return LEFT_GOAL, self.goalX, self.goalY
         elif isGoal2Available and not isGoal1Available:
+            Utils.writeLog("ChooseGoal func", "1 goal block", goalChoosen)
             return RIGHT_GOAL, self.goal2X, self.goal2Y
         elif isGoal1Available and isGoal2Available:
             # compare distance robot to each lanes
             goalChoosen, curGoalX, curGoalY = self.chooseGoalByDistanceRobotToLane()
             if goalChoosen is not ANOTHER_GOAL:
+                Utils.writeLog("ChooseGoal func", "choose by distance both free", goalChoosen)
                 return goalChoosen, curGoalX, curGoalY
         else:
             # both stuck
@@ -345,9 +365,11 @@ class CombineLidarLane:
         # compare distance robot to each lanes
         goalChoosen, curGoalX, curGoalY = self.chooseGoalByDistanceRobotToLane()
         if goalChoosen is not ANOTHER_GOAL:
+            Utils.writeLog("ChooseGoal func", "choose by distance both stuck", goalChoosen)
             return goalChoosen, curGoalX, curGoalY
 
         # Go on right lane at default
+        Utils.writeLog("ChooseGoal func", "default", goalChoosen)
         return RIGHT_GOAL, self.goal2X, self.goal2Y
 
     def chooseGoalByDistanceRobotToGoal(self):
@@ -578,6 +600,7 @@ class CombineLidarLane:
                 
                 if simulateMap[curGoalY, curGoalX] == BLOCKED_COLOR:
                     self.clearLineWhereGoalStuck(simulateMap)
+                Utils.writeLog("no path", "change to another goal", goalChoosen)
                 self.tracePath = self.bestFirst(simulateMap, curGoalX, curGoalY)
             
             end_QTM = time.time()
