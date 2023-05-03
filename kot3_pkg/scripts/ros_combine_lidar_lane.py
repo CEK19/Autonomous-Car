@@ -21,6 +21,7 @@ from pathfinding.core.grid import Grid
 NODE_NAME_AVOIDANCE = rospy.get_param('NODE_NAME_AVOIDANCE')
 TOPIC_NAME_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
 TOPIC_NAME_LIDAR = rospy.get_param('TOPIC_NAME_LIDAR')
+TOPIC_NAME_TRAFFIC_SIGN = rospy.get_param('TOPIC_NAME_TRAFFIC_SIGN')
 TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')
 TOPIC_NAME_LANE_DETECTION = rospy.get_param('TOPIC_NAME_LANE_DETECTION')
 
@@ -75,15 +76,15 @@ class Utils:
     def writeLog(txt="", txt1="", txt2="", txt3="", txt4=""):
         log = open(LOG_PATH, "a")
         if len(txt) > 0:
-            log.write(txt + " ")
+            log.write(txt + " | ")
         if len(txt1) > 0:
-            log.write(txt1 + " ")
+            log.write(txt1 + " | ")
         if len(txt2) > 0:
-            log.write(txt2 + " ")
+            log.write(txt2 + " | ")
         if len(txt3) > 0:
-            log.write(txt3 + " ")
+            log.write(txt3 + " | ")
         if len(txt4) > 0:
-            log.write(txt4 + " ")
+            log.write(txt4 + " | ")
         log.write("\n")
 
     @staticmethod
@@ -160,8 +161,10 @@ class CombineLidarLane:
     def __init__(self):
         self.lane_signal_subscriber = rospy.Subscriber(TOPIC_NAME_LANE_DETECTION, String, self.updateLaneDetectionSignal)
         self.lidar_signal_subscriber = rospy.Subscriber(TOPIC_NAME_LIDAR, LaserScan, self.updateLidarSignal)
+        self.sign_signal_cubcriber = rospy.Subscriber(TOPIC_NAME_TRAFFIC_SIGN, String, self.updateSignSignal)
         self.ranges = [1 for _ in range(360)]
         self.tracePath = []
+        self.sign = ""
         self.straightVel = 0
         self.turnVel = 0
 
@@ -193,10 +196,6 @@ class CombineLidarLane:
         self.cmdStartTime = time.time()
         self.cmdCount = 0
 
-    def printInfo(self):
-        print("Bottom point: ", "[", self.leftBottomLaneX, self.leftBottomLaneY, "]", "[", self.rightBottomLaneX, self.rightBottomLaneY, "]")
-        print("Top point: ", "[", self.leftTopLaneX, self.leftTopLaneY, "]", "[", self.rightTopLaneX, self.rightTopLaneY, "]")
-        pass
 
     def drawLanesOnMap(self, simMap):
         leftBottomLaneXtmp = 0
@@ -207,11 +206,7 @@ class CombineLidarLane:
         rightBottomLaneYtmp = 0
         rightTopLaneXtmp = 0
         rightTopLaneYtmp = 0
-        
-        a=0
-        c=0
-        d1=0
-        d2=0
+
         
         if self.leftBottomLaneX == self.leftTopLaneX:
             leftBottomLaneXtmp = self.leftBottomLaneX
@@ -219,13 +214,9 @@ class CombineLidarLane:
             leftTopLaneXtmp = self.leftTopLaneX
             leftTopLaneYtmp = 0
             simMap = cv2.line(simMap, (leftBottomLaneXtmp, leftBottomLaneYtmp), (leftTopLaneXtmp, leftTopLaneYtmp), BLOCKED_COLOR, LANE_THICKNESS)
-            a = 9999
-            d1 = abs(leftBottomLaneXtmp - WIDTH_OPTIMAL_PATH//2)
         else:
             # Lane left: y = Ax + B
             A, B = Utils.getEquationOfLane([self.leftBottomLaneX, self.leftBottomLaneY], [self.leftTopLaneX, self.leftTopLaneY])
-            a = A
-            d1 = Utils.getDistanceFromPointToLane(A, B, [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2])
             
             leftBottomLaneXtmp = round((HEIGH_OPTIMAL_PATH-1-B)/A)
             leftBottomLaneYtmp = HEIGH_OPTIMAL_PATH-1
@@ -247,13 +238,9 @@ class CombineLidarLane:
             rightTopLaneXtmp = self.rightTopLaneX
             rightTopLaneYtmp = 0
             simMap = cv2.line(simMap, (rightBottomLaneXtmp, rightBottomLaneYtmp), (rightTopLaneXtmp, rightTopLaneYtmp), BLOCKED_COLOR, LANE_THICKNESS)
-            c = 9999
-            d2 = abs(self.rightBottomLaneX - WIDTH_OPTIMAL_PATH//2)
         else:
             # Lane right: y = Cx + D
             C, D = Utils.getEquationOfLane([self.rightBottomLaneX, self.rightBottomLaneY], [self.rightTopLaneX, self.rightTopLaneY])
-            c = C
-            d2 = Utils.getDistanceFromPointToLane(C, D, [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2])
             
             rightBottomLaneXtmp = round((HEIGH_OPTIMAL_PATH-1-D)/C)
             rightBottomLaneYtmp = HEIGH_OPTIMAL_PATH-1
@@ -269,9 +256,6 @@ class CombineLidarLane:
             
             simMap = cv2.line(simMap, (rightBottomLaneXtmp, rightBottomLaneYtmp), (rightTopLaneXtmp, rightTopLaneYtmp), BLOCKED_COLOR, LANE_THICKNESS)
 
-        print("a: ", a)
-        print("c: ", c)
-        print("========> lane width:", d1 + d2, d1, d2)
 
         self.goalX = (3*leftTopLaneXtmp+rightTopLaneXtmp)//4
         self.goalY = (3*leftTopLaneYtmp+rightTopLaneYtmp)//4
@@ -279,6 +263,10 @@ class CombineLidarLane:
         self.goal2Y = (leftTopLaneYtmp+3*rightTopLaneYtmp)//4
 
         return simMap
+    
+    def updateSignSignal(self, msg):
+        parsed = json.loads(msg.data)
+        self.sign = parsed["sign"]
 
     def updateLaneDetectionSignal(self, msg):
         parsed = json.loads(msg.data)
@@ -297,7 +285,6 @@ class CombineLidarLane:
         self.rightBottomLaneX = parsed["br"][0]
         self.rightBottomLaneY = parsed["br"][1]
         self.frameIndex = parsed["frameIndex"]
-        print("frameIndex", parsed["frameIndex"])
 
 
     def updateLidarSignal(self, scan):
@@ -309,13 +296,11 @@ class CombineLidarLane:
             self.cmdFirstPub = False
             self.cmdStartTime = time.time()
         self.cmdCount += 1
-        print("cmd publish frequency: ", self.cmdCount / (time.time() - self.cmdStartTime))
         myTwist = Twist()
         myTwist.linear.x = self.straightVel
         myTwist.angular.z = self.turnVel
         
         
-        print("in frame: ", frameIndex, "straightVel:", self.straightVel, "turnVel:", self.turnVel)
         if HAVE_DECISION_MAKING:
             msg = json.dumps({"linear": self.straightVel, "angular": self.turnVel})
             pub.publish(msg)
@@ -344,7 +329,7 @@ class CombineLidarLane:
         isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
         isGoal2Available = simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
         if isGoal1Available and not isGoal2Available:
-            Utils.writeLog("ChooseGoal func", "1 goal block", goalChoosen)
+            Utils.writeLog("ChooseGoal func", "1 goal block", LEFT_GOAL)
             return LEFT_GOAL, self.goalX, self.goalY
         elif isGoal2Available and not isGoal1Available:
             Utils.writeLog("ChooseGoal func", "1 goal block", goalChoosen)
@@ -451,7 +436,6 @@ class CombineLidarLane:
         self.lastTimeReciveLane = time_t
 
         if self.turnVel == 0:
-            print("plus toa do", deltaTime, self.straightVel, Utils.convertMetToPixel(self.straightVel) * deltaTime)
             deltaY = Utils.convertMetToPixel(self.straightVel) * deltaTime
             self.leftBottomLaneY = self.leftBottomLaneY + deltaY
             self.rightBottomLaneY = self.rightBottomLaneY + deltaY
@@ -459,7 +443,6 @@ class CombineLidarLane:
             self.rightTopLaneY = self.rightTopLaneY + deltaY
             return
 
-        print("===== start rotate =====")
         R = abs(Utils.convertMetToPixel(self.straightVel) / self.turnVel)
         isRight = self.turnVel < 0
         angular = self.turnVel * deltaTime
@@ -488,36 +471,6 @@ class CombineLidarLane:
         self.goalX, self.goalY = Utils.getRotatedPoint(goal, curPos, angular)
         self.goal2X, self.goal2Y = Utils.getRotatedPoint(goal2, curPos, angular)
 
-        # cond1 = Utils.distanceBetweenPoints(curPos, leftBottom) == Utils.distanceBetweenPoints(
-        #     curPos, [self.leftBottomLaneX, self.leftBottomLaneY])
-        # if not cond1:
-        #     print("fail rotate bottom left point", curPos, leftBottom, [self.leftBottomLaneX, self.leftBottomLaneY], math.degrees(angular))
-        #     print(Utils.distanceBetweenPoints(curPos, leftBottom), Utils.distanceBetweenPoints(curPos, [self.leftBottomLaneX, self.leftBottomLaneY]))
-
-        # cond2 = Utils.distanceBetweenPoints(curPos, rightBottom) == Utils.distanceBetweenPoints(curPos, [self.rightBottomLaneX, self.rightBottomLaneY])
-        # if not cond2:
-        #     print("fail rotate bottom right point", curPos, rightBottom, [self.rightBottomLaneX, self.rightBottomLaneY], angular)
-        #     print(Utils.distanceBetweenPoints(curPos, rightBottom), Utils.distanceBetweenPoints(curPos, [self.rightBottomLaneX, self.rightBottomLaneY]))
-
-        # cond3 = Utils.distanceBetweenPoints(curPos, leftTop) == Utils.distanceBetweenPoints(curPos, [self.leftTopLaneX, self.leftTopLaneY])
-        # if not cond3:
-        #     print("fail rotate top left point", curPos, leftTop, [self.leftTopLaneX, self.leftTopLaneY], angular)
-        #     print(Utils.distanceBetweenPoints(curPos, leftTop), Utils.distanceBetweenPoints(curPos, [self.leftTopLaneX, self.leftTopLaneY]))
-
-        # cond4 = Utils.distanceBetweenPoints(curPos, rightTop) == Utils.distanceBetweenPoints(curPos, [self.rightTopLaneX, self.rightTopLaneY])
-        # if not cond4:
-        #     print("fail rotate top right point", curPos, rightTop, [self.rightTopLaneX, self.rightTopLaneY], angular)
-        #     print(Utils.distanceBetweenPoints(curPos, rightTop), Utils.distanceBetweenPoints(curPos, [self.rightTopLaneX, self.rightTopLaneY]))
-
-        # cond5 = Utils.distanceBetweenPoints(curPos, goal) == Utils.distanceBetweenPoints(curPos, [self.goalX, self.goalY])
-        # if not cond5:
-        #     print("fail rotate goal point", curPos, goal, [self.goalX, self.goalY], angular)
-        #     print(Utils.distanceBetweenPoints(curPos, goal), Utils.distanceBetweenPoints(curPos, [self.goalX, self.goalY]))
-
-        # cond6 = Utils.distanceBetweenPoints(curPos, goal2) == Utils.distanceBetweenPoints(curPos, [self.goal2X, self.goal2Y])
-        # if not cond6:
-        #     print("fail rotate goal2 point", curPos, goal2, [self.goal2X, self.goal2Y], angular)
-        #     print(Utils.distanceBetweenPoints(curPos, goal2), Utils.distanceBetweenPoints(curPos, [self.goal2X, self.goal2Y]))
 
     def bestFirst(self, simulateMap, curGoalX, curGoalY):
         invertMap = cv2.bitwise_not(simulateMap)
@@ -531,6 +484,10 @@ class CombineLidarLane:
 
     def pathFinding(self, event):
         try:
+            global frameIndex
+            Utils.writeLog("Frame index: " + str(frameIndex))
+            ThinhTime = time.time()
+
             self.rotatePoint()
 
             # Convert lidar distance signal, result represent left to right (0 -> 179)
@@ -607,7 +564,6 @@ class CombineLidarLane:
                 self.tracePath = self.bestFirst(simulateMap, curGoalX, curGoalY)
             
             end_QTM = time.time()
-            print(end_QTM - start_QTM)
 
             # draw trace path
             visualizedMap = cv2.cvtColor(simulateMap, cv2.COLOR_GRAY2RGB)
@@ -629,11 +585,15 @@ class CombineLidarLane:
 
             self.getVelocity()
 
+            print("**********************", time.time() - ThinhTime)
+            
             # save image for bebug
             global frameIndex
             if frameIndex % IMAGE_SAVED_PER_FRAME == 0:
                 cv2.imwrite(IMG_PATH + str(self.frameIndex) + "-" + str(frameIndex) + ".png", cv2.putText(visualizedMap, "F: " + str(self.frameIndex), (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=(255, 255, 0)))
             frameIndex += 1
+            
+            Utils.writeLog()
 
             if cv2.waitKey(1) == ord('q'):
                 return
@@ -683,6 +643,11 @@ class CombineLidarLane:
         #     straightVel = 0
         # if turnVel < MIN_TURN_VELOCITY:
         #     turnVel = 0
+        
+        if self.sign == "STOP":
+            self.straightVel = 0
+            self.turnVel = 0
+            return
 
         if isRight:
             self.straightVel = straightVel    # straightVel
@@ -697,7 +662,7 @@ if __name__ == '__main__':
     try:
         rospy.init_node(NODE_NAME_AVOIDANCE, anonymous=True)
         avoidance = CombineLidarLane()
-        time.sleep(2)
+        # time.sleep(2)
         rospy.Timer(rospy.Duration(0.2), avoidance.pathFinding)  # 0.05
         rospy.Timer(rospy.Duration(0.09), avoidance.updateVelocity)  # 0.01
 

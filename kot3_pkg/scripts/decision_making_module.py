@@ -83,7 +83,7 @@ class CombineDecisionModule:
             self.linear = 0
             self.angular = 0
         elif self.sign == RESPONSE_SIGN['LEFT'] or signMsg == RESPONSE_SIGN['RIGHT']:
-            self.isInProcess = True
+            self.isInProcess = False
             self.action = self.sign
         # forward and none case (and forbid case)
         else:
