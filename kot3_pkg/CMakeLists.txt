@@ -161,12 +161,8 @@ include_directories(
 # Mark executable scripts (Python etc.) for installation
 # in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  scripts/talker.py
-  scripts/listener.py
-  scripts/cmdFre.py
-  scripts/cmdDelta.py
+  scripts/modelTCP_client.py
   scripts/ros_combine_lidar_lane.py
-  scripts/trafficSign.py
   scripts/trafficSignV2.py
   scripts/trafficLight.py
   scripts/decision_making_module.py
