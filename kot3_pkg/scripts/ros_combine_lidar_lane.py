@@ -58,6 +58,9 @@ LEFT_GOAL = 'left-goal'
 RIGHT_GOAL = 'right-goal'
 ANOTHER_GOAL = 'another-goal'
 
+LOG_PATH = "/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/log.txt"
+IMG_PATH = "/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/lidar/"
+
 HAVE_DECISION_MAKING = True
 
 pub = 0
@@ -70,7 +73,7 @@ else:
 class Utils:
     @staticmethod
     def writeLog(txt="", txt1="", txt2="", txt3="", txt4=""):
-        log = open("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/log.txt", "a")
+        log = open(LOG_PATH, "a")
         if len(txt) > 0:
             log.write(txt + " ")
         if len(txt1) > 0:
@@ -629,14 +632,14 @@ class CombineLidarLane:
             # save image for bebug
             global frameIndex
             if frameIndex % IMAGE_SAVED_PER_FRAME == 0:
-                cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/lidar/" + str(self.frameIndex) + "-" + str(frameIndex) + ".png", cv2.putText(visualizedMap, "F: " + str(self.frameIndex), (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=(255, 255, 0)))
+                cv2.imwrite(IMG_PATH + str(self.frameIndex) + "-" + str(frameIndex) + ".png", cv2.putText(visualizedMap, "F: " + str(self.frameIndex), (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=(255, 255, 0)))
             frameIndex += 1
 
             if cv2.waitKey(1) == ord('q'):
                 return
             
         except Exception as e:
-            log = open("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/log.txt", "a")
+            log = open(LOG_PATH, "a")
             log.write(e)
             log.write("\n")
             print(e)
