@@ -15,7 +15,7 @@ TOPIC_TRAFFIC_LIGHT = rospy.get_param('TOPIC_NAME_TRAFFIC_LIGHT')
 TOPIC_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')
 TOPIC_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
 
-RESPONSE_LIGTH = rospy.get_param('RESPONSE_LIGTH')
+RESPONSE_LIGHT = rospy.get_param('RESPONSE_LIGHT')
 RESPONSE_SIGN = rospy.get_param('RESPONSE_SIGN')
 
 
@@ -24,7 +24,7 @@ STRAIGHT_VEL = 0.2
 STRAIGHT_TIME = 4
 TURN_VEL = 0.1
 TURN_TIME = 5
-## total time to turn is SRTAIGHT_TIME + TURN_TIME + SRTAIGHT_TIME
+## total time to turn == SRTAIGHT_TIME + TURN_TIME + SRTAIGHT_TIME
 TOTAL_TIME = 2*STRAIGHT_TIME + TURN_TIME
 
 class CombineDecisionModule:
@@ -49,7 +49,7 @@ class CombineDecisionModule:
         self.backupAngular = 0
         
         # PRIOTIRY SIGNAL
-        self.light = RESPONSE_LIGTH['NONE']
+        self.light = RESPONSE_LIGHT['NONE']
         self.sign = RESPONSE_SIGN['NONE']
         self.isInProcess = False
         self.action = None
@@ -59,14 +59,15 @@ class CombineDecisionModule:
     
     # for case that don't care AVOIDANCE_MODULE velocity
     def isExistPriority(self):
-        return self.light is RESPONSE_LIGTH['RED'] or self.light is RESPONSE_LIGTH['YELLOW'] or self.sign is RESPONSE_SIGN['STOP']
+        return self.light == RESPONSE_LIGHT['RED'] or self.light == RESPONSE_LIGHT['YELLOW'] or self.sign == RESPONSE_SIGN['STOP']
     
     def trafficLightCallback(self, colorMsg):
+        print("recieve traffic light")
         self.light = colorMsg
-        if colorMsg is RESPONSE_LIGTH['RED']:
+        if colorMsg == RESPONSE_LIGHT['RED']:
             self.linear = 0
             self.angular = 0
-        elif colorMsg is RESPONSE_LIGTH['YELLOW']:
+        elif colorMsg == RESPONSE_LIGHT['YELLOW']:
             self.linear = self.linear // 2
             self.angular = self.angular // 2
         # green and none case
@@ -75,13 +76,14 @@ class CombineDecisionModule:
             self.angular = self.backupAngular
             
     def trafficSignCallback(self, signMsg):
+        print("recieve traffic Sign")
         # parsed = json.loads(msg.data)
         # if parsed['type'] == 'STOP':
-        self.sign = signMsg
-        if signMsg is RESPONSE_SIGN['STOP']:
+        self.sign = signMsg.data
+        if signMsg == RESPONSE_SIGN['STOP']:
             self.linear = 0
             self.angular = 0
-        elif signMsg is RESPONSE_SIGN['LEFT'] or signMsg is RESPONSE_SIGN['RIGHT']:
+        elif signMsg == RESPONSE_SIGN['LEFT'] or signMsg == RESPONSE_SIGN['RIGHT']:
             self.isInProcess = True
             self.action = signMsg
         # forward and none case (and forbid case)
@@ -91,6 +93,7 @@ class CombineDecisionModule:
 
 
     def avoidanceCallback(self, msg):
+        print("recieve avoidance", msg)
         parsed = json.loads(msg.data)
         self.backupLinear = parsed['linear']
         self.backupAngular = parsed['angular']
@@ -105,8 +108,9 @@ class CombineDecisionModule:
         
         # check hardcode turn
         if self.isInProcess:
+            print("in process")
             # first time
-            if self.processStartTime is 0:
+            if self.processStartTime == 0:
                 self.processStartTime = time.time()
             else:
                 # update time
@@ -122,20 +126,20 @@ class CombineDecisionModule:
             
             
             # check done condition
-            if self.processStep is 2 and self.processTime > TOTAL_TIME:
+            if self.processStep == 2 and self.processTime > TOTAL_TIME:
                 self.isInProcess = False
                 self.action = None
                 return self.veloPublisher.publish(myTwist)
             
-            if self.processStep is 0 or self.processStep is 2:
+            if self.processStep == 0 or self.processStep == 2:
                 # go Straight at step 0 and 2
                 myTwist.linear.x = STRAIGHT_VEL
                 myTwist.angular.z = 0
             # turn at step 1
-            elif self.action is RESPONSE_SIGN['LEFT']:
+            elif self.action == RESPONSE_SIGN['LEFT']:
                 self.linear = 0
                 self.angular = TURN_VEL
-            elif self.action is RESPONSE_SIGN['RIGHT']:
+            elif self.action == RESPONSE_SIGN['RIGHT']:
                 self.linear = 0
                 self.angular = -TURN_VEL
             return self.veloPublisher.publish(myTwist)
@@ -147,8 +151,10 @@ class CombineDecisionModule:
         
 if __name__ == '__main__':
     try:
+        print("start decision making module")
         rospy.init_node(NODE_NAME_DECISION_MAKING, anonymous=True)
         decisionMaking = CombineDecisionModule()
+        print("decisin making ready")
         rospy.Timer(rospy.Duration(0.1), decisionMaking.publishVelo) # 0.01
         rospy.spin()
     except rospy.ROSInterruptException:

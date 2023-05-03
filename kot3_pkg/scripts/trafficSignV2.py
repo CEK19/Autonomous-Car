@@ -18,6 +18,7 @@ from ultralytics import YOLO
 NODE_NAME_TRAFFIC_SIGN = rospy.get_param('NODE_NAME_TRAFFIC_SIGN')
 
 TOPIC_NAME_CAMERA = rospy.get_param('TOPIC_NAME_CAMERA')
+TOPIC_NAME_TRAFFIC_SIGN = rospy.get_param('TOPIC_NAME_TRAFFIC_SIGN')
 
 RESPONSE_SIGN = rospy.get_param('RESPONSE_SIGN')
 
@@ -29,6 +30,7 @@ YOLOmodel = YOLO('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/asset
 # Nhan config
 nhanIndex = 0
 DO_NHAN_WANT_SAVE_IMG = False
+HAVE_DECISION_MAKING = True
 
 # CONST FILE
 class Setting:
@@ -69,7 +71,7 @@ class ColorThreshold:
 	
 #################################################
 # TODO later, an dia r ghep
-pub = rospy.Publisher('chatter', String, queue_size=1)
+pub = rospy.Publisher(TOPIC_NAME_TRAFFIC_SIGN, String, queue_size=1)
 
 with open('/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/assets/mean_image_gray.pickle', 'rb') as f:
 	MEAN_IMAGE = pickle.load(f, encoding='latin1')
@@ -185,14 +187,7 @@ def predict(sign):
 
 def rosPublish(traffic_sign):
 	rate = rospy.Rate(10) # 10hz
-	# message = json.dumps({
-	# 	"sign": MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign],
-	# 	"size": float(size),
-	# 	"accuracy": float(accuracy)
-	# })
-	# print(message)
-	# pub.publish(MODULE_TRAFFIC_SIGNS.LABEL_TO_TEXT[traffic_sign])
-	pub.publish(RESPONSE_SIGN['LABEL_TO_TEXT'][traffic_sign])
+	pub.publish(traffic_sign)
 
 
 def colorFilter(img):
@@ -236,7 +231,6 @@ def callbackFunction(data):
 	global lastTime
 	global potentialSign
 
-	print(lastTime, QTM_time_start, QTM_time_start - lastTime)
 	if QTM_time_start - lastTime >= 0.1 or QTM_time_start - lastTime < 0.02:
 		lastTime = QTM_time_start
 		return
@@ -248,7 +242,6 @@ def callbackFunction(data):
 
 	cv2.imshow("Origin", imgMatrix)
 	cv2.waitKey(3)
-	final_sign = []
 	print("done read img")
 
 
@@ -271,7 +264,6 @@ def callbackFunction(data):
 		cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/sign/yolo_" + str(nhanIndex) + ".png", visual)
 
 	for i in range(len(signs.conf)):
-		# print()
 		print("My boxes:", signs)
 		print()
 		if signs.conf[i] < Sign.MIN_ACCURACY:
@@ -300,10 +292,6 @@ def callbackFunction(data):
 	sign = imgMatrix[(y-extra):(y+h+extra), (x-extra):(x+w+extra)]
 
 
-	# big = findBiggestContour(final_sign)
-	# sign = boundary_Green_Box(imgMatrix, big)
-	# cv2.imshow('final', imgMatrix)
-
 	print("---------------classification---------------")
 	cv2.imshow("sign", sign)
 	startTime = time.time()
@@ -312,8 +300,8 @@ def callbackFunction(data):
 	print("total time: ", endTime-startTime, ", predict time:", t)
 	label = RESPONSE_SIGN['LABEL_TO_TEXT'][np.argmax(prediction)]
 	accuracy = np.amax(prediction)
-	
-	print("=====> label: ", label, ", accuracy: ", accuracy)
+
+	print("=====> label: ", label, ", accuracy: ", accuracy, ", size: ", bigSize)
 	visualImg = cv2.resize(sign, (300, 300))
 	visualImg = cv2.putText(visualImg, label + "-" + str(accuracy*100)[:5] + "%", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 	if DO_NHAN_WANT_SAVE_IMG:
