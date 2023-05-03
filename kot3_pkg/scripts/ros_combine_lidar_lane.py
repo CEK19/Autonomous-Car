@@ -58,9 +58,13 @@ LEFT_GOAL = 'left-goal'
 RIGHT_GOAL = 'right-goal'
 ANOTHER_GOAL = 'another-goal'
 
+HAVE_DECISION_MAKING = True
 
-# pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
-pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=1)
+pub = 0
+if HAVE_DECISION_MAKING:
+    pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
+else:
+    pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=1)
 
 
 class Utils:
@@ -292,17 +296,13 @@ class CombineLidarLane:
         myTwist.linear.x = self.straightVel
         myTwist.angular.z = self.turnVel
         
-        # global frameIndex
-        # myTwist.linear.x = 0
-        # if frameIndex % 2 == 0:
-        #     myTwist.angular.z = 0
-        # else:
-        #     myTwist.angular.z = 0.06228410989030499
         
-        pub.publish(myTwist)
         print("in frame: ", frameIndex, "straightVel:", self.straightVel, "turnVel:", self.turnVel)
-        # msg = json.dumps({"linear": straight, "angular": angular})
-        # pub.publish(msg)
+        if HAVE_DECISION_MAKING:
+            msg = json.dumps({"linear": self.straightVel, "angular": self.turnVel})
+            pub.publish(msg)
+        else:
+            pub.publish(myTwist)
 
         # Utils.publicVelocity(self.straightVel, self.turnVel)
 
