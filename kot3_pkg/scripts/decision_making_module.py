@@ -76,16 +76,15 @@ class CombineDecisionModule:
             self.angular = self.backupAngular
             
     def trafficSignCallback(self, signMsg):
-        print("recieve traffic Sign")
-        # parsed = json.loads(msg.data)
-        # if parsed['type'] == 'STOP':
-        self.sign = signMsg.data
-        if signMsg == RESPONSE_SIGN['STOP']:
+        print("recieve traffic Sign", signMsg)
+        parsed = json.loads(signMsg.data)
+        self.sign = parsed['sign']
+        if self.sign == RESPONSE_SIGN['STOP']:
             self.linear = 0
             self.angular = 0
-        elif signMsg == RESPONSE_SIGN['LEFT'] or signMsg == RESPONSE_SIGN['RIGHT']:
+        elif self.sign == RESPONSE_SIGN['LEFT'] or signMsg == RESPONSE_SIGN['RIGHT']:
             self.isInProcess = True
-            self.action = signMsg
+            self.action = self.sign
         # forward and none case (and forbid case)
         else:
             self.linear = self.backupLinear
@@ -93,7 +92,7 @@ class CombineDecisionModule:
 
 
     def avoidanceCallback(self, msg):
-        print("recieve avoidance", msg)
+        # print("recieve avoidance")
         parsed = json.loads(msg.data)
         self.backupLinear = parsed['linear']
         self.backupAngular = parsed['angular']
@@ -155,7 +154,7 @@ if __name__ == '__main__':
         rospy.init_node(NODE_NAME_DECISION_MAKING, anonymous=True)
         decisionMaking = CombineDecisionModule()
         print("decisin making ready")
-        rospy.Timer(rospy.Duration(0.1), decisionMaking.publishVelo) # 0.01
+        rospy.Timer(rospy.Duration(0.01), decisionMaking.publishVelo) # 0.01
         rospy.spin()
     except rospy.ROSInterruptException:
         pass

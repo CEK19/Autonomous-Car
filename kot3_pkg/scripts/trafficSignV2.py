@@ -1,5 +1,8 @@
 #! /usr/bin/python
 
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
 import rospy
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
@@ -41,8 +44,8 @@ class Setting:
 class Sign:
 	EXTRA_SAFETY = 5
 	MIN_AREA = 100
-	MAX_AREA = 50000
-	MAX_AREA_TODETECT = 40000
+	MAX_AREA = 500
+	MAX_AREA_TODETECT = 410
 	MIN_WIDTH_HEIGHT = 30
 	MIN_ACCURACY = 0.75
 	WIDTH_HEIGHT_RATIO = 1.3
@@ -187,7 +190,8 @@ def predict(sign):
 
 def rosPublish(traffic_sign):
 	rate = rospy.Rate(10) # 10hz
-	pub.publish(traffic_sign)
+	msg = json.dumps({"sign": traffic_sign})
+	pub.publish(msg)
 
 
 def colorFilter(img):
@@ -240,9 +244,8 @@ def callbackFunction(data):
 	bridge = CvBridge()
 	imgMatrix = bridge.imgmsg_to_cv2(data, "bgr8")	#data.encoding
 
-	cv2.imshow("Origin", imgMatrix)
+
 	cv2.waitKey(3)
-	print("done read img")
 
 
 	print("---------------detection---------------")
@@ -326,6 +329,7 @@ def callbackFunction(data):
 
 print("---------------begin---------------")
 rospy.init_node(NODE_NAME_TRAFFIC_SIGN)
+
 while not rospy.is_shutdown():
 	lis = rospy.Subscriber(TOPIC_NAME_CAMERA, Image, callbackFunction)
 	rospy.spin()

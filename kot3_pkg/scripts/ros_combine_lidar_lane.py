@@ -535,14 +535,14 @@ class CombineLidarLane:
             # Make obstacle bigger
             simulateMap[coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]] = BLOCKED_COLOR
 
-            cv2.imshow("hinhSimulatQQ before", simulateMap)
+            # cv2.imshow("hinhSimulatQQ before", simulateMap)
 
             # Magic code to fix point at (width/2, height/2) is collision
             simulateMap[HEIGH_SIMULATE_MAP//2 - MAGIC_NUMBER: HEIGH_SIMULATE_MAP//2 + MAGIC_NUMBER, WIDTH_SIMULATE_MAP//2 - MAGIC_NUMBER: WIDTH_SIMULATE_MAP//2 + MAGIC_NUMBER] = NON_BLOCKED_COLOR
 
             tmpImg = Utils.imgInColor(simulateMap)
             tmpImg[HEIGH_SIMULATE_MAP//2 - MAGIC_NUMBER: HEIGH_SIMULATE_MAP//2 + MAGIC_NUMBER, WIDTH_SIMULATE_MAP//2 - MAGIC_NUMBER: WIDTH_SIMULATE_MAP//2 + MAGIC_NUMBER] = (255, 255, 0)
-            cv2.imshow("hinhSimulatQQ after", tmpImg)
+            # cv2.imshow("hinhSimulatQQ after", tmpImg)
 
             # Make obstacle bigger - Option 2
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (DELTA, DELTA))
@@ -550,7 +550,7 @@ class CombineLidarLane:
 
             qqImg = Utils.imgInColor(simulateMap)
             qqImg[HEIGH_SIMULATE_MAP//2 - MAGIC_NUMBER: HEIGH_SIMULATE_MAP//2 + MAGIC_NUMBER, WIDTH_SIMULATE_MAP//2 - MAGIC_NUMBER: WIDTH_SIMULATE_MAP//2 + MAGIC_NUMBER] = (255, 255, 0)
-            cv2.imshow("big Map", simulateMap)
+            # cv2.imshow("big Map", simulateMap)
 
             # Cut the image in range 50px radius from robot (25px from left to 25px from right)
             simulateMap = simulateMap[WIDTH_SIMULATE_MAP//2 - WIDTH_OPTIMAL_PATH//2: WIDTH_SIMULATE_MAP//2 + WIDTH_OPTIMAL_PATH // 2, HEIGH_SIMULATE_MAP//2 - HEIGH_OPTIMAL_PATH//2: HEIGH_SIMULATE_MAP//2 + HEIGH_OPTIMAL_PATH//2]
@@ -653,10 +653,10 @@ class CombineLidarLane:
         if straightVel < 0 or turnVel < 0:
             print("fail at negative vel")
 
-        if straightVel < MIN_STRAIGHT_VELOCITY:
-            straightVel = 0
-        if turnVel < MIN_TURN_VELOCITY:
-            turnVel = 0
+        # if straightVel < MIN_STRAIGHT_VELOCITY:
+        #     straightVel = 0
+        # if turnVel < MIN_TURN_VELOCITY:
+        #     turnVel = 0
 
         if isRight:
             self.straightVel = straightVel    # straightVel
@@ -673,7 +673,7 @@ if __name__ == '__main__':
         avoidance = CombineLidarLane()
         time.sleep(2)
         rospy.Timer(rospy.Duration(0.2), avoidance.pathFinding)  # 0.05
-        rospy.Timer(rospy.Duration(0.1), avoidance.updateVelocity)  # 0.01
+        rospy.Timer(rospy.Duration(0.09), avoidance.updateVelocity)  # 0.01
 
         rospy.spin()
     except rospy.ROSInterruptException:
