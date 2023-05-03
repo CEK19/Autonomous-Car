@@ -38,18 +38,18 @@ HEIGH_OPTIMAL_PATH = 50
 BLOCKED_COLOR = 255
 NON_BLOCKED_COLOR = 0
 LANE_THICKNESS = 2
-DELTA = 11  # 50 / 14
+DELTA = 12  # 50 / 14 / 10
 DELTA_X = DELTA
 DELTA_Y = DELTA
 # for check space of goal is free
 AREA_WIDTH = 4
 AREA_HEIGHT = 10
-NUM_POINTS_OF_DIRECTION = 12  # 35 / 12
+NUM_POINTS_OF_DIRECTION = 8  # 35 / 12
 MAX_STRAIGHT_VELOCITY = 0.05  # 0.05
 MIN_STRAIGHT_VELOCITY = 0
-MAX_TURN_VELOCITY = 0.75  # 2.0 # 1.0
+MAX_TURN_VELOCITY = 1.00  # 2.0 # 1.0
 MIN_TURN_VELOCITY = 0
-MAGIC_NUMBER = 4
+MAGIC_NUMBER = 6
 
 IMAGE_SAVED_PER_FRAME = 1
 frameIndex = 0
@@ -313,25 +313,25 @@ class CombineLidarLane:
     def chooseGoal(self, simulateMap):
         # check if only 1 goal feature
         if self.goal2X is None or self.goal2Y is None:
-            return self.goalX, self.goalY
+            return LEFT_GOAL, self.goalX, self.goalY
 
         # check free space above goals
         goalChoosen, curGoalX, curGoalY = self.chooseGoalByFreeSpaceAGoal(simulateMap)
         if goalChoosen is not ANOTHER_GOAL:
-            return curGoalX, curGoalY
+            return goalChoosen, curGoalX, curGoalY
 
         # Go to another goal if 1 goal is blocked
         isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
         isGoal2Available = simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
         if isGoal1Available and not isGoal2Available:
-            return self.goalX, self.goalY
+            return LEFT_GOAL, self.goalX, self.goalY
         elif isGoal2Available and not isGoal1Available:
-            return self.goal2X, self.goal2Y
+            return RIGHT_GOAL, self.goal2X, self.goal2Y
         elif isGoal1Available and isGoal2Available:
             # compare distance robot to each lanes
             goalChoosen, curGoalX, curGoalY = self.chooseGoalByDistanceRobotToLane()
             if goalChoosen is not ANOTHER_GOAL:
-                return curGoalX, curGoalY
+                return goalChoosen, curGoalX, curGoalY
         else:
             # both stuck
             self.clearLineWhereGoalStuck(simulateMap)
@@ -345,10 +345,10 @@ class CombineLidarLane:
         # compare distance robot to each lanes
         goalChoosen, curGoalX, curGoalY = self.chooseGoalByDistanceRobotToLane()
         if goalChoosen is not ANOTHER_GOAL:
-            return curGoalX, curGoalY
+            return goalChoosen, curGoalX, curGoalY
 
         # Go on right lane at default
-        return self.goal2X, self.goal2Y
+        return RIGHT_GOAL, self.goal2X, self.goal2Y
 
     def chooseGoalByDistanceRobotToGoal(self):
         curPoint = [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2]
@@ -494,6 +494,15 @@ class CombineLidarLane:
         #     print("fail rotate goal2 point", curPos, goal2, [self.goal2X, self.goal2Y], angular)
         #     print(Utils.distanceBetweenPoints(curPos, goal2), Utils.distanceBetweenPoints(curPos, [self.goal2X, self.goal2Y]))
 
+    def bestFirst(self, simulateMap, curGoalX, curGoalY):
+        invertMap = cv2.bitwise_not(simulateMap)
+        grid = Grid(matrix=invertMap)
+        start = grid.node(WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH // 2)
+        end = grid.node(curGoalX, curGoalY)
+
+        path, _= self.pathFinder.find_path(start, end, grid)
+        return path
+        
 
     def pathFinding(self, event):
         try:
@@ -529,7 +538,7 @@ class CombineLidarLane:
             cv2.imshow("hinhSimulatQQ before", simulateMap)
 
             # Magic code to fix point at (width/2, height/2) is collision
-            simulateMap[HEIGH_SIMULATE_MAP//2 - 4: HEIGH_SIMULATE_MAP//2 + 4, WIDTH_SIMULATE_MAP//2 - 4: WIDTH_SIMULATE_MAP//2 + 4] = NON_BLOCKED_COLOR
+            simulateMap[HEIGH_SIMULATE_MAP//2 - MAGIC_NUMBER: HEIGH_SIMULATE_MAP//2 + MAGIC_NUMBER, WIDTH_SIMULATE_MAP//2 - MAGIC_NUMBER: WIDTH_SIMULATE_MAP//2 + MAGIC_NUMBER] = NON_BLOCKED_COLOR
 
             tmpImg = Utils.imgInColor(simulateMap)
             tmpImg[HEIGH_SIMULATE_MAP//2 - MAGIC_NUMBER: HEIGH_SIMULATE_MAP//2 + MAGIC_NUMBER, WIDTH_SIMULATE_MAP//2 - MAGIC_NUMBER: WIDTH_SIMULATE_MAP//2 + MAGIC_NUMBER] = (255, 255, 0)
@@ -554,22 +563,23 @@ class CombineLidarLane:
             curGoalX = 0
             curGoalY = 0
             
-            curGoalX, curGoalY = self.chooseGoal(simulateMap)
-            if curGoalX == self.goalX  and curGoalY == self.goalY:
-                print("left goal selected")
-            else:
-                print("right goal selected")
-
-
-            invertMap = cv2.bitwise_not(simulateMap)
-            grid = Grid(matrix=invertMap)
-            start = grid.node(WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH // 2)
-            print(curGoalX, curGoalY)
-            end = grid.node(curGoalX, curGoalY)
+            goalChoosen, curGoalX, curGoalY = self.chooseGoal(simulateMap)
 
             start_QTM = time.time()
-            self.tracePath, _ = self.pathFinder.find_path(start, end, grid)
-            print(self.tracePath)
+            self.tracePath = self.bestFirst(simulateMap, curGoalX, curGoalY)
+            
+            if len(self.tracePath) == 0:
+                if goalChoosen == LEFT_GOAL:
+                    curGoalX = self.goal2X
+                    curGoalY = self.goal2Y
+                else:
+                    curGoalX = self.goalX
+                    curGoalY = self.goalY
+                
+                if simulateMap[curGoalY, curGoalX] == BLOCKED_COLOR:
+                    self.clearLineWhereGoalStuck(simulateMap)
+                self.tracePath = self.bestFirst(simulateMap, curGoalX, curGoalY)
+            
             end_QTM = time.time()
             print(end_QTM - start_QTM)
 
