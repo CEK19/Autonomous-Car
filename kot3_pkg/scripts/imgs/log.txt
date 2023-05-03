@@ -1,0 +1,1651 @@
+Frame index: 0 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 1 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 2 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 3 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 4 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 5 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 6 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 7 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 8 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 9 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 10 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 11 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 12 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 13 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 14 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 15 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 16 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 17 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 18 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 19 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 20 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 21 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 22 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 23 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 24 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 25 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 26 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 27 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 28 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 29 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 30 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 31 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 32 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 33 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 34 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 35 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 36 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 37 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 38 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 39 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 40 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 41 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 42 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 43 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 44 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 45 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 46 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 47 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 48 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 49 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 50 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 51 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 52 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 53 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 54 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 55 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 56 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 57 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 58 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 59 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 60 | 
+ChooseGoal func | choose by distance both stuck | right-goal | 
+
+Frame index: 61 | 
+ChooseGoal func | choose by distance both stuck | right-goal | 
+
+Frame index: 62 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 63 | 
+ChooseGoal func | choose by distance both stuck | right-goal | 
+
+Frame index: 64 | 
+ChooseGoal func | choose by distance both stuck | right-goal | 
+
+Frame index: 65 | 
+ChooseGoal func | choose by distance both stuck | right-goal | 
+
+Frame index: 66 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 67 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 68 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 69 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 70 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 71 | 
+ChooseGoal func | choose by distance both stuck | right-goal | 
+
+Frame index: 72 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 73 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 74 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 75 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 76 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 77 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 78 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 79 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 80 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 81 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 82 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 83 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 84 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 85 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 86 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 87 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 88 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 89 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 90 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 91 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 92 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 93 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 94 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 95 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 96 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 97 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 98 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 99 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 100 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 101 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 102 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 103 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 104 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 105 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 106 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 107 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 108 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 109 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 110 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 111 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 112 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 113 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 114 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 115 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 116 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 117 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 118 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 119 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 120 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 121 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 122 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 123 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 124 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 125 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 126 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 127 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 128 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 129 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 130 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 131 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 132 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 133 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 134 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 135 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 136 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 137 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 138 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 139 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 140 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 141 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 142 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 143 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 144 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 145 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 146 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 147 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 148 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 149 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 150 | 
+ChooseGoal func | free space | right-goal | 
+no path | change to another goal | right-goal | 
+
+Frame index: 151 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 152 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 153 | 
+ChooseGoal func | 1 goal block | left-goal | 
+
+Frame index: 154 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 155 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 156 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 157 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 158 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 159 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 160 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 161 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 162 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 163 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 164 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 165 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 166 | 
+ChooseGoal func | 1 goal block | another-goal | 
+
+Frame index: 167 | 
+ChooseGoal func | 1 goal block | another-goal | 
+
+Frame index: 168 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 169 | 
+ChooseGoal func | 1 goal block | another-goal | 
+
+Frame index: 170 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 171 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 172 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 173 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 174 | 
+ChooseGoal func | 1 goal block | another-goal | 
+
+Frame index: 175 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 176 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 177 | 
+ChooseGoal func | 1 goal block | another-goal | 
+
+Frame index: 178 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 179 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 180 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 181 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 182 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 183 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 184 | 
+ChooseGoal func | 1 goal block | another-goal | 
+
+Frame index: 185 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 186 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 187 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 188 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 189 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 190 | 
+ChooseGoal func | 1 goal block | another-goal | 
+
+Frame index: 191 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 192 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 193 | 
+ChooseGoal func | 1 goal block | another-goal | 
+
+Frame index: 194 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+
+Frame index: 195 | 
+ChooseGoal func | choose by distance both stuck | left-goal | 
+no path | change to another goal | left-goal | 
+
+Frame index: 196 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 197 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 198 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 199 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 200 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 201 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 202 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 203 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 204 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 205 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 206 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 207 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 208 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 209 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 210 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 211 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 212 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 213 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 214 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 215 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 216 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 217 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 218 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 219 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 220 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 221 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 222 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 223 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 224 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 225 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 226 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 227 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 228 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 229 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 230 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 231 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 232 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 233 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 234 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 235 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 236 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 237 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 238 | 
+ChooseGoal func | choose by distance both free | left-goal | 
+
+Frame index: 239 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 240 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 241 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 242 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 243 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 244 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 245 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 246 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 247 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 248 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 249 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 250 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 251 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 252 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 253 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 254 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 255 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 256 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 257 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 258 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 259 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 260 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 261 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 262 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 263 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 264 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 265 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 266 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 267 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 268 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 269 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 270 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 271 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 272 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 273 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 274 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 275 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 276 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 277 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 278 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 279 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 280 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 281 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 282 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 283 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 284 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 285 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 286 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 287 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 288 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 289 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 290 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 291 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 292 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 293 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 294 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 295 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 296 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 297 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 298 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 299 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 300 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 301 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 302 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 303 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 304 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 305 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 306 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 307 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 308 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 309 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 310 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 311 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 312 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 313 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 314 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 315 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 316 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 317 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 318 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 319 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 320 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 321 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 322 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 323 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 324 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 325 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 326 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 327 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 328 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 329 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 330 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 331 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 332 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 333 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 334 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 335 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 336 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 337 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 338 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 339 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 340 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 341 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 342 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 343 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 344 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 345 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 346 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 347 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 348 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 349 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 350 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 351 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 352 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 353 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 354 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 355 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 356 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 357 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 358 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 359 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 360 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 361 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 362 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 363 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 364 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 365 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 366 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 367 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 368 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 369 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 370 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 371 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 372 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 373 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 374 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 375 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 376 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 377 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 378 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 379 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 380 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 381 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 382 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 383 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 384 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 385 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 386 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 387 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 388 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 389 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 390 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 391 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 392 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 393 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 394 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 395 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 396 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 397 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 398 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 399 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 400 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 401 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 402 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 403 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 404 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 405 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 406 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 407 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 408 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 409 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 410 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 411 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 412 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 413 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 414 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 415 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 416 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 417 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 418 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 419 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 420 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 421 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 422 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 423 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 424 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 425 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 426 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 427 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 428 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 429 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 430 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 431 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 432 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 433 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 434 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 435 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 436 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 437 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 438 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 439 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 440 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 441 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 442 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 443 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 444 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 445 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 446 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 447 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 448 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 449 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 450 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 451 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 452 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 453 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 454 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 455 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 456 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 457 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 458 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 459 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 460 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 461 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 462 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 463 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 464 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 465 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 466 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 467 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 468 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 469 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 470 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 471 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 472 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 473 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 474 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 475 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 476 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 477 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 478 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 479 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 480 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 481 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 482 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 483 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 484 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 485 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 486 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 487 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 488 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 489 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 490 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 491 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 492 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 493 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 494 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 495 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 496 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 497 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 498 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 499 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 500 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 501 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 502 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 503 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 504 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 505 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 506 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 507 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 508 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 509 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 510 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 511 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 512 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 513 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 514 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 515 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 516 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 517 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 518 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 519 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 520 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 521 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 522 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 523 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 524 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 525 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 526 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 527 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 528 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 529 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 530 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 531 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 532 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 533 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 534 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 535 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 536 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 537 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 538 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 539 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 540 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 541 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 542 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 543 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+
+Frame index: 544 | 
+ChooseGoal func | choose by distance both free | right-goal | 
+

@@ -48,7 +48,7 @@ AREA_HEIGHT = 10
 NUM_POINTS_OF_DIRECTION = 8  # 35 / 12
 MAX_STRAIGHT_VELOCITY = 0.05  # 0.05
 MIN_STRAIGHT_VELOCITY = 0
-MAX_TURN_VELOCITY = 1.00  # 2.0 # 1.0
+MAX_TURN_VELOCITY = 0.5  # 2.0 # 1.0
 MIN_TURN_VELOCITY = 0
 MAGIC_NUMBER = 6
 
@@ -59,10 +59,10 @@ LEFT_GOAL = 'left-goal'
 RIGHT_GOAL = 'right-goal'
 ANOTHER_GOAL = 'another-goal'
 
-LOG_PATH = "/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/log.txt"
-IMG_PATH = "/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/lidar/"
+LOG_PATH = "/home/ubuntu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/log.txt"
+IMG_PATH = "/home/ubuntu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/lidar/"
 
-HAVE_DECISION_MAKING = True
+HAVE_DECISION_MAKING = False
 
 pub = 0
 if HAVE_DECISION_MAKING:
@@ -588,7 +588,6 @@ class CombineLidarLane:
             print("**********************", time.time() - ThinhTime)
             
             # save image for bebug
-            global frameIndex
             if frameIndex % IMAGE_SAVED_PER_FRAME == 0:
                 cv2.imwrite(IMG_PATH + str(self.frameIndex) + "-" + str(frameIndex) + ".png", cv2.putText(visualizedMap, "F: " + str(self.frameIndex), (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=(255, 255, 0)))
             frameIndex += 1
@@ -663,8 +662,8 @@ if __name__ == '__main__':
         rospy.init_node(NODE_NAME_AVOIDANCE, anonymous=True)
         avoidance = CombineLidarLane()
         # time.sleep(2)
-        rospy.Timer(rospy.Duration(0.2), avoidance.pathFinding)  # 0.05
-        rospy.Timer(rospy.Duration(0.09), avoidance.updateVelocity)  # 0.01
+        rospy.Timer(rospy.Duration(0.1), avoidance.pathFinding)  # 0.05
+        rospy.Timer(rospy.Duration(0.1), avoidance.updateVelocity)  # 0.01
 
         rospy.spin()
     except rospy.ROSInterruptException:
