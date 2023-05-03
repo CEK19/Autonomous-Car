@@ -267,10 +267,8 @@ def callbackFunction(data):
 		cv2.imwrite("/home/minhtu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/sign/yolo_" + str(nhanIndex) + ".png", visual)
 
 	for i in range(len(signs.conf)):
-		print("My boxes:", signs)
-		print()
 		if signs.conf[i] < Sign.MIN_ACCURACY:
-			print("low accuracy")
+			print("low accuracy - ", end="")
 			print("time: ", time.time()-QTM_time_start)
 			continue
 
@@ -285,7 +283,7 @@ def callbackFunction(data):
 			y = round( xyxy[1] )
 			w = round( xywh[2] )
 			h = round( xywh[3] )
-			print("save bigger img")
+
 
 	print("---------------crop---------------")
 	if w == 0 and h == 0:
