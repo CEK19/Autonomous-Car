@@ -4,7 +4,7 @@ import math
 class GAME_SETTING:
     SCREEN_WIDTH = 500
     SCREEN_HEIGHT = 500
-    FPS = 60
+    FPS = 10
 
 
 class PLAYER_SETTING:
@@ -28,11 +28,11 @@ class PLAYER_SETTING:
 
     Y_GOAL_POSITION = 10
 
-    MAX_STEP_PER_EPOCH = 1000
+    MAX_STEP_PER_EPOCH = 5000
 
 
 class OBSTACLE_SETTING:
-    MAX_INSTANCES = 5
+    MAX_INSTANCES = 1
     RADIUS_OBJECT = 10
     PROBABILITIES_ACTION = [0.1,
                             0.1,

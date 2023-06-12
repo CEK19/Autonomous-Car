@@ -1,0 +1,242 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+from calendar import day_name, month
+from operator import mod
+from pyexpat import model
+from keras.models import Sequential
+from keras.layers.convolutional import Conv2D
+from keras.layers.core import Activation
+from keras.layers.core import Flatten
+from keras.layers.core import Dense
+import keras.losses
+from keras import backend as K
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from keras.layers import *
+from keras.optimizers import *
+import matplotlib.pyplot as plt
+import numpy as np
+import argparse
+import cv2
+from PIL import Image as im
+import random
+from keras.models import *
+from enum import Enum
+import sys
+import datetime
+
+dimImage = 128
+
+
+class stupidModel:
+    def build():
+        model = Sequential()
+        model.add(Dense(512, activation = 'sigmoid', input_shape = (256,256,1)))
+        model.add(Dense(512, activation = 'sigmoid'))
+        return model
+
+    def unet():
+        inputs = Input((dimImage,dimImage,1))
+        conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
+        conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
+        pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+        conv2 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
+        conv2 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv2)
+        pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
+        conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool2)
+        conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
+        pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
+        conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
+        conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
+        drop4 = Dropout(0.5)(conv4)
+        pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
+
+        conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
+        conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
+        drop5 = Dropout(0.5)(conv5)
+
+        up6 = Conv2D(512, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(drop5))
+        merge6 = concatenate([drop4,up6], axis = 3)
+        conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
+        conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
+
+        up7 = Conv2D(256, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
+        merge7 = concatenate([conv3,up7], axis = 3)
+        conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
+        conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
+
+        up8 = Conv2D(128, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
+        merge8 = concatenate([conv2,up8], axis = 3)
+        conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
+        conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
+
+        up9 = Conv2D(64, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
+        merge9 = concatenate([conv1,up9], axis = 3)
+        conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
+        conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+        conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+        conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
+        model = Model(inputs, conv10)
+        model.compile(optimizer = Adam(learning_rate = 3e-5), loss = 'binary_crossentropy', metrics = ['accuracy'])
+        return model
+
+    def unet(self, input_size, loss, metrics):
+        inputs = Input(input_size)
+        conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
+        conv1 = BatchNormalization()(conv1)
+        conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
+        conv1 = BatchNormalization()(conv1)
+        pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+        conv2 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
+        conv2 = BatchNormalization()(conv2)
+        conv2 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv2)
+        conv2 = BatchNormalization()(conv2)
+        pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
+        conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool2)
+        conv3 = BatchNormalization()(conv3)
+        conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
+        conv3 = BatchNormalization()(conv3)
+        pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
+        conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
+        conv4 = BatchNormalization()(conv4)
+        conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
+        conv4 = BatchNormalization()(conv4)
+        drop4 = Dropout(0.5)(conv4)
+        pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
+
+        conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
+        conv5 = BatchNormalization()(conv5)
+        conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
+        conv5 = BatchNormalization()(conv5)
+        drop5 = Dropout(0.5)(conv5)
+
+        up6 = Conv2D(512, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(drop5))
+        merge6 = concatenate([drop4,up6], axis = 3)
+        conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
+        conv6 = BatchNormalization()(conv6)
+        conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
+        conv6 = BatchNormalization()(conv6)
+
+        up7 = Conv2D(256, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
+        merge7 = concatenate([conv3,up7], axis = 3)
+        conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
+        conv7 = BatchNormalization()(conv7)
+        conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
+        conv7 = BatchNormalization()(conv7)
+
+        up8 = Conv2D(128, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
+        merge8 = concatenate([conv2,up8], axis = 3)
+        conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
+        conv8 = BatchNormalization()(conv8)
+        conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
+        conv8 = BatchNormalization()(conv8)
+
+        up9 = Conv2D(64, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
+        merge9 = concatenate([conv1,up9], axis = 3)
+        conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
+        conv9 = BatchNormalization()(conv9)
+        conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+        conv9 = BatchNormalization()(conv9)
+        conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+        conv9 = BatchNormalization()(conv9)
+        conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
+        
+        self.model = Model(inputs = inputs, outputs = conv10)
+        self.model.compile(optimizer=Adam(lr=1e-3), loss=loss, metrics =[metrics])
+        return self.model
+
+smooth=1
+def tversky(y_true, y_pred):
+    y_true_pos = K.flatten(y_true)
+    y_pred_pos = K.flatten(y_pred)
+    true_pos = K.sum(y_true_pos * y_pred_pos)
+    false_neg = K.sum(y_true_pos * (1-y_pred_pos))
+    false_pos = K.sum((1-y_true_pos)*y_pred_pos)
+    alpha = 0.7
+    return (true_pos + smooth)/(true_pos + alpha*false_neg + (1-alpha)*false_pos + smooth)
+def focal_tversky(y_true,y_pred):
+    pt_1 = tversky(y_true, y_pred)
+    gamma = 0.75
+    return K.pow((1-pt_1), gamma)
+def dice(y_true, y_pred):
+    smooth = 1.
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    score = (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+    return score
+stpm = stupidModel()
+
+
+cnn = load_model("D:/container/AI_DCLV/12-11/Model-CARLA9_epoch2.hdf5",custom_objects={'focal_tversky':focal_tversky, 'dice':dice})
+
+# videoIndexCounter = "11"
+# out = cv2.VideoWriter('D:/container/AI_DCLV/readData/output/output_Model-CARLA8_epoch80.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 60, (512,512))
+counter = 0
+videoValue = os.listdir("D:/container/AI_DCLV/readData/video/")
+for videoIndex in videoValue:
+    dataX = []
+    dataY = []
+    print(" process video ",videoIndex)
+    pathTest = "D:/container/AI_DCLV/readData/video/"+videoIndex
+    cap = cv2.VideoCapture(pathTest)
+
+    while(cap.isOpened()):
+    # Capture frame-by-frame
+        ret, frame = cap.read()
+        if (ret == True):
+            
+            tmpX = cv2.resize(frame,(dimImage,dimImage))
+            tmpX = cv2.cvtColor(tmpX,cv2.COLOR_RGB2GRAY)
+            if videoIndex == "angle4.MOV" or videoIndex == "angle5.MOV":
+                tmpX = cv2.flip(tmpX,0)
+            dataX.append(np.array(tmpX))
+        else: 
+            break
+    cap.release()
+    if len(dataX) == 0:
+        print(videoIndex,"empty")
+        continue
+    else:
+        print(videoIndex," get ",len(dataX))
+
+    # dataX = dataX[0:32]
+    dataX = np.array(dataX)
+    dataX  = dataX.astype('float32')
+
+    print(len(dataX))
+
+    predict = cnn.predict(dataX,batch_size =16)
+    tmp = np.zeros((dimImage,dimImage,3))
+    # predict*=255
+    dataX = dataX.astype("uint8")
+    for each in range(0,len(dataX)):
+        tmp = cv2.cvtColor(predict[each],cv2.COLOR_GRAY2RGB)
+        tmp = tmp*255
+        tmp[:,:,1] = 0
+        
+        # outImg = cv2.resize(tmp,(512,512))
+
+        orgImg = cv2.cvtColor(dataX[each],cv2.COLOR_GRAY2RGB)
+        # orgImg = cv2.resize(orgImg,(512,512))
+        
+        outImg = np.array(tmp, dtype = np.uint8)
+        orgImg = np.array(orgImg, dtype = np.uint8)
+        counter += 1
+        name = str(counter)+".png"
+        if counter%50 != 0:
+            continue
+        while len(name) < 12:
+            name = "0" + name
+        name = videoIndex.split(".")[0] + "-" + name
+        cv2.imwrite("D:/container/AI_DCLV/readData/output/fullOutput/image/"+name,orgImg)
+        cv2.imwrite("D:/container/AI_DCLV/readData/output/fullOutput/label/"+name,outImg)
+        
+        outImg = cv2.addWeighted(outImg,0.5,orgImg,1,0)
+        cv2.imwrite("D:/container/AI_DCLV/readData/output/fullOutput/predic/"+name,outImg)
+        # out.write(outImg)
+        tmp = np.zeros((dimImage,dimImage,3))
+        
+# out.release()

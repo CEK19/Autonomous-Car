@@ -5,6 +5,10 @@ from const import *
 from utils import *
 import random
 import numpy as np
+import cv2
+import os
+
+from someTestCode.DijkstraTest3 import genData
 
 
 class Car():
@@ -63,7 +67,7 @@ class Car():
 class Robot(Car):
     def __init__(self) -> None:
         super().__init__(
-            initX=PLAYER_SETTING.INITIAL_X,
+            initX=np.random.randint(PLAYER_SETTING.INITIAL_X-50,PLAYER_SETTING.INITIAL_X+50),
             initY=PLAYER_SETTING.INITIAL_Y,
             maxForwardVelocity=PLAYER_SETTING.MAX_FORWARD_VELO,
             minRotationVelocity=PLAYER_SETTING.MIN_ROTATION_VELO,
@@ -74,11 +78,13 @@ class Robot(Car):
         )
         self.is_alive = True
         self.is_goal = False
+        self.currAngle = math.pi + np.random.random()-0.5
         self.lidarSignals = [PLAYER_SETTING.RADIUS_LIDAR]*PLAYER_SETTING.CASTED_RAYS
         self.lidarVisualize = [{"source": {"x": self.xPos, "y": self.yPos},
                                 "target": {"x": self.xPos, "y": self.yPos},
                                 "color": COLOR.WHITE
                                 } for x in range(PLAYER_SETTING.CASTED_RAYS)]
+                                
 
     def checkCollision(self, collisions):
         if collisions == None or len(collisions) == 0:
@@ -266,16 +272,22 @@ class Obstacles(Car):
 class PyGame2D():
     def __init__(self) -> None:
         pygame.init()
+        self.visualMap = np.zeros((GAME_SETTING.SCREEN_WIDTH,GAME_SETTING.SCREEN_HEIGHT,3),dtype='uint8')
         self.screen = pygame.display.set_mode(
             (GAME_SETTING.SCREEN_WIDTH, GAME_SETTING.SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.robot = Robot()
         self.obstacles = self._initObstacle()
+        center, self.frame = genData(GAME_SETTING.SCREEN_WIDTH)
+        self.obstacles[0].xPos = center[0]
+        self.obstacles[0].yPos = center[1]
         self.preRobotYPos = self.robot.yPos
         self.mode = 0
         self.stepCounter = 0
         self.totalReward = 0
+        self.preAngle = self.robot.currAngle
         self.tmp = []
+        
 
     def _initObstacle(self):
         #TODO: UPDATE IT
@@ -285,10 +297,11 @@ class PyGame2D():
         for _ in range(numOfObstacles):
             obstacleInstance = Obstacles(
                 initX=GAME_SETTING.SCREEN_WIDTH//2 +
-                random.randint(-int(0.8*GAME_SETTING.SCREEN_WIDTH//2),
-                               int(0.8*GAME_SETTING.SCREEN_WIDTH//2)),
+                random.randint(-int(0.1*GAME_SETTING.SCREEN_WIDTH//2),
+                               int(0.1*GAME_SETTING.SCREEN_WIDTH//2)),
                 initY=random.randint(0, int(0.7*GAME_SETTING.SCREEN_HEIGHT))
             )
+            cv2.circle(self.visualMap,(obstacleInstance.xPos,obstacleInstance.yPos),PLAYER_SETTING.RADIUS_OBJECT,(0,0,255),-1)
             obstacles.append(obstacleInstance)
         return obstacles
 
@@ -304,102 +317,37 @@ class PyGame2D():
     def action(self, action):
         self.stepCounter += 1
         self.lastAction = action
+        preX, preY = self.robot.xPos, self.robot.yPos
         self.robot.move(action=action)
+        cv2.line(self.visualMap,(int(preX),int(preY)),(int(self.robot.xPos),int(self.robot.yPos)),(0,255,0),1)
         self._obstacleMoves()
         self.robot.checkCollision(collisions=self.obstacles)
         self.robot.scanLidar(obstacles=self.obstacles)
         self.robot.checkAchieveGoal()
 
     def evaluate(self):
-        # tmpLidarSignal = self.robot.lidarSignals
 
-        # directionVector = [math.cos(self.robot.currAngle),math.sin(self.robot.currAngle)]
-        # objInRange = []
+        yCheck = 1
+        xCheck = 0.5
 
         reward = 0
 
-        minDistance = INT_INFINITY
-
-        ahead = [self.robot.xPos + 10*math.cos(self.robot.currAngle + math.pi/2),self.robot.yPos + 10*math.sin(self.robot.currAngle + math.pi/2)]
-        
-        if self.robot.currRotationVelocity != 0:
-            
-            r = abs(self.robot.currentForwardVelocity/self.robot.currRotationVelocity)
-            centerDireaction = 0
-            if self.robot.currRotationVelocity > 0:
-                centerDireaction = self.robot.currAngle + math.pi
-            else:
-                centerDireaction = self.robot.currAngle
-
-            centerX = self.robot.xPos + r*math.cos(centerDireaction)
-            centerY = self.robot.yPos + r*math.sin(centerDireaction)
-
-            for eachObj in self.obstacles:
-                d = abs(r - Utils.distanceBetweenTwoPoints(eachObj.xPos,eachObj.yPos,centerX,centerY))
-                if d < PLAYER_SETTING.RADIUS_OBJECT*4:
-                    distanceToRobot = Utils.distanceBetweenTwoPoints(eachObj.xPos,eachObj.yPos,self.robot.xPos,self.robot.yPos)
-                    if Utils.distanceBetweenTwoPoints(ahead[0],ahead[1],eachObj.xPos,eachObj.yPos) < distanceToRobot and \
-                        distanceToRobot < PLAYER_SETTING.RADIUS_LIDAR:
-                        # self.tmp.append(eachObj)
-                        minDistance = min(minDistance,d)
-        else:
-            for eachObj in self.obstacles:
-                s2 = Utils.distanceBetweenTwoPoints(eachObj.xPos,eachObj.yPos,self.robot.xPos,self.robot.yPos)
-                s1 = Utils.distanceBetweenTwoPoints(ahead[0],ahead[1],eachObj.xPos,eachObj.yPos)
-
-                d = (s2**2-s1**2-100)/20
-                h = math.sqrt(abs(s1**2-d**2))
-
-                if  h < PLAYER_SETTING.RADIUS_OBJECT*4 and s2 > s1 and s2 < PLAYER_SETTING.RADIUS_LIDAR:
-                    # self.tmp.append(eachObj)
-                    minDistance = min(minDistance,h)
-        
-
-        if minDistance == INT_INFINITY:
-            reward += 100
-        else:
-            reward += -100 + 200*minDistance/(PLAYER_SETTING.RADIUS_OBJECT*4)
-            # print(minDistance/(PLAYER_SETTING.RADIUS_OBJECT*4))
-
-        # s1 = reward
-        
-        if not self.robot.is_alive:
-            reward += -10000
-
-        if (GAME_SETTING.SCREEN_WIDTH < self.robot.yPos):
-            reward += -100000000
-
-        ratioLeft = (self.robot.xPos)/(GAME_SETTING.SCREEN_WIDTH)
-
-        reward += 200 - abs(ratioLeft-0.5)*800
-
-        reward += (self.preRobotYPos - self.robot.yPos)*100
+        reward += (self.robot.yPos - self.preRobotYPos)*yCheck
         self.preRobotYPos = self.robot.yPos
 
-        reward += -abs(self.robot.currAngle - math.pi)*10
+        if int(self.robot.yPos) != GAME_SETTING.SCREEN_WIDTH:
+            bestPos = list(self.frame[int(self.robot.yPos)]).index(200)
+        else:
+            bestPos = self.robot.xPos
+            reward += 100
+        reward -= abs(self.robot.xPos - bestPos)*xCheck
 
-        reward += -self.stepCounter*0.5
-
-        
-
-        if self.lastAction == ACTIONS.FORWARD_ACCELERATION:
-            reward += 50
-        elif self.lastAction == ACTIONS.BACKWARD_ACCELERATION:
-            reward -= 10
-        elif self.lastAction == ACTIONS.TURN_LEFT_ACCELERATION:
-            reward -= 5
-        elif self.lastAction == ACTIONS.TURN_RIGHT_ACCELERATION:
-            reward -= 5
-
-        if self.robot.is_goal:
-            reward += (PLAYER_SETTING.MAX_STEP_PER_EPOCH - self.stepCounter)*(self.totalReward/self.stepCounter)
-
-        self.totalReward += reward
         return reward
-        # return [int(s1),int(s2),int(s3),int(0),int(0),ratioLeft,reward]
 
     def is_done(self):
         if ((not self.robot.is_alive) or self.robot.is_goal or self.stepCounter > PLAYER_SETTING.MAX_STEP_PER_EPOCH):
+            counter = len(os.listdir("./LastRun"))
+            cv2.imwrite("./LastRun/"+str(counter)+".png",self.visualMap)
             return True
         return False
 
@@ -434,8 +382,8 @@ class PyGame2D():
         pygame.display.flip()
         self.clock.tick(GAME_SETTING.FPS)
 
-# import time
 
+# import time
 # game = PyGame2D()
 # ct = 0
 # while True:
@@ -444,5 +392,6 @@ class PyGame2D():
 #     game.view()
 #     data = game.evaluate()
 #     # print(f"{data[0]:>15} {data[1]:>15} {data[2]:>15} {data[3]:>15} {data[4]:>15} {data[5]:>15} {data[6]:>20}")
-#     print(int(data),"      ",ct)
+#     print("                              ",int(data),"      ",ct)
+#     time.sleep(0.05)
 #     pass
