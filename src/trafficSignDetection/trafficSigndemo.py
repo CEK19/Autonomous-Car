@@ -1,0 +1,319 @@
+#! /usr/bin/python
+
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
+
+import cv2
+import math
+import numpy as np
+import pickle
+import time
+import json
+from keras import models
+from ultralytics import YOLO
+
+import os
+from os import listdir
+from os.path import isfile, join
+
+
+# MODULE FILE
+CNNmodel = models.load_model(
+    '/Users/lap15864-local/temp/Autonomous-Car/kot3_pkg/scripts/assets/model-110.h5')
+YOLOmodel = YOLO(
+    '/Users/lap15864-local/temp/Autonomous-Car/kot3_pkg/scripts/assets/last.pt')
+
+# Nhan config
+nhanIndex = 0
+DO_NHAN_WANT_SAVE_IMG = True
+HAVE_DECISION_MAKING = True
+
+# CONST FILE
+
+
+class Setting:
+    MODEL_NAME = "model-110.h5"
+    MODEL_PATH = "/Users/lap15864-local/temp/Autonomous-Car/kot3_pkg/scripts/assets/"
+    DATA_PATH = "/Users/lap15864-local/temp/Autonomous-Car/kot3_pkg/scripts/assets/"
+
+
+class Sign:
+    EXTRA_SAFETY = 5
+    MIN_AREA = 100
+    MAX_AREA = 500
+    MAX_AREA_TODETECT = 410
+    MIN_WIDTH_HEIGHT = 30
+    MIN_ACCURACY = 0.65
+    WIDTH_HEIGHT_RATIO = 1.3
+
+
+RESPONSE_SIGN_LABEL = ["AHEAD", "FORBID", "STOP", "LEFT", "RIGHT", "NONE"]
+
+
+class ColorThreshold:
+    class RED:
+        sensitivity = np.array([170, 0, 0])
+        lower = np.array([0, 95, 110])     # [0, 113, 150]
+        upper = np.array([10, 255, 255])    # [10, 255, 255]
+
+    class BLUE:
+        sensitivity = np.array([0, 0, 0])
+        lower = np.array([95, 100, 100])      # [90, 50, 70]
+        upper = np.array([128, 255, 255])   # [128, 255, 255]
+
+
+#################################################
+
+
+with open('/Users/lap15864-local/temp/Autonomous-Car/kot3_pkg/scripts/assets/mean_image_gray.pickle', 'rb') as f:
+    MEAN_IMAGE = pickle.load(f, encoding='latin1')
+
+with open('/Users/lap15864-local/temp/Autonomous-Car/kot3_pkg/scripts/assets/std_gray.pickle', 'rb') as f:
+    STD_IMAGE = pickle.load(f, encoding='latin1')
+
+#################################################
+
+
+def distanceBetweenTwoPoint(PointA, PointB):
+    return math.sqrt((PointA[0] - PointB[0])**2 + (PointA[1] - PointB[1])**2)
+
+
+def returnRedness(img):
+    yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+    y, u, v = cv2.split(yuv)
+    return v
+    # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    # cv2.imshow("blur", blur)
+    # return blur
+
+# T=145 - long range
+# T=150 - short range
+# T=160
+# from T=128 to T=150 -> red sign detection -> best:150
+# T= < T=120 -> blue sign detection -> best: 110
+
+
+def threshold_RedSign(img, T=150):
+    _, img = cv2.threshold(img, T, 255, cv2.THRESH_BINARY)
+    cv2.imshow("red threshhold", img)
+    return img
+
+# T = 125	# data 2
+# T = 110
+# T = 100	# data 3
+# T = 122
+# T = 120
+
+
+def threshold_BlueSign(img, T=110):
+    _, img = cv2.threshold(img, T, 255, cv2.THRESH_BINARY)
+    cv2.imshow("blue threshold", img)
+    return img
+
+
+def findContour(img):
+    contours, hierarchy = cv2.findContours(
+        img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    return contours
+
+
+def findBiggestContour(contours):
+    m = 0
+    c = [cv2.contourArea(i) for i in contours]
+    return contours[c.index(max(c))]
+
+
+def boundary_Green_Box(img, contour):
+    x, y, w, h = cv2.boundingRect(contour)
+    extra = Sign.EXTRA_SAFETY
+    img = cv2.rectangle(img, (x-extra, y-extra),
+                        (x+w+extra, y+h+extra), (0, 255, 0), 5)
+    sign = img[(y-extra):(y+h+extra), (x-extra):(x+w+extra)]
+    return sign
+
+
+def preprocessingImageToClassifier(image=None, imageSize=32):
+    # GRAYSCALE
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # RESIZE
+    image = cv2.resize(image, (imageSize, imageSize))
+    # LOCAL HISTOGRAM EQUALIZATION
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
+    image = clahe.apply(image)
+    image = image.astype(np.float32)/255.0
+    cv2.imshow("classifyImg", image)
+    image = image.reshape(1, imageSize, imageSize, 1)
+    return image
+
+
+def preprocessingImageToClassifierV2(image=None, imageSize=32):
+    # RESIZE
+    image = cv2.resize(image, (imageSize, imageSize))
+
+    # GRAYSCALE
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # LOCAL HISTOGRAM EQUALIZATION
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
+    image = clahe.apply(image)
+
+    # /255.0 NORMALIZATION
+    image = image.astype(np.float32)/255.0
+
+    # Mean Normalization
+    image = image - MEAN_IMAGE["mean_image_gray"]
+
+    # STD Normalization
+    image = image / STD_IMAGE["std_gray"]
+
+    image = image.reshape(1, imageSize, imageSize, 1)
+    return image
+
+
+def predict(sign):
+    img = preprocessingImageToClassifierV2(sign, imageSize=32)
+    start_time = time.time()
+    ans = CNNmodel.predict(img)
+    end_time = time.time()
+    return ans, end_time-start_time
+
+
+def colorFilter(img):
+    hsvImg = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    sensitivity = ColorThreshold.RED.sensitivity
+
+    # Keep red color
+    maskColorRed1 = cv2.inRange(
+        hsvImg, ColorThreshold.RED.lower, ColorThreshold.RED.upper)
+    maskColorRed2 = cv2.inRange(
+        hsvImg, ColorThreshold.RED.lower + sensitivity, ColorThreshold.RED.upper + sensitivity)
+    maskColorRed = cv2.bitwise_or(maskColorRed1, maskColorRed2)
+    cv2.imshow("maskColorRed", maskColorRed)
+
+    # Keep blue color
+    maskColorBlue = cv2.inRange(
+        hsvImg, ColorThreshold.BLUE.lower, ColorThreshold.BLUE.upper)
+    cv2.imshow("maskColorBlue", maskColorBlue)
+
+    # Combine mask
+    mask = cv2.bitwise_or(maskColorRed, maskColorBlue)
+    cv2.imshow("mask", mask)
+
+    # connect gaps in binary image (another branch, not used yet)
+    contours, _ = cv2.findContours(
+        mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        cv2.drawContours(mask, [cnt], 0, 255, 15)
+        cv2.drawContours(mask, [cnt], 0, 255, -1)
+    cv2.imshow("mask after contour", mask)
+
+    resultColor = cv2.bitwise_and(img, img, mask=mask)
+    cv2.imshow("resultColor", resultColor)
+    cv2.imshow("orgImg", img)
+    return resultColor
+
+
+potentialSign = []
+lastTime = time.time()
+
+
+def callbackFunction(imgMatrix, fileName):
+    QTM_time_start = time.time()
+
+    cv2.waitKey(3)
+
+    # YOLO only detect traffic sign
+    result = YOLOmodel(imgMatrix)[0]
+    visual = result.plot()
+    if DO_NHAN_WANT_SAVE_IMG:
+        cv2.imwrite(
+            "/Users/lap15864-local/temp/Autonomous-Car/report/tu/yoloTemp/" + fileName, visual)
+
+    signs = result.boxes
+
+    bigSize = 0
+    x, y, w, h = 0, 0, 0, 0
+
+    if not len(signs.conf):
+        print("time: ", time.time()-QTM_time_start)
+        if DO_NHAN_WANT_SAVE_IMG:
+            cv2.imwrite("/Users/lap15864-local/temp/Autonomous-Car/report/tu/cnnTemp/" +
+                        fileName, np.zeros((300, 300)))
+        return
+
+    global nhanIndex
+    nhanIndex += 1
+
+    for i in range(len(signs.conf)):
+        if signs.conf[i] < Sign.MIN_ACCURACY:
+            continue
+
+        # center point (x,y), width (w), height (h)
+        xywh = (np.rint(signs.xywh[i].numpy())).astype(int)
+        # Top left corner (x1,y1), bottom right corner (x2,y2)
+        xyxy = (np.rint(signs.xyxy[i].numpy())).astype(int)
+        width, height = xywh[2], xywh[3]
+        if (width*height > bigSize):
+            bigSize = width*height
+            x = round(xyxy[0])
+            y = round(xyxy[1])
+            w = round(xywh[2])
+            h = round(xywh[3])
+
+    print("---------------crop---------------")
+    if w == 0 and h == 0:
+        if DO_NHAN_WANT_SAVE_IMG:
+            cv2.imwrite("/Users/lap15864-local/temp/Autonomous-Car/report/tu/cnn6/" +
+                        fileName, np.zeros((300, 300)))
+        return
+    print(x, y, w, h)
+    extra = 0  # Sign.EXTRA_SAFETY
+    sign = imgMatrix[(y-extra):(y+h+extra), (x-extra):(x+w+extra)]
+
+    print("---------------classification---------------")
+    cv2.imshow("sign", sign)
+    startTime = time.time()
+    prediction, t = predict(sign)
+    endTime = time.time()
+    print("total time: ", endTime-startTime, ", predict time:", t)
+    label = RESPONSE_SIGN_LABEL[np.argmax(prediction)]
+    accuracy = np.amax(prediction)
+
+    visualImg = cv2.resize(sign, (300, 300))
+    
+    if DO_NHAN_WANT_SAVE_IMG:
+        cv2.imwrite(
+            "/Users/lap15864-local/temp/Autonomous-Car/report/tu/cnnTemp_backup/" + fileName, visualImg)
+        
+    visualImg = cv2.putText(visualImg, label + "-" + str(accuracy*100)
+                            [:5] + "%", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    if DO_NHAN_WANT_SAVE_IMG:
+        cv2.imwrite(
+            "/Users/lap15864-local/temp/Autonomous-Car/report/tu/cnnTemp/" + fileName, visualImg)
+
+
+###########################
+### MAIN FUNCTION	###
+###########################
+
+
+myPath = "/Users/lap15864-local/temp/Hack-Life/outputs/pics"
+onlyfiles = [f for f in listdir(myPath) if isfile(join(myPath, f))]
+for fileName in onlyfiles:
+    img = cv2.imread(join(myPath, fileName))
+    
+    if img is None:
+        print("Could not read input image file", fileName)
+    
+    blankImg = img.copy()
+    blankImg = cv2.resize(blankImg, (420, 240))
+
+    blankImg[:, :] = [0, 0, 0]
+    blankImg[:img.shape[0], :img.shape[1]] = img
+
+    callbackFunction(blankImg, fileName)
+
+
+###########################
