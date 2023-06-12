@@ -9,6 +9,7 @@ progress-backup.txt
 __pycache__
 TU_dataset
 ignore
+<<<<<<< HEAD
 
 .DS_Store
 
@@ -17,3 +18,6 @@ img_reportDemo.zip
 
 report/tu
 report
+=======
+src/objectMovementDetection/data/
+>>>>>>> 3c61b2bbef629b7431cfc61d42a4f40fb4ddff04

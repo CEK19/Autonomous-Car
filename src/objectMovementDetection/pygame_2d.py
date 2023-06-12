@@ -5,6 +5,7 @@ from const import *
 from utils import *
 import random
 import numpy as np
+<<<<<<< HEAD
 from datetime import datetime
 import Anytime_D_StartV2 as atdstar
 import cv2
@@ -25,6 +26,12 @@ class Lane():
 
     def isCollideWithThing(self, thing):
         return self.leftLane.colliderect(thing) or self.rightLane.colliderect(thing)
+=======
+import cv2
+import os
+
+from someTestCode.DijkstraTest3 import genData
+>>>>>>> 3c61b2bbef629b7431cfc61d42a4f40fb4ddff04
 
 
 class Car():
@@ -83,7 +90,7 @@ class Car():
 class Robot(Car):
     def __init__(self) -> None:
         super().__init__(
-            initX=PLAYER_SETTING.INITIAL_X,
+            initX=np.random.randint(PLAYER_SETTING.INITIAL_X-50,PLAYER_SETTING.INITIAL_X+50),
             initY=PLAYER_SETTING.INITIAL_Y,
             maxForwardVelocity=PLAYER_SETTING.MAX_FORWARD_VELO,
             minRotationVelocity=PLAYER_SETTING.MIN_ROTATION_VELO,
@@ -94,11 +101,13 @@ class Robot(Car):
         )
         self.is_alive = True
         self.is_goal = False
-        self.lidarSignals = [INT_INFINITY]*PLAYER_SETTING.CASTED_RAYS
+        self.currAngle = math.pi + np.random.random()-0.5
+        self.lidarSignals = [PLAYER_SETTING.RADIUS_LIDAR]*PLAYER_SETTING.CASTED_RAYS
         self.lidarVisualize = [{"source": {"x": self.xPos, "y": self.yPos},
                                 "target": {"x": self.xPos, "y": self.yPos},
                                 "color": COLOR.WHITE
                                 } for x in range(PLAYER_SETTING.CASTED_RAYS)]
+                                
 
     def checkCollision(self, collisions, lane):
         if collisions == None or len(collisions) == 0:
@@ -115,14 +124,16 @@ class Robot(Car):
         for collision in collisions:
             distanceBetweenCenter = Utils.distanceBetweenTwoPoints(
                 self.xPos, self.yPos, collision.xPos, collision.yPos)
-            # https://stackoverflow.com/questions/22135712/pygame-collision-detection-with-two-circles
             if distanceBetweenCenter <= PLAYER_SETTING.RADIUS_OBJECT + OBSTACLE_SETTING.RADIUS_OBJECT:
                 self.is_alive = False
                 return
 
         if self.xPos <= 0 or self.xPos >= GAME_SETTING.SCREEN_WIDTH or self.yPos < 0 or self.yPos >= GAME_SETTING.SCREEN_HEIGHT:
             self.is_alive = False
+<<<<<<< HEAD
             return
+=======
+>>>>>>> 3c61b2bbef629b7431cfc61d42a4f40fb4ddff04
 
     def scanLidar(self, obstacles):
         inRangeLidarObject = []
@@ -151,7 +162,7 @@ class Robot(Car):
                     "y": self.yPos
                 }
                 self.lidarVisualize[ray]["color"] = COLOR.CYAN
-                self.lidarSignals[ray] = INT_INFINITY
+                self.lidarSignals[ray] = PLAYER_SETTING.RADIUS_LIDAR
                 startAngle += PLAYER_SETTING.STEP_ANGLE
         else:
             for ray in range(PLAYER_SETTING.CASTED_RAYS):
@@ -187,7 +198,7 @@ class Robot(Car):
                         isObjectDetected = True
 
                 if not isObjectDetected:
-                    self.lidarSignals[ray] = INT_INFINITY
+                    self.lidarSignals[ray] = PLAYER_SETTING.RADIUS_LIDAR
                     self.lidarVisualize[ray]["target"] = {
                         "x": target_x,
                         "y": target_y
@@ -196,7 +207,7 @@ class Robot(Car):
                     startAngle += PLAYER_SETTING.STEP_ANGLE
                     continue
 
-                distance = INT_INFINITY
+                distance = PLAYER_SETTING.RADIUS_LIDAR
 
                 for obstacle in inRangeLidarObject:
                     scalar = (self.xPos-obstacle.xPos)*math.sin(startAngle) + \
@@ -215,7 +226,7 @@ class Robot(Car):
                         "y": target_y
                     }
                 else:
-                    self.lidarSignals[ray] = INT_INFINITY
+                    self.lidarSignals[ray] = PLAYER_SETTING.RADIUS_LIDAR
                     self.lidarVisualize[ray]["color"] = COLOR.CYAN
                     self.lidarVisualize[ray]["target"] = {
                         "x": target_x,
@@ -250,6 +261,21 @@ class Robot(Car):
             targetY = lidarItemVisualize["target"]["y"]
             pygame.draw.line(screen, color, (srcX, srcY), (targetX, targetY))
 
+        if self.currRotationVelocity != 0:
+            
+            r = abs(self.currentForwardVelocity/self.currRotationVelocity)
+            centerDireaction = 0
+            if self.currRotationVelocity > 0:
+                centerDireaction = self.currAngle + math.pi
+            else:
+                centerDireaction = self.currAngle
+
+            centerX = self.xPos + r*math.cos(centerDireaction)
+            centerY = self.yPos + r*math.sin(centerDireaction)
+
+            pygame.draw.circle(screen, COLOR.WBLUE, (centerX,centerY), r,width=2)
+
+
 
 class Obstacles(Car):
     def __init__(self, initX, initY) -> None:
@@ -280,13 +306,23 @@ class Obstacles(Car):
 class PyGame2D():
     def __init__(self) -> None:
         pygame.init()
+        self.visualMap = np.zeros((GAME_SETTING.SCREEN_WIDTH,GAME_SETTING.SCREEN_HEIGHT,3),dtype='uint8')
         self.screen = pygame.display.set_mode(
             (GAME_SETTING.SCREEN_WIDTH, GAME_SETTING.SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.robot = Robot()
         self.lane = Lane()
         self.obstacles = self._initObstacle()
+        center, self.frame = genData(GAME_SETTING.SCREEN_WIDTH)
+        self.obstacles[0].xPos = center[0]
+        self.obstacles[0].yPos = center[1]
+        self.preRobotYPos = self.robot.yPos
         self.mode = 0
+        self.stepCounter = 0
+        self.totalReward = 0
+        self.preAngle = self.robot.currAngle
+        self.tmp = []
+        
 
     def _initObstacle(self):
         # TODO: UPDATE IT
@@ -296,10 +332,11 @@ class PyGame2D():
         for _ in range(numOfObstacles):
             obstacleInstance = Obstacles(
                 initX=GAME_SETTING.SCREEN_WIDTH//2 +
-                random.randint(-int(0.8*GAME_SETTING.SCREEN_WIDTH//2),
-                               int(0.8*GAME_SETTING.SCREEN_WIDTH//2)),
+                random.randint(-int(0.1*GAME_SETTING.SCREEN_WIDTH//2),
+                               int(0.1*GAME_SETTING.SCREEN_WIDTH//2)),
                 initY=random.randint(0, int(0.7*GAME_SETTING.SCREEN_HEIGHT))
             )
+            cv2.circle(self.visualMap,(obstacleInstance.xPos,obstacleInstance.yPos),PLAYER_SETTING.RADIUS_OBJECT,(0,0,255),-1)
             obstacles.append(obstacleInstance)
         return obstacles
 
@@ -307,19 +344,50 @@ class PyGame2D():
         for obstacle in self.obstacles:
             keys = ACTIONS_LIST
             probs = OBSTACLE_SETTING.PROBABILITIES_ACTION
-            randomIndex = random.choices(range(len(keys)), probs)[0]
+            # randomIndex = random.choices(range(len(keys)), probs)[0]
+            randomIndex = 2
             choosedKey = keys[randomIndex]
             obstacle.move(action=choosedKey)
 
     def action(self, action):
+        self.stepCounter += 1
+        self.lastAction = action
+        preX, preY = self.robot.xPos, self.robot.yPos
         self.robot.move(action=action)
+        cv2.line(self.visualMap,(int(preX),int(preY)),(int(self.robot.xPos),int(self.robot.yPos)),(0,255,0),1)
         self._obstacleMoves()
         self.robot.checkCollision(collisions=self.obstacles, lane=self.lane)
         self.robot.scanLidar(obstacles=self.obstacles)
         self.robot.checkAchieveGoal()
 
+<<<<<<< HEAD
     def is_done(self):
         if ((not self.robot.is_alive) or self.robot.is_goal):
+=======
+    def evaluate(self):
+
+        yCheck = 1
+        xCheck = 0.5
+
+        reward = 0
+
+        reward += (self.robot.yPos - self.preRobotYPos)*yCheck
+        self.preRobotYPos = self.robot.yPos
+
+        if int(self.robot.yPos) != GAME_SETTING.SCREEN_WIDTH:
+            bestPos = list(self.frame[int(self.robot.yPos)]).index(200)
+        else:
+            bestPos = self.robot.xPos
+            reward += 100
+        reward -= abs(self.robot.xPos - bestPos)*xCheck
+
+        return reward
+
+    def is_done(self):
+        if ((not self.robot.is_alive) or self.robot.is_goal or self.stepCounter > PLAYER_SETTING.MAX_STEP_PER_EPOCH):
+            counter = len(os.listdir("./LastRun"))
+            cv2.imwrite("./LastRun/"+str(counter)+".png",self.visualMap)
+>>>>>>> 3c61b2bbef629b7431cfc61d42a4f40fb4ddff04
             return True
         return False
 
@@ -335,6 +403,10 @@ class PyGame2D():
                 exit()
 
         self.robot.draw(screen=self.screen)
+        for each in self.tmp:
+            pygame.draw.circle(self.screen,COLOR.WBLUE,(each.xPos,each.yPos),20,2)
+        # pygame.draw.circle(self.screen,COLOR.WBLUE,(self.robot.xPos + 10*math.cos(self.robot.currAngle + math.pi/2),self.robot.yPos + 10*math.sin(self.robot.currAngle + math.pi/2)),10,2 )
+        self.tmp = []
         for obstacle in self.obstacles:
             obstacle.draw(screen=self.screen)
         pygame.display.flip()
@@ -423,5 +495,20 @@ class PyGame2D():
                 # Decide the action suitable to the map
 
 
+<<<<<<< HEAD
 game = PyGame2D()
 game.controller(mode=GAME_SETTING.MODE_AUTO, game=game)
+=======
+# import time
+# game = PyGame2D()
+# ct = 0
+# while True:
+#     Utils.inputUser(game)
+#     ct+= 1
+#     game.view()
+#     data = game.evaluate()
+#     # print(f"{data[0]:>15} {data[1]:>15} {data[2]:>15} {data[3]:>15} {data[4]:>15} {data[5]:>15} {data[6]:>20}")
+#     print("                              ",int(data),"      ",ct)
+#     time.sleep(0.05)
+#     pass
+>>>>>>> 3c61b2bbef629b7431cfc61d42a4f40fb4ddff04
