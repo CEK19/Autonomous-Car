@@ -1,0 +1,17 @@
+﻿<Window x:Class="Wpf_AutoTrain.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Wpf_AutoTrain"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Button x:Name="button" Content="Run this shit" HorizontalAlignment="Left" Margin="128,114,0,0" VerticalAlignment="Top" Width="230" Click="button_Click"/>
+        <Label x:Name="label" Content="Label" HorizontalAlignment="Center" Margin="0,217,0,0" VerticalAlignment="Top" Width="738" Height="123"/>
+        <Label x:Name="label1" Content="Run loop&#xD;&#xA;" HorizontalAlignment="Left" Margin="483,141,0,0" VerticalAlignment="Top" Width="91" Height="26"/>
+        <Label x:Name="runLoop" Content="0" HorizontalAlignment="Left" Margin="541,141,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="epoch" Content="Epoch" HorizontalAlignment="Left" Margin="483,115,0,0" VerticalAlignment="Top" Width="91" Height="26"/>
+
+    </Grid>
+</Window>

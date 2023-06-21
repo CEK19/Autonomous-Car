@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v5.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v5.0": {
+      "Wpf_AutoTrain/1.0.0": {
+        "runtime": {
+          "Wpf_AutoTrain.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Wpf_AutoTrain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
