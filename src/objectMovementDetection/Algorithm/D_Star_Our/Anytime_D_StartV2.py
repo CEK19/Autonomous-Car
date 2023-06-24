@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from plottingV2 import *
 from const import *
 from utils import *
-from temp import *
+from Gen import *
 
 
 class ADStar:

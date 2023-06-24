@@ -58,7 +58,12 @@ Video hướng dẫn kết nối với turtlebot và chạy thử model AI ở [
 
 ### Module né vật cản
 
-> Tất cả code hiện hành của module này được code trong file [kot3_pkg/scripts/ros_combine_lidar_lane.py](kot3_pkg/scripts/ros_combine_lidar_lane.py). Do ros khi nạp xuống robot được chuyển thành định dạng khác, nên ko thể đọc được từ file thứ 2. Chính vì vậy, các utils không thể tách thành file riêng.
+> File deploy robot: [ros_combine_lidar_lane.py](./kot3_pkg/scripts/ros_combine_lidar_lane.py)
+> Đường dẫn tới thư mục các hướng tiếp cận quá khứ: ```"src/objectMovementDetection/"```
+> Cấu trúc thư mục bao gồm:
+> - Reinforcement Learning/: Đây là thư mục chứa việc nghiên cứu về việc áp dụng Reinforcement Learning
+> - Algorithm/: Đây là thư mục chứa các nghiên cứu về việc áp dụng giải thuật như D* và A*
+
 
 - Các cách tiếp cận:
   1. Reinforcement Learning (RL): Với ý tưởng rằng, ta sẽ train robot trong môi trường mô phỏng rất nhiều lần, nhằm giúp robot học được kinh nghiệm. Từ đó đem model nạp xuống robot và chạy thực tế. Tuy nhiên do sự bùng nổ về số state đầu vào. Và thiếu hụt thông tin về vận tốc và hướng của vật cản, nên hướng tiếp cận RL cho ra kết quả không khả quan.

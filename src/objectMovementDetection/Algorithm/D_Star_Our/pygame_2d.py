@@ -5,15 +5,15 @@ from const import *
 from utils import *
 import random
 import numpy as np
-<<<<<<< HEAD
 from datetime import datetime
 import Anytime_D_StartV2 as atdstar
+from genGraph import genData
 import cv2
-from temp import *
+from Gen import *
 
 
 class Lane():
-    def __init__(self) -> None:
+    def __init__(self):
         #  (left, top, width, height)
         self.leftLane = pygame.Rect((LANE_SETTING.LEFT_PADDING, LANE_SETTING.TOP_PADDING), (
             LANE_SETTING.WIDTH_OF_LANE_BORDER, GAME_SETTING.SCREEN_HEIGHT))
@@ -26,12 +26,6 @@ class Lane():
 
     def isCollideWithThing(self, thing):
         return self.leftLane.colliderect(thing) or self.rightLane.colliderect(thing)
-=======
-import cv2
-import os
-
-from someTestCode.DijkstraTest3 import genData
->>>>>>> 3c61b2bbef629b7431cfc61d42a4f40fb4ddff04
 
 
 class Car():
@@ -130,10 +124,7 @@ class Robot(Car):
 
         if self.xPos <= 0 or self.xPos >= GAME_SETTING.SCREEN_WIDTH or self.yPos < 0 or self.yPos >= GAME_SETTING.SCREEN_HEIGHT:
             self.is_alive = False
-<<<<<<< HEAD
             return
-=======
->>>>>>> 3c61b2bbef629b7431cfc61d42a4f40fb4ddff04
 
     def scanLidar(self, obstacles):
         inRangeLidarObject = []
@@ -278,7 +269,7 @@ class Robot(Car):
 
 
 class Obstacles(Car):
-    def __init__(self, initX, initY) -> None:
+    def __init__(self, initX, initY):
         super().__init__(
             initX=initX,
             initY=initY,
@@ -304,7 +295,7 @@ class Obstacles(Car):
 
 
 class PyGame2D():
-    def __init__(self) -> None:
+    def __init__(self):
         pygame.init()
         self.visualMap = np.zeros((GAME_SETTING.SCREEN_WIDTH,GAME_SETTING.SCREEN_HEIGHT,3),dtype='uint8')
         self.screen = pygame.display.set_mode(
@@ -360,34 +351,8 @@ class PyGame2D():
         self.robot.scanLidar(obstacles=self.obstacles)
         self.robot.checkAchieveGoal()
 
-<<<<<<< HEAD
     def is_done(self):
         if ((not self.robot.is_alive) or self.robot.is_goal):
-=======
-    def evaluate(self):
-
-        yCheck = 1
-        xCheck = 0.5
-
-        reward = 0
-
-        reward += (self.robot.yPos - self.preRobotYPos)*yCheck
-        self.preRobotYPos = self.robot.yPos
-
-        if int(self.robot.yPos) != GAME_SETTING.SCREEN_WIDTH:
-            bestPos = list(self.frame[int(self.robot.yPos)]).index(200)
-        else:
-            bestPos = self.robot.xPos
-            reward += 100
-        reward -= abs(self.robot.xPos - bestPos)*xCheck
-
-        return reward
-
-    def is_done(self):
-        if ((not self.robot.is_alive) or self.robot.is_goal or self.stepCounter > PLAYER_SETTING.MAX_STEP_PER_EPOCH):
-            counter = len(os.listdir("./LastRun"))
-            cv2.imwrite("./LastRun/"+str(counter)+".png",self.visualMap)
->>>>>>> 3c61b2bbef629b7431cfc61d42a4f40fb4ddff04
             return True
         return False
 
@@ -495,20 +460,5 @@ class PyGame2D():
                 # Decide the action suitable to the map
 
 
-<<<<<<< HEAD
 game = PyGame2D()
 game.controller(mode=GAME_SETTING.MODE_AUTO, game=game)
-=======
-# import time
-# game = PyGame2D()
-# ct = 0
-# while True:
-#     Utils.inputUser(game)
-#     ct+= 1
-#     game.view()
-#     data = game.evaluate()
-#     # print(f"{data[0]:>15} {data[1]:>15} {data[2]:>15} {data[3]:>15} {data[4]:>15} {data[5]:>15} {data[6]:>20}")
-#     print("                              ",int(data),"      ",ct)
-#     time.sleep(0.05)
-#     pass
->>>>>>> 3c61b2bbef629b7431cfc61d42a4f40fb4ddff04
