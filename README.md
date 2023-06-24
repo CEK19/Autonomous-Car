@@ -44,15 +44,21 @@ catkin_make
 - Le Hoang Minh Tu - 1915812
 
 ---
-**Guideline**:
+# Guideline:
+
+---
 
 **Module né vật cản**
 - Các cách tiếp cận:
 - Hướng tiếp cận đang được sử dụng:
 
+---
+
 **Module nhận diện làn đường**
 - Các cách tiếp cận:
 - Hướng tiếp cận đang được sử dụng:
+
+---
 
 **Module nhận diện và phân loại biển báo giao thông**
 - Các cách tiếp cận: Có 2 cách tiếp cận chính gồm:
@@ -76,12 +82,47 @@ pip install ultralytics
 Truy cập https://www.makesense.ai/ > Đánh nhãn > Xuất ở định dạng YOLO XML > Download
 
 **Bước 5: [YOLOV8] Huấn luyện mô hình:**
-Tổng quan các bước gồm: Cấu hình file > Huấn luyện > Lưu model dưới định dạng "tenModel.pt"
+Tổng quan các bước gồm: Config file > Huấn luyện > Lưu model dưới định dạng "anyNameModel.pt"
 
-- Config file
-- Tạo folder
-- Mẫu file huấn luyện
-- 
+**1. Tạo folder train và validation:**
+   - Train:
+     - /PATH_TO_TRAIN/train/images (trong đây chưa các ảnh train *.jpg)
+     - /PATH_TO_TRAIN/train/labels (trong đây chưa các file train labels *.txt)
+   - Validation:
+     - /PATH_TO_VAL/val/images (trong đây chưa các ảnh validation *.jpg)
+     - /PATH_TO_VAL/val/labels (trong đây chưa các file validation labels *.txt)
+**2. Chỉnh sửa file configuration:**
+```config.yaml
+train: /PATH_TO_TRAIN/train/images
+val: /PATH_TO_VALIDATION/val/images
+names: 
+  0: sign
+  // 1: another_thing1 (if need) -> new label
+  // 2: another_thing (if need) -> new label 
+```
+**3. Huấn luyện: Tham khảo file sau main.ipynb:**
+[Reference Training Folder](https://drive.google.com/drive/folders/1odlIC2L1V09jNq_5MxbbNF4dSDWKU7GN?usp=sharing)
+
+**4. Save và tải model:**
+
+Tạm gọi mô hình đã được huấn luyện có tên là signal.pt
+
+Tới bước này ta đã xong bước huấn luyện YOLO, ta sẽ triển khai YOLO để cắt được phần ảnh hợp lí nhất sau đó đưa vào CNN. Giả sử đã cắt được bước hình biển báo giao thông rồi và bây giờ cần phân loại, ta tiếp tục các bước sau đối với CNN
+
+**Bước 6: [CNN] Lựa chọn model và data phù hợp:**
+Tham khảo model + data biển báo giao thông được lấy tại [đây](https://www.kaggle.com/datasets/valentynsichkar/traffic-signs-preprocessed) của tác giả này.
+
+**Bước 6: [CNN] Data augmentation:**
+Dựa vào data đã thu thập được, sau đó ta thu thập thêm data thực tế của mình và gán nhãn. Sau đó thực hiện một số kĩ thuật data augmentation tại [đây](https://www.tensorflow.org/tutorials/images/data_augmentation). Có thể ghép thêm nền của các vật cảnh khác từ nhữg hình có sẵn để tăng độ chính xác và tổng quan của model
+
+**Bước 7: [CNN] Huấn luyện model CNN:**
+Tham khảo tại file sau: [đây](https://github.com/CEK19/Autonomous-Car/blob/document/src/trafficSignDetection/train.ipynb)
+
+**Tổng kết**: Toàn bộ quá trình từ việc triển khai model signal.pt để cắt hình hợp lí nhất, sau đó đưa vào CNN có thể tham khảo tại: [Ref YOLO + CNN](https://github.com/CEK19/Autonomous-Car/blob/document/kot3_pkg/scripts/trafficSignV2.py). Về ý tưởng chung được miêu tả như sau:
+- Sử dụng YOLO để cắt hình biển báo ra khỏi hình tổng. Trên một hình có thể có nhiều biển báo và ta ưu tiên vị trí boundary box có độ chính xác lớn nhất mà thoả ngưỡng về kích cỡ.
+- Hình biển báo sau khi được crop ra sẽ được đưa vào khối CNN để phân loại 1 trong 5 loại biển báo đã đề ra.
+- Lưu ý rằng nên thay đổi kiến trúc model CNN để được độ chính xác cao hơn.
+
 
 **Module nhận diện và phân loại đèn giao thông**
 - Các cách tiếp cận:
