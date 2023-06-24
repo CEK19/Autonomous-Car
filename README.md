@@ -130,6 +130,6 @@ Tham khảo tại file sau: [đây](https://github.com/CEK19/Autonomous-Car/blob
 
 ---
 
-**Module nhận diện và phân loại đèn giao thông**
-- Các cách tiếp cận:
+**Module nhận diện và phân loại đèn giao thông [Phần này chưa được sử dụng trong hệ thống thực]**
+- Các cách tiếp cận: 
 - Hướng tiếp cận đang được sử dụng:
