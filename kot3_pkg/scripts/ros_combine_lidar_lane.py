@@ -34,15 +34,23 @@ WIDTH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*50)
 HEIGH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*50)
 WIDTH_OPTIMAL_PATH = 50
 HEIGH_OPTIMAL_PATH = 50
+
+# value of pixel when blocked or non-blocked
 BLOCKED_COLOR = 255
 NON_BLOCKED_COLOR = 0
+
+# Phình đường đi
 LANE_THICKNESS = 2
+# Phình vật cản theo chiều x và chiều y
 DELTA = 12  # 50 / 14 / 10
 DELTA_X = DELTA
 DELTA_Y = DELTA
+
 # for check space of goal is free
 AREA_WIDTH = 4
 AREA_HEIGHT = 10
+
+# calculate velocity
 NUM_POINTS_OF_DIRECTION = 8  # 35 / 12
 MAX_STRAIGHT_VELOCITY = 0.05  # 0.05
 MIN_STRAIGHT_VELOCITY = 0
@@ -50,18 +58,19 @@ MAX_TURN_VELOCITY = 0.5  # 2.0 # 1.0
 MIN_TURN_VELOCITY = 0
 MAGIC_NUMBER = 6
 
-IMAGE_SAVED_PER_FRAME = 1
-frameIndex = 0
-
+# choose goal
 LEFT_GOAL = 'left-goal'
 RIGHT_GOAL = 'right-goal'
 ANOTHER_GOAL = 'another-goal'
 
+# log path for tracing
+IMAGE_SAVED_PER_FRAME = 1
+frameIndex = 0
 LOG_PATH = "/home/ubuntu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/log.txt"
 IMG_PATH = "/home/ubuntu/NCKH_workspace/KOT3_ws/src/kot3_pkg/scripts/imgs/lidar/"
 
+# change publish topic whenever system architecture is changed
 HAVE_DECISION_MAKING = False
-
 pub = 0
 if HAVE_DECISION_MAKING:
     pub = rospy.Publisher(TOPIC_NAME_AVOIDANCE, String, queue_size=1)
@@ -138,6 +147,7 @@ class Utils:
     def convertPixelToMet(pixel):
         return pixel*(2*LIDAR_MAX_RANGE)/WIDTH_SIMULATE_MAP
 
+    # change gray image to color (RGB) image
     @staticmethod
     def imgInColor(img):
         imgRGB = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
@@ -162,6 +172,7 @@ class CombineLidarLane:
         self.lane_signal_subscriber = rospy.Subscriber(TOPIC_NAME_LANE_DETECTION, String, self.updateLaneDetectionSignal)
         self.lidar_signal_subscriber = rospy.Subscriber(TOPIC_NAME_LIDAR, LaserScan, self.updateLidarSignal)
         self.sign_signal_cubcriber = rospy.Subscriber(TOPIC_NAME_TRAFFIC_SIGN, String, self.updateSignSignal)
+        
         self.ranges = [1 for _ in range(360)]
         self.tracePath = []
         self.sign = ""
@@ -177,7 +188,6 @@ class CombineLidarLane:
         self.goal2Y = None
 
         # Position of lane
-        self.lastTimeReciveLane = time.time()
         self.leftBottomLaneX = 37
         self.leftBottomLaneY = HEIGH_OPTIMAL_PATH - 1
 
@@ -189,6 +199,9 @@ class CombineLidarLane:
 
         self.rightBottomLaneX = WIDTH_OPTIMAL_PATH - 1 - self.leftBottomLaneX
         self.rightBottomLaneY = HEIGH_OPTIMAL_PATH - 1
+        
+        # for auto rotate map (Cơ chế xoay map)
+        self.lastTimeReciveLane = time.time()
 
         # lane detection
         self.frameIndex = 0
@@ -206,8 +219,8 @@ class CombineLidarLane:
         rightBottomLaneYtmp = 0
         rightTopLaneXtmp = 0
         rightTopLaneYtmp = 0
-
         
+        # Kiểm tra đường bên trái có phải đường thẳng song song trực tung, bởi đường thẳng song song trục tung x = a, ko thể thể hiện bằng y = ax + b
         if self.leftBottomLaneX == self.leftTopLaneX:
             leftBottomLaneXtmp = self.leftBottomLaneX
             leftBottomLaneYtmp = HEIGH_OPTIMAL_PATH-1
@@ -223,6 +236,7 @@ class CombineLidarLane:
             leftTopLaneXtmp = round(-B/A)
             leftTopLaneYtmp = 0
             
+            # cắt ngắn đường bên trái, chỉ lấy phần nằm trong khung hình
             _, lbPoint, ltPoint = cv2.clipLine((0, 0, WIDTH_OPTIMAL_PATH-1, HEIGH_OPTIMAL_PATH-1), (leftBottomLaneXtmp, leftBottomLaneYtmp), (leftTopLaneXtmp, leftTopLaneYtmp))
             
             leftBottomLaneXtmp = lbPoint[0]
@@ -232,6 +246,8 @@ class CombineLidarLane:
             
             simMap = cv2.line(simMap, (leftBottomLaneXtmp, leftBottomLaneYtmp), (leftTopLaneXtmp, leftTopLaneYtmp), BLOCKED_COLOR, LANE_THICKNESS)
         
+        
+        # Kiểm tra đường bên phải có phải đường thẳng song song trực tung, bởi đường thẳng song song trục tung x = a, ko thể thể hiện bằng y = ax + b
         if self.rightBottomLaneX == self.rightTopLaneX:
             rightBottomLaneXtmp = self.rightBottomLaneX
             rightBottomLaneYtmp = HEIGH_OPTIMAL_PATH-1
@@ -247,6 +263,7 @@ class CombineLidarLane:
             rightTopLaneXtmp = round(-D/C)
             rightTopLaneYtmp = 0
             
+            # cắt ngắn đường bên phải, chỉ lấy phần nằm trong khung hình
             _, rbPoint, rtPoint = cv2.clipLine((0, 0, WIDTH_OPTIMAL_PATH-1, HEIGH_OPTIMAL_PATH-1), (rightBottomLaneXtmp, rightBottomLaneYtmp), (rightTopLaneXtmp, rightTopLaneYtmp))
             
             rightBottomLaneXtmp = rbPoint[0]
@@ -257,16 +274,20 @@ class CombineLidarLane:
             simMap = cv2.line(simMap, (rightBottomLaneXtmp, rightBottomLaneYtmp), (rightTopLaneXtmp, rightTopLaneYtmp), BLOCKED_COLOR, LANE_THICKNESS)
 
 
+        # Goal bên trái là trung điểm của làn trái
         self.goalX = (3*leftTopLaneXtmp+rightTopLaneXtmp)//4
         self.goalY = (3*leftTopLaneYtmp+rightTopLaneYtmp)//4
+        # Goal bên phải là trung điểm làn phải
         self.goal2X = (leftTopLaneXtmp+3*rightTopLaneXtmp)//4
         self.goal2Y = (leftTopLaneYtmp+3*rightTopLaneYtmp)//4
 
         return simMap
     
+    
     def updateSignSignal(self, msg):
         parsed = json.loads(msg.data)
         self.sign = parsed["sign"]
+
 
     def updateLaneDetectionSignal(self, msg):
         parsed = json.loads(msg.data)
