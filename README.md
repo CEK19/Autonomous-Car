@@ -56,9 +56,11 @@ Video hướng dẫn kết nối với turtlebot và chạy thử model AI ở [
 
 ---
 
+## Module né vật cản
+
 - Các cách tiếp cận:
   1. Reinforcement Learning (RL): Với ý tưởng rằng, ta sẽ train robot trong môi trường mô phỏng rất nhiều lần, nhằm giúp robot học được kinh nghiệm. Từ đó đem model nạp xuống robot và chạy thực tế. Tuy nhiên do sự bùng nổ về số state đầu vào. Và thiếu hụt thông tin về vận tốc và hướng của vật cản, nên hướng tiếp cận RL cho ra kết quả không khả quan.
-  1. Giải thuật tìm đường đi: Ta có thể áp dụng một số giải thuật tìm đường đi như D*, A*, BFS, DFS, Best First, ... Đối với hướng tiếp cận này, sẽ không thể có thể né các vật cản lao từ đằng sau.
+  2. Giải thuật tìm đường đi: Ta có thể áp dụng một số giải thuật tìm đường đi như D*, A*, BFS, DFS, Best First, ... Đối với hướng tiếp cận này, sẽ không thể có thể né các vật cản lao từ đằng sau.
 - Hướng tiếp cận đang được sử dụng (cách 2):
   - **BƯỚC 1:** Cài đặt thư viện
   ```
