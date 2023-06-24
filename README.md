@@ -51,11 +51,26 @@ DO SOMETHING HERE
 ---
 # Guideline:
 
----
 
-**Module né vật cản**
+
+## Module né vật cản
+
 - Các cách tiếp cận:
-- Hướng tiếp cận đang được sử dụng:
+  1. Reinforcement Learning (RL): Với ý tưởng rằng, ta sẽ train robot trong môi trường mô phỏng rất nhiều lần, nhằm giúp robot học được kinh nghiệm. Từ đó đem model nạp xuống robot và chạy thực tế. Tuy nhiên do sự bùng nổ về số state đầu vào. Và thiếu hụt thông tin về vận tốc và hướng của vật cản, nên hướng tiếp cận RL cho ra kết quả không khả quan.
+  1. Giải thuật tìm đường đi: Ta có thể áp dụng một số giải thuật tìm đường đi như D*, A*, BFS, DFS, Best First, ... Đối với hướng tiếp cận này, sẽ không thể có thể né các vật cản lao từ đằng sau.
+- Hướng tiếp cận đang được sử dụng (cách 2):
+  - **BƯỚC 1:** Cài đặt thư viện
+  ```
+  pip install pathfinding
+  ```
+  - **BƯỚC 2:** Visualize dữ liệu lên map kích thước 50x50 pixel
+    - Theo quy ước về tỉ lệ 1x1 pixel<sup>2</sup> = 2x2 cm<sup>2</sup>
+    - Từ quy ước trên, ta có thể visualize dữ liệu từ lidar lên map một cách chính xác theo đúng tỉ lệ.
+    - Tuy nhiên việc visual làn đường có tính tương đối hơn, và sẽ được xử lý bên khối AI làn đường
+    - Hàm vẽ map sẽ được xử lý như hàm trigger, nghĩa là nếu có 1 trong những input được update mới, map sẽ được update theo
+    - Trong đó, ta có áp dụng phình vật cản. Với độ phình của vật cản sấp sỉ 
+
+
 
 ---
 
