@@ -15,4 +15,4 @@ Các file trên là thu thập từ các nguồn internet như github / stackove
    - Ta sẽ import và tiến tới bước 2
 1. Kéo thả các thanh
    - Ta sẽ tiến hành kéo thả các thanh, sao cho kẹp được khoảng màu mong muốn (như hình dưới)
-   ![Cách chỉnh tool](../gitImg/tool.png)
+   ![Cách chỉnh tool](../gitImg/tool2.png)

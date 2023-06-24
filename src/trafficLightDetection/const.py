@@ -107,12 +107,8 @@ class COLOR:
 	
 	
 class Setting:
-	PICTURE_PATH = "./assets/tmp/red2_inpaintV3.png"	# "./assets/ngocngec/yellow1.jpg""C:\\Users\\Admin\\Documents\\coding\\Autonomous-Car\\src\\trafficLightDetection\\assets\\demo\\red2.jpg"
-	VIDEO_PATH = "./assets/ignore/yellowVid.mp4"	# PATH = "./assets/ignore/org.mp4"
+	PICTURE_PATH = "./assets/choaLedResult/red2_inpaintV3.png"
+	VIDEO_PATH = "./assets/ignore/yellowVid.mp4"
 	MODE = Mode.PIC
 	COLOR_THRESHOLD = COLOR_THRESHOLD.newDemo
 	STANDARD_PROPERTY = STANDARD_PROPERTY.demo
-
-# "./assets/ignore/redVid.mp4"
-# "./assets/ignore/yellowVid.mp4"
-# "./assets/ignore/greenVidFinal.mov"

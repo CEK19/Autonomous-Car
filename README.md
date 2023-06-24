@@ -64,26 +64,26 @@ Video hướng dẫn kết nối với turtlebot và chạy thử model AI ở [
   1. Reinforcement Learning (RL): Với ý tưởng rằng, ta sẽ train robot trong môi trường mô phỏng rất nhiều lần, nhằm giúp robot học được kinh nghiệm. Từ đó đem model nạp xuống robot và chạy thực tế. Tuy nhiên do sự bùng nổ về số state đầu vào. Và thiếu hụt thông tin về vận tốc và hướng của vật cản, nên hướng tiếp cận RL cho ra kết quả không khả quan.
   2. Giải thuật tìm đường đi: Ta có thể áp dụng một số giải thuật tìm đường đi như D*, A*, BFS, DFS, Best First, ... Đối với hướng tiếp cận này, sẽ không thể có thể né các vật cản lao từ đằng sau.
 - Hướng tiếp cận đang được sử dụng (cách 2):
-  - **BƯỚC 1:** Cài đặt thư viện
+  - **Bước 1:** Cài đặt thư viện
   ```
   pip install pathfinding
   ```
-  - **BƯỚC 2:** Visualize dữ liệu lên map kích thước 50x50 pixel
+  - **Bước 2:** Visualize dữ liệu lên map kích thước 50x50 pixel
     - Theo quy ước về tỉ lệ 1x1 pixel<sup>2</sup> = 2x2 cm<sup>2</sup>
     - Từ quy ước trên, ta có thể visualize dữ liệu từ lidar lên map một cách chính xác theo đúng tỉ lệ.
     - Tuy nhiên việc visual làn đường có tính tương đối hơn, và sẽ được xử lý bên khối AI làn đường.
     - Hàm vẽ map sẽ được xử lý như hàm trigger, nghĩa là nếu có 1 trong những input được update mới, map sẽ được update theo.
     - Trong đó, ta có áp dụng phình vật cản. Với ```độ phình của vật cản = bán kính robot + hằng số``` (hằng số này sẽ giúp robot né một cách an toàn hơn). Bên cạnh đó, làn đường cũng cần được vẽ dày lên với hàm **cv.line( size=2 )**, việc này giúp ngăn ngừa giải thuật kiếm đường đi xuyên qua làn đường (khi làn đường đang nằm nghiên)
-  - **BƯỚC 3:** Ta cần chọn điểm goal tạm thời để làm input của giải thuật.
+  - **Bước 3:** Ta cần chọn điểm goal tạm thời để làm input của giải thuật.
     - Các giải thuật tìm đường cần input gồm vị trí hiện tại và vị trí đích. Chính vì vậy, ta cần tìm ra cơ chế chọn điểm goal phù hợp (đọc thêm tại [mục 4.2.2.3 Cách chọn điểm goal ở từng frame](https://drive.google.com/file/d/1Z_Ez_u44AQI37l7NrvjPNhta7aDiH2m1/view?usp=drive_link)).
-  - **BƯỚC 4:** Một số chiến thuật
+  - **Bước 4:** Một số chiến thuật
     - **Tìm khoảng cách từ robot đến goal (đã bỏ):** Cách này khi áp dụng nhận được kết quả không như mong đợi, hành vi của robot khá lắc, lắc trái, lắc phải.
     - **Tìm khoảng cách hình chiếu từ robot lên 2 làn đường:** nhằm tìm làn mà robot gần hơn.
     - **Tìm khoảng trống trước robot:** nhằm giúp robot né từ xa.
     - **Xoá hàng ngang tại điểm goal:** giúp robot tránh bị stuck khi vẫn còn đường di chuyển
-  - **BƯỚC 5:** Áp dụng cơ chế xoay map (tăng tính đảm bảo khi không có dữ liệu AI làn đường gửi tới)
+  - **Bước 5:** Áp dụng cơ chế xoay map (tăng tính đảm bảo khi không có dữ liệu AI làn đường gửi tới)
     - Cần tính toán thời gian khi bắt đầu xoay map:
-    ![Lượt đồ thời gian](./gitImg/whenToRotateMap.png)
+    ![Lượt đồ thời gian](./gitImg/whenToRotateMap2.png)
     - Trong đó, ta sẽ tiến hành xoay map mỗi khi 
 
 
@@ -224,15 +224,39 @@ Tham khảo tại file sau: [đây](https://github.com/CEK19/Autonomous-Car/blob
 
 ### Module nhận diện và phân loại đèn giao thông [Phần này chưa được sử dụng trong hệ thống thực]
 
+> Đường dẫn tới thư mục: ```"src/trafficLightDetection/"```
+> Cấu trúc thư mục bao gồm:
+> - research/: Đây là thư mục chứa các code thử nghiệm một số cách khác (tăng / giảm độ sáng)
+> - assets/: Đây là nơi lưu trữ những tấm ảnh đèn giao thông
+>   - assets/choaLedResult/: Đây là folder chứa kết quả sau khi xử lý choá
+> - [const.py](./src/trafficLightDetection/const.py): chứa các hằng số, và các thông số config
+> - [main.py](./src/trafficLightDetection/main.py): giải thuật để phân loại đèn giao thông. Gồm 3 mode là
+>   - pic: đọc 1 bức ảnh và đưa ra tín hiệu đèn
+>   - camera: đọc liên tục từ dữ liệu camera / webcam
+>   - video: đọc từng frame của video và trả kết quả liên tục
+> - [choaLedHandler.py](./src/trafficLightDetection/choaLedHandler.py): Xử lý choá sáng cho đèn
+
 - Các cách tiếp cận: 
   1. **Computer Vision:** Bằng việc lọc các khoảng màu xanh / đỏ / vàng, và tìm vùng màu có kích thước hình tròn và giới hạn trong 1 độ lớn, ta có thể xác định được màu của đèn giao thông trong môi trường phòng thí nghiệm.
-  1. **YOLO V8:** xử dụng yolo v8 để tìm và phân loại đèn giao thông.
+  2. **YOLO V8:** xử dụng yolo v8 để tìm và phân loại đèn giao thông.
   
 - Hạn chế:
   - **Độ choá cao:** Do module đèn của arduino có cấu tạo khá bự, dẫn đến độ choá cao (đã xử lý được trường hợp này)
   - **Độ phân giải thấp:** Do hạn chế về độ phân giải của camera robot (chưa thể cải thiện, có thể được cải thiện khi nâng cấp camera mới)
 
 - Hướng tiếp cận đang được sử dụng (hướng 1):
-  - BƯỚC 1: Ta tiến hành lọc màu đỏ / xanh / vàng trong bức hình
-    - Ta cần xác định khoảng màu và kẹp lại bằng **cv2.inRange(lowerColor, upperColor)**, hàm này với đầu vào là màu HSV. Chính vì vậy, ta cần tool để xác định khoảng màu phù hợp. Tool tìm khoảng màu HSV có thể được tìm thấy trong thư mục ```src/trafficLightDetection/HSV_Picker```. Và thực hiện theo file [README.md](./src/trafficLightDetection/HSV_Picker/README.md) trong thư mục đó.
-  
+  - **Bước 1:** Ta tiến hành lọc màu đỏ / xanh / vàng trong bức hình
+    - Ta cần xác định khoảng màu và kẹp lại bằng **cv2.inRange(lowerColor, upperColor)**, hàm này với đầu vào là màu HSV. Chính vì vậy, ta cần tool để xác định khoảng màu phù hợp. Tool tìm khoảng màu HSV có thể được tìm thấy trong thư mục ```src/trafficLightDetection/HSV_Picker```. Và thực hiện theo file [/HSV_Picker/README.md](./src/trafficLightDetection/HSV_Picker/README.md) trong thư mục đó.
+    - Đầu ra của bước này là 3 tấm ảnh, với mỗi tấm ảnh giữ lại 1 màu lần lượt là xanh / đỏ / vàng.
+  - **Bước 2:** Tìm vùng khoảng màu phù hợp
+    - Ta dựa vào **cv2.findContour** để tìm vùng khoảng màu có kích thước kẹp trong khoảng min-max và có khung chứa là hình gần vuông (do ánh sáng mờ mờ từ đèn có thể bị bắt trong quá trình này).
+    - Vùng mà ta thu được từ quá trình trên chính là vùng chứa đèn giao thông.
+  - **Bước 3:** Ta chọn màu có vùng lớn nhất
+    - Trong trường hợp ta có thể thấy được nhiều ngã 4 trong cùng 1 thời điểm
+    ![manyLight](./gitImg/manyLight.png)
+    Khi này ta sẽ lấy đèn gần ta nhất (kích thước vùng màu lớn nhất)
+  - **Bước 4:** Xử lý choá (phiên bản camera điện thoại)
+    - Sau khi đã giữ lại khoảng màu đỏ mong muốn, tuy nhiên do hiện tượng choá, nên phần trung tâm của đèn ta không bắt được, và phần vièn có thể mỏng. Xe sẽ khó nhận diện khi nhìn đèn với 1 góc xiên.
+    ![choaLed](./gitImg/choaLed.png)
+    - Khi này, nhằm giải quyết vấn đề trên, ta tìm các khoảng gần màu trắng tuyệt đối (trắng do loá sáng gây ra), sau đó áp dụng hàm **cv2.inpaint()** để tô phần màu trắng bằng 4 pixel xung quanh. Kết quả thu được như hình bên dưới
+    ![choaLed result](./gitImg/choaLedResult.png)
