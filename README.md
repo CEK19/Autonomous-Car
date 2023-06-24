@@ -128,6 +128,7 @@ Tham khảo tại file sau: [đây](https://github.com/CEK19/Autonomous-Car/blob
 - Hình biển báo sau khi được crop ra sẽ được đưa vào khối CNN để phân loại 1 trong 5 loại biển báo đã đề ra.
 - Lưu ý rằng nên thay đổi kiến trúc model CNN để được độ chính xác cao hơn.
 
+---
 
 **Module nhận diện và phân loại đèn giao thông**
 - Các cách tiếp cận:
