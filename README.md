@@ -51,9 +51,10 @@ DO SOMETHING HERE
 ---
 # Guideline:
 
+Video hướng dẫn kết nối với turtlebot và chạy thử model AI ở [video này](https://youtu.be/JL_jAX7FTZk)
 
 
-## Module né vật cản
+---
 
 - Các cách tiếp cận:
   1. Reinforcement Learning (RL): Với ý tưởng rằng, ta sẽ train robot trong môi trường mô phỏng rất nhiều lần, nhằm giúp robot học được kinh nghiệm. Từ đó đem model nạp xuống robot và chạy thực tế. Tuy nhiên do sự bùng nổ về số state đầu vào. Và thiếu hụt thông tin về vận tốc và hướng của vật cản, nên hướng tiếp cận RL cho ra kết quả không khả quan.
@@ -75,8 +76,63 @@ DO SOMETHING HERE
 ---
 
 **Module nhận diện làn đường**
-- Các cách tiếp cận:
-- Hướng tiếp cận đang được sử dụng:
+
+Các code bên dưới sẽ được đề cập tính từ thư mục Autonomous-Car\src\lane-detect
+Các file không được đề cập có thể được xem như file rác.
+Cấu trúc thư mục ảnh chuẩn (sử dụng từ phiên bản demo 5 trở đi) có cấu trúc như sau):
+
+-	Image: tập chứa ảnh
+-	image_org hoặc orgimg: tập chứa ảnh gốc, ảnh trong tập image đã qua một bước xử lý (thường là khi loại bỏ các tấm chưa được label trong tập ảnh)
+-	output: ảnh segment phần làn đường, các pixel có làn sẽ là 255
+-	predic: ảnh visula kết quả, ảnh gốc sẽ là ảnh gray, và vùng làn đường sẽ có màu (thường là hồng – đỏ)
+
+Các tập muốn train cần có ảnh tập image và tập output có cùng số lượng ảnh, nếu không, chỉ có thể sử dụng code từ phiên bản demo5 trở đi (có chức năng tự động skip các ảnh không có label hoặc không có image ). Vấn đề thường gặp khi label chưa hết tập ảnh.
+
+Các ảnh background thường được lấy từ youtube, với các từ khoá “best upcoming movies 2023” để tìm được video đủ dài, các cảnh được chuyển liên tục và nhiều đường nét / hoạ tiết.
+
+**AI làn đường (thư mục src)**
+
+-	*demo_third_train*: file huấn luyện sử dụng model unet, từ phiên bản demo thứ 3 trở đi, cấu trúc cố định bao gồm khai báo model Unet, khai báo hàm loss. Các bạn không cần kiểm tra lại. bản demo số 3  huấn luyện ảnh segmentation với data có sẵn, chỉ argument lật ảnh theo 4 hướng.
+-	*demo_third_test*: file test kết quả output từ model AI, những vùng segmen sẽ được tô màu tím với cường độ 50% lên bức ảnh gray.
+-	*demo_four_train*: kế thừa từ demo 3, tuy nhiên, các ảnh train sẽ được argument ngẫu nhiên mỗi khi chạy huấn luyện bằng bộ số input bởi hàm randomImage. Bộ số được áp dụng chung cho bộ ảnh input và label, vì argument có các hành vi xoay, scale và flip.
+-	*demo_four_test*: Kế thừa từ demo3, phiên bản này hỗ trợ chạy test trên video hoặc folder nhiều video, kết quả trả về có thể là nhiều video, một video hoặc tập ảnh.
+-	*demo_five_train*: Kế thừa từ demo 4, phương pháp argument được cải tiến bao gồm tăng giảm cường độ ánh sáng, chệch màu, blur, nhiễu hạt tiêu, xoá một rectangle ngẫu nhiên. Ngoài ra, phiên bản này cũng hỗ trợ kiểm soát đầu vào ảnh, bao gồm việc lấy ra n ảnh từ tập dataset, tập dataset bao gồm các ảnh trong tư mục ảnh chuẩn và tập ảnh background, các bức ảnh sẽ được argument và chạy huấn luyện, sau mỗi epoch, GPU sẽ được nghỉ 20s.
+-	*demo_five_test*: tương tự demo 3, tuy nhiên, kết quả predic có thể chạy tương thích với cấu trúc thư mục ảnh chuẩn, bao gồm outpput kết quả visual và kết quả ở dạng predic, kết quả đó có thể được dùng như label để huấn luyện lại model.
+-	*demo_six_train*: thử nghiệm phương pháp chỉ argument data một lần duy nhất, và huấn luyện với lượng ảnh và epoch lớn
+-	*demo_seven_train*: kế thừa từ demo train 6, tuỳ chọn được tỉ lệ giữa ảnh làn đường và ảnh background, ảnh làn đường giờ sẽ vẽ ngẫu nhiên các đường nét random và một số cải tiến khác về argument. Có split ảnh để chạy tập validation, dùng để vẽ đồ thị báo cáo. Kết quả lịch sử sẽ ghi lại vào file json và vẽ sau.
+-	*gazebo_train*: kế thừa từ demo train 3, vì chỉ train ở gazebo nên quá trình sẽ rút gọn và đơn giản hơn
+-	*interpolation*: khai báo các hàm hỗ trợ quá trình trong việc tìm kiếm argument tối ưu, sử dụng code auto train, nhưng mỗi lần chạy ta sử dụng model mới, hai parameter của hàm loss sẽ dựa trên hàm này, hàm này sử dụng lịch sử của các parameter và kết quả huấn luyện để tính toán bộ parameter tối ưu nhất cho lần huấn luyện kế tiếp.
+-	*log.txt*: kết quả quá trình tìm kiếm argument, giá tri 4 số lần lượt là alpha, gamma, độ chính xác train, độ chính xác test
+-	*try7*: vẽ đồ thị
+-	*auto_train.py*: là file huấn luyện kế thừa từ train_5, Mình sẽ viết một app C# WPF để tự động gọi file python này, vì mình cần thử nghiệm việc argument data mới mỗi 5 epoch. Tuy nhiên, nếu argument quá nhiều sẽ gây ra tràn Vram của GPU. Do đó khi sử dụng một ứng  dụng C# để tạo và xoá một process python, Vram sẽ được làm sạch và không gây ra crash hệ thống.
+
+**Các file hỗ trợ việc label làn đường (thư mục dataset_process)**
+
+Video giải thích và hướng dẫn từng file ở [video này](https://youtu.be/4btCJ3rfGkg)
+
+**Các file hỗ trợ việc label làn đường (thư mục dataset_process)**
+
+- *modelTCP_server*: file server chính thức, là file chạy ở thiết bị window để nhận dữ liệu từ tcp và trả kết quả, quá trình bao gồm mở port, đợi tín hiệu từ model, chạy backend, song song hoá, tái tạo làn đường, warp, trả kết quả.
+
+- *modelTCP_server_tryFaster*: server phiên bản không output các thông tin log và không show ảnh debug
+
+- *modelTCP_server_debug*: server phiên bản nhận ảnh từ máy thay vì tcp, dùng để debug các lỗi ở file *modelTCP_server* nhanh hơn vì không cần chạy ROS/máy ảo
+
+- *LaneDetect_model*: file chạy model và backend, phiên bản backend số 1 (được phát triển bởi Trọng Nhân)
+
+- *LaneDetect_model_v2*: file chạy model và backend, phiên bản backend số 2 (được phát triển bởi Duy Thịnh và Trọng Nhân), được sử dụng trong quá trình demo. Backend này tách các vùng phát hiện và sử dụng bộ lọc dựa theo kích thước để phân biệt vùng trái, vùng phải và vùng lỗi.
+
+- *LaneDetect_model_visual*: tương tự *LaneDetect_model*
+ với một số visual về kết quả để phục vụ debug
+
+**Data và model ví dụ**
+Data được đặt ở [link này](https://drive.google.com/drive/folders/1GaTe5gqs6ncXDwlXcU8HhgwpxmdThIxt?usp=sharing)
+
+- *labeled_v8*: Bao gồm một số ảnh và label sẵn
+
+- *Model-CARLA9_epoch2*: Model tổng quát, được sử dụng trong nhiều môi trường khác nhau
+
+- *Model-S5_AUTO-13*: Model được huấn luyện overfit với môi trường demo
 
 ---
 
