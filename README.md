@@ -1,3 +1,8 @@
+<header id="top">
+  <h1 style="color: white">AUTONOMOUS CAR</h1>
+  <h2 style="color: white"><cite>KOT3</cite></h2>
+</header>
+
 # Autonomous-Car
 DEVELOPMENT OF DRIVING-ASSISTED SYSTEM FOR AUTONOMOUS CAR
 
@@ -51,12 +56,14 @@ DO SOMETHING HERE
 ---
 # Guideline:
 
-Video hướng dẫn kết nối với turtlebot và chạy thử model AI ở [video này](https://youtu.be/JL_jAX7FTZk)
+Video hướng dẫn kết nối với turtlebot và chạy thử model AI ở [video này](https://youtu.be/JL_jAX7FTZk).
 
 
 ---
 
-## Module né vật cản
+### Module né vật cản
+
+> Tất cả code hiện hành của module này được code trong file [kot3_pkg/scripts/ros_combine_lidar_lane.py](kot3_pkg/scripts/ros_combine_lidar_lane.py). Do ros khi nạp xuống robot được chuyển thành định dạng khác, nên ko thể đọc được từ file thứ 2. Chính vì vậy, các utils không thể tách thành file riêng.
 
 - Các cách tiếp cận:
   1. Reinforcement Learning (RL): Với ý tưởng rằng, ta sẽ train robot trong môi trường mô phỏng rất nhiều lần, nhằm giúp robot học được kinh nghiệm. Từ đó đem model nạp xuống robot và chạy thực tế. Tuy nhiên do sự bùng nổ về số state đầu vào. Và thiếu hụt thông tin về vận tốc và hướng của vật cản, nên hướng tiếp cận RL cho ra kết quả không khả quan.
@@ -69,19 +76,30 @@ Video hướng dẫn kết nối với turtlebot và chạy thử model AI ở [
   - **BƯỚC 2:** Visualize dữ liệu lên map kích thước 50x50 pixel
     - Theo quy ước về tỉ lệ 1x1 pixel<sup>2</sup> = 2x2 cm<sup>2</sup>
     - Từ quy ước trên, ta có thể visualize dữ liệu từ lidar lên map một cách chính xác theo đúng tỉ lệ.
-    - Tuy nhiên việc visual làn đường có tính tương đối hơn, và sẽ được xử lý bên khối AI làn đường
-    - Hàm vẽ map sẽ được xử lý như hàm trigger, nghĩa là nếu có 1 trong những input được update mới, map sẽ được update theo
-    - Trong đó, ta có áp dụng phình vật cản. Với độ phình của vật cản sấp sỉ 
+    - Tuy nhiên việc visual làn đường có tính tương đối hơn, và sẽ được xử lý bên khối AI làn đường.
+    - Hàm vẽ map sẽ được xử lý như hàm trigger, nghĩa là nếu có 1 trong những input được update mới, map sẽ được update theo.
+    - Trong đó, ta có áp dụng phình vật cản. Với ```độ phình của vật cản = bán kính robot + hằng số``` (hằng số này sẽ giúp robot né một cách an toàn hơn). Bên cạnh đó, làn đường cũng cần được vẽ dày lên với hàm **cv.line( size=2 )**, việc này giúp ngăn ngừa giải thuật kiếm đường đi xuyên qua làn đường (khi làn đường đang nằm nghiên)
+  - **BƯỚC 3:** Ta cần chọn điểm goal tạm thời để làm input của giải thuật.
+    - Các giải thuật tìm đường cần input gồm vị trí hiện tại và vị trí đích. Chính vì vậy, ta cần tìm ra cơ chế chọn điểm goal phù hợp (đọc thêm tại [mục 4.2.2.3 Cách chọn điểm goal ở từng frame](https://drive.google.com/file/d/1Z_Ez_u44AQI37l7NrvjPNhta7aDiH2m1/view?usp=drive_link)).
+  - **BƯỚC 4:** Một số chiến thuật
+    - **Tìm khoảng cách từ robot đến goal (đã bỏ):** Cách này khi áp dụng nhận được kết quả không như mong đợi, hành vi của robot khá lắc, lắc trái, lắc phải.
+    - **Tìm khoảng cách hình chiếu từ robot lên 2 làn đường:** nhằm tìm làn mà robot gần hơn.
+    - **Tìm khoảng trống trước robot:** nhằm giúp robot né từ xa.
+    - **Xoá hàng ngang tại điểm goal:** giúp robot tránh bị stuck khi vẫn còn đường di chuyển
+  - **BƯỚC 5:** Áp dụng cơ chế xoay map (tăng tính đảm bảo khi không có dữ liệu AI làn đường gửi tới)
+    - Cần tính toán thời gian khi bắt đầu xoay map:
+    ![Lượt đồ thời gian](./gitImg/whenToRotateMap.png)
+    - Trong đó, ta sẽ tiến hành xoay map mỗi khi 
 
 
 
 ---
 
-**Module nhận diện làn đường**
+### Module nhận diện làn đường
 
 Các code bên dưới sẽ được đề cập tính từ thư mục Autonomous-Car\src\lane-detect
 Các file không được đề cập có thể được xem như file rác.
-Cấu trúc thư mục ảnh chuẩn (sử dụng từ phiên bản demo 5 trở đi) có cấu trúc như sau):
+Cấu trúc thư mục ảnh chuẩn (sử dụng từ phiên bản demo 5 trở đi) có cấu trúc như sau:
 
 -	Image: tập chứa ảnh
 -	image_org hoặc orgimg: tập chứa ảnh gốc, ảnh trong tập image đã qua một bước xử lý (thường là khi loại bỏ các tấm chưa được label trong tập ảnh)
@@ -138,7 +156,8 @@ Data được đặt ở [link này](https://drive.google.com/drive/folders/1GaT
 
 ---
 
-**Module nhận diện và phân loại biển báo giao thông**
+### Module nhận diện và phân loại biển báo giao thông
+
 - Các cách tiếp cận: Có 2 cách tiếp cận chính gồm:
   - [1] OpenCV + CNN: Sử dụng các kĩ thuật Computer Vision để định ra vị trí sau đó cắt biển báo tại vùng boundary box đó để đưa vào CNN. Tuy nhiên thì do là thuật toán thị giác máy tính nên rất dễ bị ảnh hưởng bởi ánh sáng và không xử lí được nhiều trường hợp khác nhau.
   - [2] YOLOV8 + CNN: YOLOV8 được sử dụng trong việc Object Detection, tức là chỉ định ra vị trí của các biển báo trên hình và đóng khung chúng lại. Sau đó 
@@ -208,6 +227,107 @@ Tham khảo tại file sau: [đây](https://github.com/CEK19/Autonomous-Car/blob
 
 ---
 
-**Module nhận diện và phân loại đèn giao thông [Phần này chưa được sử dụng trong hệ thống thực]**
+### Module nhận diện và phân loại đèn giao thông [Phần này chưa được sử dụng trong hệ thống thực]
+
 - Các cách tiếp cận: 
-- Hướng tiếp cận đang được sử dụng:
+  1. **Computer Vision:** Bằng việc lọc các khoảng màu xanh / đỏ / vàng, và tìm vùng màu có kích thước hình tròn và giới hạn trong 1 độ lớn, ta có thể xác định được màu của đèn giao thông trong môi trường phòng thí nghiệm.
+  1. **YOLO V8:** xử dụng yolo v8 để tìm và phân loại đèn giao thông.
+  
+- Hạn chế:
+  - **Độ choá cao:** Do module đèn của arduino có cấu tạo khá bự, dẫn đến độ choá cao (đã xử lý được trường hợp này)
+  - **Độ phân giải thấp:** Do hạn chế về độ phân giải của camera robot (chưa thể cải thiện, có thể được cải thiện khi nâng cấp camera mới)
+
+- Hướng tiếp cận đang được sử dụng (hướng 1):
+  - BƯỚC 1: Ta tiến hành lọc màu đỏ / xanh / vàng trong bức hình
+    - Ta cần xác định khoảng màu và kẹp lại bằng **cv2.inRange(lowerColor, upperColor)**, hàm này với đầu vào là màu HSV. Chính vì vậy, ta cần tool để xác định khoảng màu phù hợp. Tool tìm khoảng màu HSV có thể được tìm thấy trong thư mục ```src/trafficLightDetection/HSV_Picker```. Và thực hiện theo file [README.md](./src/trafficLightDetection/HSV_Picker/README.md) trong thư mục đó.
+  
+
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+main {
+  padding: 0 3rem;
+  position: relative;
+  max-width: 50rem;
+  margin: 2rem auto;
+
+  *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.back-to-top-wrapper {
+  position: absolute;
+  top: 130vh;
+  right: 0.25rem;
+  bottom: -5em;
+  width: 3em;
+  pointer-events: none;
+}
+
+.back-to-top-link {
+  position: fixed;
+  pointer-events: all;
+  top: calc(100vh - 5rem);
+
+  display: inline-block;
+  text-decoration: none;
+  font-size: 2rem;
+  line-height: 3rem;
+  text-align: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  padding: 0.25rem;
+
+  border: 1px solid #254568;
+  background-color: scale-color(#254568, $lightness: 85%);
+  transition: transform 80ms ease-in;
+
+  &:hover,
+  &:focus {
+    transform: scale(1.1);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px scale-color(#254568, $lightness: 35%);
+  }
+}
+
+body {
+  font-family: "Baloo 2", sans-serif;
+  min-height: 100vh;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  margin: 0;
+}
+
+header {
+  display: grid;
+  place-items: center;
+  background-color: #254568;
+  color: #fff;
+}
+
+header {
+  background-image: url(https://images.unsplash.com/photo-1513628253939-010e64ac66cd?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+</style>
+
+<div class="back-to-top-wrapper">
+  <a href="#top" class="back-to-top-link" aria-label="Scroll to Top">🔝</a>
+</div>
