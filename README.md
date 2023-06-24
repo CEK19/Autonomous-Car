@@ -25,6 +25,11 @@ cd ~/NCKH_workspace/KOT3_ws/
 catkin_make
 ```
 
+**STEP 4: RUN PROJECT**
+```
+DO SOMETHING HERE
+```
+
 ---
 **Source structure**:   
 -  **build:** contains script to build workspace ROS
