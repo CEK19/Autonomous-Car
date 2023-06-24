@@ -16,8 +16,8 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.finder.best_first import BestFirst
 from pathfinding.core.grid import Grid
 
-# Test here
 
+# Read param from robot's config file
 NODE_NAME_AVOIDANCE = rospy.get_param('NODE_NAME_AVOIDANCE')
 TOPIC_NAME_VELOCITY = rospy.get_param('TOPIC_NAME_VELOCITY')
 TOPIC_NAME_LIDAR = rospy.get_param('TOPIC_NAME_LIDAR')
@@ -25,12 +25,10 @@ TOPIC_NAME_TRAFFIC_SIGN = rospy.get_param('TOPIC_NAME_TRAFFIC_SIGN')
 TOPIC_NAME_AVOIDANCE = rospy.get_param('TOPIC_NAME_AVOIDANCE')
 TOPIC_NAME_LANE_DETECTION = rospy.get_param('TOPIC_NAME_LANE_DETECTION')
 
-# NODE_NAME_AVOIDANCE = "avoidance_node_name"
-# TOPIC_NAME_VELOCITY = "/cmd_vel"
-# TOPIC_NAME_LIDAR = "/scan"
-# TOPIC_NAME_AVOIDANCE = "avoidance_topic"
-# TOPIC_NAME_LANE_DETECTION = "lane_detection_topic"
 
+
+# LIDAR_CONFIG
+#################
 LIDAR_MAX_RANGE = 3.5  # metters, unit
 WIDTH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*50)
 HEIGH_SIMULATE_MAP = int(2*LIDAR_MAX_RANGE*50)
@@ -71,6 +69,8 @@ else:
     pub = rospy.Publisher(TOPIC_NAME_VELOCITY, Twist, queue_size=1)
 
 
+# Utils function
+#################
 class Utils:
     @staticmethod
     def writeLog(txt="", txt1="", txt2="", txt3="", txt4=""):
