@@ -26,9 +26,8 @@ catkin_make
 ```
 
 **STEP 4: RUN PROJECT**
-```
-DO SOMETHING HERE
-```
+
+Based on this video, we guide you how to connect Turtlebot3, run the project and try to connect lane detection model: [Video](https://youtu.be/JL_jAX7FTZk).
 
 ---
 **Source structure**:   
@@ -50,10 +49,6 @@ DO SOMETHING HERE
 
 ---
 # Guideline:
-
-Video hướng dẫn kết nối với turtlebot và chạy thử model AI ở [video này](https://youtu.be/JL_jAX7FTZk).
-
-
 ---
 
 ### Module né vật cản
