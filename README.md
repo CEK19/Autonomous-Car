@@ -105,6 +105,17 @@ Các tập muốn train cần có ảnh tập image và tập output có cùng s
 
 Các ảnh background thường được lấy từ youtube, với các từ khoá “best upcoming movies 2023” để tìm được video đủ dài, các cảnh được chuyển liên tục và nhiều đường nét / hoạ tiết.
 
+- Luồng xử lý (Quá trình Train)
+  - Sinh model và hàm loss: kiến trúc model được lấy tại https://github.com/zhixuhao/unet, tham số hyperparameter của hàm loss tuỳ vào từng file train khác nhau
+  - Data Augmentation: Bao gồm các hành vi thay đổi độ sáng, nhiễu, ép, flip. ở file train phiên bản 7, quá trình augment được thực hiện một lần duy nhất, tuy nhiên đối với một số file train khác, quá trình augment sẽ được thực hiện lại sau một số epoch nhất định
+  - Train: Ảnh đầu vào ở ảnh label có hai giá trị là 0-1 thay vì 0-255, do đó các giá trị cần chia 255 để quá trình train diễn ra hiệU quả. Việc lưu ảnh label là 0-255 giúp ta dễ đối chiếu ảnh label so với ảnh đầu vào.
+  - Validation và lưu model: chỉ có file train phiên bản 7 có quá trình tách data cho validation. Các phiên bản mới hơn chỉ lưu model một lần sau khi train xong, nhưng các phiên bản cũ sẽ lưu model sau một số lần train.
+
+- Luồng xử lý (Quá trình Test)
+  - nạp model: model là file .hdf5 được lưu trong quá trình train, tuy nhiên file này không kèm định nghĩa của hàm loss, do đó hàm loss cần được khai báo trước và chỉ định lại trong quá trình nạp model
+  - xử lý output: với các phiên bản test cũ hơn, có thể có nhiều dạng output đƯợc sinh ra trong các file tương ứng, dạng label (dữ liệu thô của predic), dạng overlay (các vùng làn đường sẽ được tô màu với độ đậm 50% hoặc 100%, trong khi ảnh gốc sẽ là ảnh xám)
+  - một số xử lý khác: có một số file test đọc từ video, do đó hàm sẽ lặp qua toàn bộ videl có trong folder và ghép thành một video output dạng overlay duy nhất. Một số video có tên đặc thù sẽ có những quá trình tiền xử lý khác nhau.
+
 **AI làn đường (thư mục src)**
 
 -	*demo_third_train*: file huấn luyện sử dụng model unet, từ phiên bản demo thứ 3 trở đi, cấu trúc cố định bao gồm khai báo model Unet, khai báo hàm loss. Các bạn không cần kiểm tra lại. bản demo số 3  huấn luyện ảnh segmentation với data có sẵn, chỉ argument lật ảnh theo 4 hướng.
