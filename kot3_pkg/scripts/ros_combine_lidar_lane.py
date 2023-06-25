@@ -202,12 +202,7 @@ class CombineLidarLane:
         
         # for auto rotate map (Cơ chế xoay map)
         self.lastTimeReciveLane = time.time()
-
-        # lane detection
         self.frameIndex = 0
-        self.cmdFirstPub = True
-        self.cmdStartTime = time.time()
-        self.cmdCount = 0
 
 
     def drawLanesOnMap(self, simMap):
@@ -292,6 +287,7 @@ class CombineLidarLane:
     def updateLaneDetectionSignal(self, msg):
         parsed = json.loads(msg.data)
         
+        # Lane backend has handle this case
         if parsed['bl'][1] == parsed['tl'][1]:
             return
         if parsed['br'][1] == parsed['tr'][1]:
@@ -312,24 +308,22 @@ class CombineLidarLane:
         # Front of robot index = 0, anti clockwise +1 index (left = 90 deg)
         self.ranges = scan.ranges
 
+
     def updateVelocity(self, event):
-        if self.cmdFirstPub:
-            self.cmdFirstPub = False
-            self.cmdStartTime = time.time()
-        self.cmdCount += 1
         myTwist = Twist()
         myTwist.linear.x = self.straightVel
-        myTwist.angular.z = self.turnVel
+        myTwist.angular.z = self.turnVel        
         
-        
+        # if architech has decision making module, send velocity as JSON string to it
+        # eles send velocity to robot directly
         if HAVE_DECISION_MAKING:
             msg = json.dumps({"linear": self.straightVel, "angular": self.turnVel})
             pub.publish(msg)
         else:
             pub.publish(myTwist)
 
-        # Utils.publicVelocity(self.straightVel, self.turnVel)
 
+    # solution help to choose goal
     def clearLineWhereGoalStuck(self, simulateMap):
         simulateMap[self.goalY:self.goalY + 2, :] = NON_BLOCKED_COLOR
         simulateMap[self.goal2Y:self.goal2Y + 2, :] = NON_BLOCKED_COLOR
@@ -337,39 +331,28 @@ class CombineLidarLane:
     def chooseGoal(self, simulateMap):
         # check if only 1 goal feature
         if self.goal2X is None or self.goal2Y is None:
-            Utils.writeLog("ChooseGoal func", "never appear", goalChoosen)
             return LEFT_GOAL, self.goalX, self.goalY
 
         # check free space above goals
         goalChoosen, curGoalX, curGoalY = self.chooseGoalByFreeSpaceAGoal(simulateMap)
         if goalChoosen is not ANOTHER_GOAL:
-            Utils.writeLog("ChooseGoal func", "free space", goalChoosen)
             return goalChoosen, curGoalX, curGoalY
 
         # Go to another goal if 1 goal is blocked
         isGoal1Available = simulateMap[self.goalY, self.goalX] == NON_BLOCKED_COLOR
         isGoal2Available = simulateMap[self.goal2Y, self.goal2X] == NON_BLOCKED_COLOR
         if isGoal1Available and not isGoal2Available:
-            Utils.writeLog("ChooseGoal func", "1 goal block", LEFT_GOAL)
             return LEFT_GOAL, self.goalX, self.goalY
         elif isGoal2Available and not isGoal1Available:
-            Utils.writeLog("ChooseGoal func", "1 goal block", goalChoosen)
             return RIGHT_GOAL, self.goal2X, self.goal2Y
         elif isGoal1Available and isGoal2Available:
             # compare distance robot to each lanes
             goalChoosen, curGoalX, curGoalY = self.chooseGoalByDistanceRobotToLane()
             if goalChoosen is not ANOTHER_GOAL:
-                Utils.writeLog("ChooseGoal func", "choose by distance both free", goalChoosen)
                 return goalChoosen, curGoalX, curGoalY
         else:
             # both stuck
             self.clearLineWhereGoalStuck(simulateMap)
-
-
-        # check free space above goals
-        # goalChoosen, curGoalX, curGoalY = self.chooseGoalByFreeSpaceAGoal(simulateMap)
-        # if goalChoosen is not ANOTHER_GOAL:
-        #     return curGoalX, curGoalY
 
         # compare distance robot to each lanes
         goalChoosen, curGoalX, curGoalY = self.chooseGoalByDistanceRobotToLane()
@@ -381,6 +364,7 @@ class CombineLidarLane:
         Utils.writeLog("ChooseGoal func", "default", goalChoosen)
         return RIGHT_GOAL, self.goal2X, self.goal2Y
 
+    # Dựa vào khoảng cách đường chim bay từ robot đến goal
     def chooseGoalByDistanceRobotToGoal(self):
         curPoint = [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2]
 
@@ -392,6 +376,7 @@ class CombineLidarLane:
             return RIGHT_GOAL, self.goal2X, self.goal2Y
         return ANOTHER_GOAL, None, None
     
+    # Dựa vào hình chiếu từ robot đến 2 làn đường
     def chooseGoalByDistanceRobotToLane(self):
         curPoint = [WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH//2]
         d1 = 0
@@ -419,6 +404,7 @@ class CombineLidarLane:
         return ANOTHER_GOAL, None, None
 
 
+    # Dựa vào khoảng trống trước goal
     def chooseGoalByFreeSpaceAGoal(self, simulateMap):
         leftGoalArea = simulateMap[self.goalX : self.goalX + AREA_WIDTH, self.goalY : self.goalY + AREA_HEIGHT]
         rightGoalArea = simulateMap[self.goal2X : self.goal2X - AREA_WIDTH, self.goal2Y : self.goal2Y + AREA_HEIGHT]
@@ -431,31 +417,15 @@ class CombineLidarLane:
         elif not isLeftGoalAreaBlocked and isRightGoalAreaBlocked:
             return LEFT_GOAL, self.goalX, self.goalY
         return ANOTHER_GOAL, None, None
-    
-    def chooseGoalByFreeSpaceAGoalV2(self, simulateMap):
-        leftGoalArea, rightGoalArea = 0, 0
-        
-        if self.leftBottomLaneX == self.leftTopLaneX:
-            leftGoalArea = simulateMap[self.goalX : self.goalX + AREA_WIDTH, self.goalY : self.goalY + AREA_HEIGHT]
-            rightGoalArea = simulateMap[self.goal2X : self.goal2X - AREA_WIDTH, self.goal2Y : self.goal2Y + AREA_HEIGHT]
-        else:
-            leftGoalArea = simulateMap[self.goalX : self.goalX + AREA_WIDTH, self.goalY : self.goalY + AREA_HEIGHT]
-            rightGoalArea = simulateMap[self.goal2X : self.goal2X - AREA_WIDTH, self.goal2Y : self.goal2Y + AREA_HEIGHT]
 
-        isLeftGoalAreaBlocked = np.sum(leftGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT) > 0.6
-        isRightGoalAreaBlocked = np.sum(rightGoalArea) / (BLOCKED_COLOR * AREA_WIDTH * AREA_HEIGHT) > 0.6
-        
-        if isLeftGoalAreaBlocked and not isRightGoalAreaBlocked:
-            return RIGHT_GOAL, self.goal2X, self.goal2Y
-        elif not isLeftGoalAreaBlocked and isRightGoalAreaBlocked:
-            return LEFT_GOAL, self.goalX, self.goalY
-        return ANOTHER_GOAL, None, None
-
+    # Cơ chế xoay map (chỉ xoay làn đường, do lidar là tín hiệu luôn được cập nhật)
     def rotatePoint(self):
+        # Tính thời gian từ lần map chính xác cuối cùng
         time_t = time.time()
         deltaTime = time_t - self.lastTimeReciveLane
         self.lastTimeReciveLane = time_t
 
+        # nếu robot chạy thẳng, ta chỉ cần dời các điểm làn đường về sau robot và ko cần xoay map
         if self.turnVel == 0:
             deltaY = Utils.convertMetToPixel(self.straightVel) * deltaTime
             self.leftBottomLaneY = self.leftBottomLaneY + deltaY
@@ -464,19 +434,28 @@ class CombineLidarLane:
             self.rightTopLaneY = self.rightTopLaneY + deltaY
             return
 
+        # trường hợp robot có xoay, ta vẽ đồ thị chuyển động tròn có gia tốc hướng tâm và vận tốc thẳng, từ đó áp công thức toán tính được bán kính R, và vị trí mới của robot
         R = abs(Utils.convertMetToPixel(self.straightVel) / self.turnVel)
         isRight = self.turnVel < 0
         angular = self.turnVel * deltaTime
         alpha = abs(angular)
+        
+        # vị trí hiện tại của robot
         curPos = [HEIGH_OPTIMAL_PATH // 2, WIDTH_OPTIMAL_PATH // 2]
+        # vị trí mới của robot
         newPos = [0, 0]
         if isRight:
             newPos = [curPos[0] + 2*R*math.sin(alpha/2)*math.cos(math.pi/2 - alpha/2), curPos[1] - 2*R*math.sin(alpha/2)*math.sin(math.pi/2 - alpha/2)]
         else:
             newPos = [curPos[0] - 2*R*math.sin(alpha/2)*math.cos(math.pi/2 - alpha/2), curPos[1] - 2*R*math.sin(alpha/2)*math.sin(math.pi/2 - alpha/2)]
+        
+        # Vector di chuyển của robot trong toạ độ thực tế
         vector = Utils.getVectorAB(curPos, newPos)
+        # Do map cũng dịch theo robot, nên ta sẽ dời các điểm mút làn đường theo vector ngược lại của vector này
         invertVec = Utils.getInvertVector(vector)
 
+        # Ta sẽ tiến hành tịnh tiến các điểm mút làn đường với invertVector ở trên, sau đó tiến hành xoay map
+        # Bước 1: tịnh tiến các điểm mút + goal
         leftBottom = [self.leftBottomLaneX + invertVec[0], self.leftBottomLaneY + invertVec[1]]
         rightBottom = [self.rightBottomLaneX + invertVec[0], self.rightBottomLaneY + invertVec[1]]
         leftTop = [self.leftTopLaneX + invertVec[0], self.leftTopLaneY + invertVec[1]]
@@ -484,6 +463,7 @@ class CombineLidarLane:
         goal = [self.goalX + invertVec[0], self.goalY + invertVec[1]]
         goal2 = [self.goal2X + invertVec[0], self.goal2Y + invertVec[1]]
 
+        # Bước 2: xoay các điểm mút + goal
         self.leftBottomLaneX, self.leftBottomLaneY = Utils.getRotatedPoint(leftBottom, curPos, angular)
         self.rightBottomLaneX, self.rightBottomLaneY = Utils.getRotatedPoint(rightBottom, curPos, angular)
         self.leftTopLaneX, self.leftTopLaneY = Utils.getRotatedPoint(leftTop, curPos, angular)
@@ -493,7 +473,9 @@ class CombineLidarLane:
         self.goal2X, self.goal2Y = Utils.getRotatedPoint(goal2, curPos, angular)
 
 
+    # Best First Algorithm
     def bestFirst(self, simulateMap, curGoalX, curGoalY):
+        # Do có đầu vào ngược lại với map nhóm visualize, nên ta tiến hành invert map (swap có vật cản và ko có vật cản)
         invertMap = cv2.bitwise_not(simulateMap)
         grid = Grid(matrix=invertMap)
         start = grid.node(WIDTH_OPTIMAL_PATH//2, HEIGH_OPTIMAL_PATH // 2)
@@ -507,7 +489,6 @@ class CombineLidarLane:
         try:
             global frameIndex
             Utils.writeLog("Frame index: " + str(frameIndex))
-            ThinhTime = time.time()
 
             self.rotatePoint()
 
@@ -538,7 +519,6 @@ class CombineLidarLane:
             # Make obstacle bigger
             simulateMap[coordinateYObstacleSimulationMap[filteredIndex], coordinateXObstacleSimulationMap[filteredIndex]] = BLOCKED_COLOR
 
-            # cv2.imshow("hinhSimulatQQ before", simulateMap)
 
             # Magic code to fix point at (width/2, height/2) is collision
             simulateMap[HEIGH_SIMULATE_MAP//2 - MAGIC_NUMBER: HEIGH_SIMULATE_MAP//2 + MAGIC_NUMBER, WIDTH_SIMULATE_MAP//2 - MAGIC_NUMBER: WIDTH_SIMULATE_MAP//2 + MAGIC_NUMBER] = NON_BLOCKED_COLOR
@@ -553,7 +533,7 @@ class CombineLidarLane:
 
             qqImg = Utils.imgInColor(simulateMap)
             qqImg[HEIGH_SIMULATE_MAP//2 - MAGIC_NUMBER: HEIGH_SIMULATE_MAP//2 + MAGIC_NUMBER, WIDTH_SIMULATE_MAP//2 - MAGIC_NUMBER: WIDTH_SIMULATE_MAP//2 + MAGIC_NUMBER] = (255, 255, 0)
-            # cv2.imshow("big Map", simulateMap)
+
 
             # Cut the image in range 50px radius from robot (25px from left to 25px from right)
             simulateMap = simulateMap[WIDTH_SIMULATE_MAP//2 - WIDTH_OPTIMAL_PATH//2: WIDTH_SIMULATE_MAP//2 + WIDTH_OPTIMAL_PATH // 2, HEIGH_SIMULATE_MAP//2 - HEIGH_OPTIMAL_PATH//2: HEIGH_SIMULATE_MAP//2 + HEIGH_OPTIMAL_PATH//2]
@@ -571,6 +551,7 @@ class CombineLidarLane:
             start_QTM = time.time()
             self.tracePath = self.bestFirst(simulateMap, curGoalX, curGoalY)
             
+            # backup plan
             if len(self.tracePath) == 0:
                 if goalChoosen == LEFT_GOAL:
                     curGoalX = self.goal2X
@@ -583,8 +564,7 @@ class CombineLidarLane:
                     self.clearLineWhereGoalStuck(simulateMap)
                 Utils.writeLog("no path", "change to another goal", goalChoosen)
                 self.tracePath = self.bestFirst(simulateMap, curGoalX, curGoalY)
-            
-            end_QTM = time.time()
+
 
             # draw trace path
             visualizedMap = cv2.cvtColor(simulateMap, cv2.COLOR_GRAY2RGB)
@@ -601,52 +581,45 @@ class CombineLidarLane:
 
             visualizedMap = cv2.resize(visualizedMap, (WIDTH_OPTIMAL_PATH*4, HEIGH_OPTIMAL_PATH*4))
             cv2.imshow("simulate map", visualizedMap)
-            # cv2.imshow("simulate map", cv2.resize(simulateMap, (WIDTH_OPTIMAL_PATH*4, HEIGH_OPTIMAL_PATH*4)))
-            # cv2.imshow("path only map", cv2.resize(pathOnlyMap, (WIDTH_OPTIMAL_PATH*4, HEIGH_OPTIMAL_PATH*4)))
 
+            # calculate velocity
             self.getVelocity()
-
-            print("**********************", time.time() - ThinhTime)
             
             # save image for bebug
             if frameIndex % IMAGE_SAVED_PER_FRAME == 0:
                 cv2.imwrite(IMG_PATH + str(self.frameIndex) + "-" + str(frameIndex) + ".png", cv2.putText(visualizedMap, "F: " + str(self.frameIndex), (10, 25), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=3, color=(255, 255, 0)))
             frameIndex += 1
             
-            Utils.writeLog()
-
+            # press q to quit
             if cv2.waitKey(1) == ord('q'):
                 return
             
         except Exception as e:
-            log = open(LOG_PATH, "a")
-            log.write(e)
-            log.write("\n")
             print(e)
             pass
 
-    def sendActionToTopic(self, action):
-        """
-        Input: action
-        Ouput: None
-        """
-        message = json.dumps({"action": action})
-        self.avoidance_publisher.publish(message)
-
-    def getPath(self):
-        return self.tracePath
-
+    # calculate velocity
     def getVelocity(self):
+        # Khi nhận được tín hiệu biển báo dừng, ta sẽ tiến hành dừng tại chỗ tới khi hết tín hiệu biển báo
+        if self.sign == "STOP":
+            self.straightVel = 0
+            self.turnVel = 0
+            return
+        
+        # Lấy ra điểm thứ NUM_POINTS_OF_DIRECTION làm điểm tìm tốc độ
         point15th = NUM_POINTS_OF_DIRECTION
 
+        # nếu tracePath chưa có điểm nào thì tốc độ = 0
         if (point15th < 0 or not len(self.tracePath)):
             self.straightVel = 0
             self.turnVel = 0
             return
 
+        # Nếu danh sách đường đi ko đủ dài thì lấy điểm cuói cùng của tracePath làm điểm tìm tốc độ
         if point15th >= len(self.tracePath):
             point15th = len(self.tracePath) - 1
 
+        # Ta sẽ tính vector từ robot đến điểm tìm vận tốc. Từ đó nhân với hằng số vận tốc lớn nhất để ra vận tốc hiện tại
         vecDirection = Utils.getVectorAB([HEIGH_OPTIMAL_PATH//2, WIDTH_OPTIMAL_PATH // 2], self.tracePath[point15th])
         vecZero = (1, 0)
         angle = Utils.getAngleOfVectors(vecDirection, vecZero)
@@ -658,16 +631,6 @@ class CombineLidarLane:
 
         if straightVel < 0 or turnVel < 0:
             print("fail at negative vel")
-
-        # if straightVel < MIN_STRAIGHT_VELOCITY:
-        #     straightVel = 0
-        # if turnVel < MIN_TURN_VELOCITY:
-        #     turnVel = 0
-        
-        if self.sign == "STOP":
-            self.straightVel = 0
-            self.turnVel = 0
-            return
 
         if isRight:
             self.straightVel = straightVel    # straightVel
