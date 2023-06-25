@@ -84,7 +84,8 @@ Based on this video, we guide you how to connect Turtlebot3, run the project and
   - **Bước 5:** Áp dụng cơ chế xoay map (tăng tính đảm bảo khi không có dữ liệu AI làn đường gửi tới)
     - Cần tính toán thời gian khi bắt đầu xoay map:
     ![Lượt đồ thời gian](./gitImg/whenToRotateMap2.png)
-    - Trong đó, ta sẽ tiến hành xoay map mỗi khi 
+    - Trong đó, ta sẽ tiến hành xoay map mỗi khi hàm tính toán vận tốc được gọi.
+    -  Đồng thời ta cũng reset thời gian mỗi khi gói tin được gửi tới hoặc hàm tính toán được gọi.
 
 
 
